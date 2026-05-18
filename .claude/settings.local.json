@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pasca\\\\OneDrive\\\\Desktop\\\\dvla-vpms\\\\app\\\\\\(auth\\)\\\\login\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Host \"Directories created\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pasca\\\\OneDrive\\\\Desktop\\\\dvla-vpms\\\\app\\\\\\(auth\\)\\\\login\")",
+      "PowerShell(Get-ChildItem -Recurse \"c:\\\\Users\\\\pasca\\\\OneDrive\\\\Desktop\\\\dvla-vpms\\\\app\" | Where-Object { !$_.PSIsContainer } | Select-Object FullName)",
+      "Bash(npm run *)",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pasca\\\\OneDrive\\\\Desktop\\\\dvla-vpms\\\\app\\\\dashboard\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\pasca\\\\OneDrive\\\\Desktop\\\\dvla-vpms\\\\components\")"
+    ]
+  }
+}
