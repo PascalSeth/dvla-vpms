@@ -3,11 +3,53 @@
 import { useState } from "react";
 
 const RECENT_CUSTOM_PLATES = [
-  { id: "BOSS 1",   owner: "Ibrahim Mahama", region: "Greater Accra", date: "15 May 2026", cost: "GHS 15,000" },
-  { id: "GIFTY 1",  owner: "Gifty Mensah",   region: "Ashanti",       date: "17 May 2026", cost: "GHS 15,000" },
-  { id: "KING 99",  owner: "Nana Osei Tutu", region: "Ashanti",       date: "12 Apr 2026", cost: "GHS 15,000" },
-  { id: "PRINCE 7", owner: "Prince Emmanuel", region: "Eastern",       date: "29 Mar 2026", cost: "GHS 15,000" },
-  { id: "VIP 2026", owner: "Alhaji Collins", region: "Greater Accra", date: "10 Jan 2026", cost: "GHS 15,000" },
+  { 
+    id: "BOSS 1",   
+    owners: [
+      { name: "Ibrahim Mahama", role: "Primary" },
+      { name: "Joyce Mahama", role: "Co-Owner" }
+    ], 
+    region: "Greater Accra", 
+    date: "15 May 2026", 
+    cost: "GHS 15,000" 
+  },
+  { 
+    id: "GIFTY 1",  
+    owners: [
+      { name: "Gifty Mensah", role: "Primary" }
+    ], 
+    region: "Ashanti",       
+    date: "17 May 2026", 
+    cost: "GHS 15,000" 
+  },
+  { 
+    id: "KING 99",  
+    owners: [
+      { name: "Nana Osei Tutu", role: "Primary" }
+    ], 
+    region: "Ashanti",       
+    date: "12 Apr 2026", 
+    cost: "GHS 15,000" 
+  },
+  { 
+    id: "PRINCE 7", 
+    owners: [
+      { name: "Prince Emmanuel", role: "Primary" }
+    ], 
+    region: "Eastern",       
+    date: "29 Mar 2026", 
+    cost: "GHS 15,000" 
+  },
+  { 
+    id: "VIP 2026", 
+    owners: [
+      { name: "Alhaji Collins", role: "Primary" },
+      { name: "Mariama Collins", role: "Co-Owner" }
+    ], 
+    region: "Greater Accra", 
+    date: "10 Jan 2026", 
+    cost: "GHS 15,000" 
+  },
 ];
 
 const FORBIDDEN_WORDS = ["BAD", "KILL", "DEAD", "HELL", "FOOL", "CRIME", "POLICE", "DVLA"];
@@ -17,6 +59,8 @@ export default function CustomPlatesPage() {
   const [plateStyle, setPlateStyle] = useState<"Private" | "Commercial" | "Government" | "Equipment">("Private");
   const [ownerName, setOwnerName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [coOwners, setCoOwners] = useState<{ name: string; email: string; phone: string }[]>([]);
   const [region, setRegion] = useState("Greater Accra");
   const [submitted, setSubmitted] = useState(false);
 
@@ -28,15 +72,35 @@ export default function CustomPlatesPage() {
   const hasInvalidChars = !/^[A-Z0-9\-\s]+$/.test(textClean) && textClean.length > 0;
   const isValid = !tooLong && !tooShort && !isForbidden && !hasInvalidChars;
 
+  const coOwnersValid = coOwners.every(co => co.name.trim() !== "" && co.email.trim() !== "");
+
+  const handleAddCoOwner = () => {
+    if (coOwners.length < 4) {
+      setCoOwners([...coOwners, { name: "", email: "", phone: "" }]);
+    }
+  };
+
+  const handleRemoveCoOwner = (index: number) => {
+    setCoOwners(coOwners.filter((_, idx) => idx !== index));
+  };
+
+  const handleCoOwnerChange = (index: number, field: "name" | "email" | "phone", value: string) => {
+    const updated = [...coOwners];
+    updated[index][field] = value;
+    setCoOwners(updated);
+  };
+
   const handleSubmitCustom = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValid || !ownerName || !email) return;
+    if (!isValid || !ownerName || !email || !coOwnersValid) return;
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
       setCustomText("GHANA 1");
       setOwnerName("");
       setEmail("");
+      setPhone("");
+      setCoOwners([]);
       alert("Custom plate application successfully queued for supervisor review!");
     }, 1500);
   };
@@ -239,43 +303,146 @@ export default function CustomPlatesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#374167] uppercase tracking-wider mb-2">
-                    Owner Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={ownerName}
-                    onChange={(e) => setOwnerName(e.target.value)}
-                    placeholder="Enter owner name"
-                    className="w-full px-4 py-2.5 bg-[#f8faff] border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] placeholder-[#9aa3be] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition"
-                  />
+              {/* Primary Owner details */}
+              <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 space-y-4">
+                <div className="flex items-center justify-between border-b border-[#f0f4f8] pb-2">
+                  <h4 className="text-xs font-bold text-[#1a2e05] uppercase tracking-wider flex items-center gap-1.5">
+                    <span>👤</span> Primary Owner Details
+                  </h4>
+                  <span className="px-2 py-0.5 rounded bg-[#81B71A]/10 text-[#3d6b08] text-[9px] font-bold uppercase tracking-wider border border-[#81B71A]/20">
+                    Primary
+                  </span>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#6b7a99] uppercase tracking-wider mb-1.5">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={ownerName}
+                      onChange={(e) => setOwnerName(e.target.value)}
+                      placeholder="e.g. Kwame Asante"
+                      className="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] placeholder-[#9aa3be] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#6b7a99] uppercase tracking-wider mb-1.5">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="owner@domain.com"
+                      className="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] placeholder-[#9aa3be] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#6b7a99] uppercase tracking-wider mb-1.5">
+                      Phone Number (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+233 24 123 4567"
+                      className="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] placeholder-[#9aa3be] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamically added Co-Owners */}
+              {coOwners.map((coOwner, idx) => (
+                <div key={idx} className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 space-y-4 relative overflow-hidden transition-all duration-200">
+                  <div className="flex items-center justify-between border-b border-[#f0f4f8] pb-2">
+                    <h4 className="text-xs font-bold text-[#1a2e05] uppercase tracking-wider flex items-center gap-1.5">
+                      <span>👥</span> Joint Co-Owner #{idx + 1}
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCoOwner(idx)}
+                      className="p-1 px-2 rounded-md hover:bg-red-50 text-red-500 hover:text-red-700 text-xs font-bold border border-red-100 flex items-center gap-1 transition cursor-pointer"
+                    >
+                      <span>🗑️</span> Remove
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#6b7a99] uppercase tracking-wider mb-1.5">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={coOwner.name}
+                        onChange={(e) => handleCoOwnerChange(idx, "name", e.target.value)}
+                        placeholder="e.g. Akua Asante"
+                        className="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] placeholder-[#9aa3be] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#6b7a99] uppercase tracking-wider mb-1.5">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={coOwner.email}
+                        onChange={(e) => handleCoOwnerChange(idx, "email", e.target.value)}
+                        placeholder="coowner@domain.com"
+                        className="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] placeholder-[#9aa3be] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#6b7a99] uppercase tracking-wider mb-1.5">
+                        Phone Number (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={coOwner.phone}
+                        onChange={(e) => handleCoOwnerChange(idx, "phone", e.target.value)}
+                        placeholder="+233 27 765 4321"
+                        className="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] placeholder-[#9aa3be] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add Co-Owner Button & Region selection */}
+              <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-4 p-1">
                 <div>
-                  <label className="block text-xs font-bold text-[#374167] uppercase tracking-wider mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="owner@domain.com"
-                    className="w-full px-4 py-2.5 bg-[#f8faff] border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] placeholder-[#9aa3be] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition"
-                  />
+                  {coOwners.length < 4 ? (
+                    <button
+                      type="button"
+                      onClick={handleAddCoOwner}
+                      className="px-4 py-2 bg-white hover:bg-slate-50 border border-[#cbd5e1] hover:border-[#94a3b8] rounded-xl text-xs font-bold text-[#374167] shadow-sm flex items-center gap-1.5 transition duration-200 hover:scale-[1.02] cursor-pointer"
+                    >
+                      <span>➕</span> Add Joint Co-Owner
+                    </button>
+                  ) : (
+                    <p className="text-[11px] font-bold text-[#94a3b8]">⚠️ Maximum of 4 co-owners reached.</p>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-[#374167] uppercase tracking-wider mb-2">
+                <div className="w-full md:w-60">
+                  <label className="block text-[10px] font-bold text-[#374167] uppercase tracking-wider mb-1.5">
                     Region of Issue
                   </label>
                   <select
                     value={region}
                     onChange={(e) => setRegion(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-[#f8faff] border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-semibold"
+                    className="w-full px-3 py-2 bg-[#f8faff] border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-semibold"
                   >
                     <option value="Greater Accra">Greater Accra</option>
                     <option value="Ashanti">Ashanti</option>
@@ -289,7 +456,7 @@ export default function CustomPlatesPage() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={!isValid || !ownerName || !email || submitted}
+                  disabled={!isValid || !ownerName || !email || !coOwnersValid || submitted}
                   className="w-full py-3 rounded-xl bg-[#81B71A] hover:bg-[#6a9a15] disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.99] text-white font-bold text-sm tracking-wide shadow-lg transition duration-200 cursor-pointer"
                 >
                   {submitted ? "Submitting Request..." : "Apply for Custom Plate (GHS 15,000)"}
@@ -327,8 +494,13 @@ export default function CustomPlatesPage() {
                       {item.id}
                     </span>
                     <div>
-                      <p className="text-xs font-bold text-[#1a2e05]">{item.owner}</p>
-                      <p className="text-[10px] text-[#6b7a99] font-medium">{item.region} • {item.date}</p>
+                      <p className="text-xs font-bold text-[#1a2e05]">{item.owners[0].name}</p>
+                      <p className="text-[10px] text-[#6b7a99] font-medium">
+                        {item.region} • {item.date}
+                        {item.owners.length > 1 && (
+                          <span className="text-[#81B71A] font-bold ml-1">• Joint ({item.owners.length})</span>
+                        )}
+                      </p>
                     </div>
                   </div>
                   <span className="text-xs font-bold text-[#81B71A]">{item.cost}</span>

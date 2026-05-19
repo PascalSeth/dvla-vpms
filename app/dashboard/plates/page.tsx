@@ -4,14 +4,104 @@ import { useState } from "react";
 
 // Mock database of registered plates
 const PLATES_DB = [
-  { id: "GR 8812-24", owner: "Kwame Asante", vehicle: "Toyota Land Cruiser (2024)", region: "Greater Accra", category: "Private", status: "Active", date: "18 May 2026", email: "kwame.asante@gmail.com", chassis: "JTEBU5JR8P209871" },
-  { id: "AS 3982-25", owner: "Abena Mensah", vehicle: "Hyundai Elantra (2023)", region: "Ashanti", category: "Commercial", status: "Active", date: "12 Feb 2026", email: "abena.m@yahoo.com", chassis: "KMHDK41D7NU381920" },
-  { id: "GV 928-26",  owner: "Ministry of Health", vehicle: "Nissan Patrol (2025)", region: "Greater Accra", category: "Government", status: "Active", date: "05 May 2026", email: "transport@moh.gov.gh", chassis: "JN1BYSY61U391823" },
-  { id: "WR 8729-24", owner: "Yaw Boateng", vehicle: "Mercedes-Benz C-Class (2022)", region: "Western", category: "Private", status: "Expired", date: "14 Nov 2024", email: "yaw.b@boatenglogistics.com", chassis: "WDDGF4HB0DA829103" },
-  { id: "ER 1029-25", owner: "Ama Owusu", vehicle: "Toyota Hilux (2023)", region: "Eastern", category: "Private", status: "Active", date: "17 May 2026", email: "ama.owusu@outlook.com", chassis: "AHTFR29G4K8102983" },
-  { id: "NR 4819-26", owner: "Kojo Darko", vehicle: "DAF XF Truck (2021)", region: "Northern", category: "Commercial", status: "Suspended", date: "16 May 2026", email: "k.darko@darkotransport.com", chassis: "XLRTE47M0E2918320" },
-  { id: "VR 201-26",  owner: "Efua Adjei", vehicle: "Kia Sportage (2024)", region: "Volta", category: "Private", status: "Active", date: "16 May 2026", email: "efua.adjei@live.com", chassis: "KNDPM4AC8R7281923" },
-  { id: "CR 9921-25", owner: "Fiifi Antwi", vehicle: "Caterpillar Excavator (2020)", region: "Central", category: "Equipment", status: "Active", date: "15 May 2026", email: "f.antwi@capecoastbuilders.com", chassis: "CAT0320CCPH291823" },
+  { 
+    id: "GR 8812-24", 
+    owners: [
+      { name: "Kwame Asante", email: "kwame.asante@gmail.com", phone: "+233 24 456 7890", role: "Primary" },
+      { name: "Akua Asante", email: "akua.asante@gmail.com", phone: "+233 20 987 6543", role: "Co-Owner" }
+    ], 
+    vehicle: "Toyota Land Cruiser (2024)", 
+    region: "Greater Accra", 
+    category: "Private", 
+    status: "Active", 
+    date: "18 May 2026", 
+    chassis: "JTEBU5JR8P209871" 
+  },
+  { 
+    id: "AS 3982-25", 
+    owners: [
+      { name: "Abena Mensah", email: "abena.m@yahoo.com", phone: "+233 50 123 4567", role: "Primary" },
+      { name: "Kofi Mensah", email: "kofi.m@yahoo.com", phone: "+233 24 987 6543", role: "Co-Owner" }
+    ], 
+    vehicle: "Hyundai Elantra (2023)", 
+    region: "Ashanti", 
+    category: "Commercial", 
+    status: "Active", 
+    date: "12 Feb 2026", 
+    chassis: "KMHDK41D7NU381920" 
+  },
+  { 
+    id: "GV 928-26",  
+    owners: [
+      { name: "Ministry of Health", email: "transport@moh.gov.gh", phone: "+233 30 223 4455", role: "Primary" }
+    ], 
+    vehicle: "Nissan Patrol (2025)", 
+    region: "Greater Accra", 
+    category: "Government", 
+    status: "Active", 
+    date: "05 May 2026", 
+    chassis: "JN1BYSY61U391823" 
+  },
+  { 
+    id: "WR 8729-24", 
+    owners: [
+      { name: "Yaw Boateng", email: "yaw.b@boatenglogistics.com", phone: "+233 24 555 8899", role: "Primary" }
+    ], 
+    vehicle: "Mercedes-Benz C-Class (2022)", 
+    region: "Western", 
+    category: "Private", 
+    status: "Expired", 
+    date: "14 Nov 2024", 
+    chassis: "WDDGF4HB0DA829103" 
+  },
+  { 
+    id: "ER 1029-25", 
+    owners: [
+      { name: "Ama Owusu", email: "ama.owusu@outlook.com", phone: "+233 27 111 2233", role: "Primary" }
+    ], 
+    vehicle: "Toyota Hilux (2023)", 
+    region: "Eastern", 
+    category: "Private", 
+    status: "Active", 
+    date: "17 May 2026", 
+    chassis: "AHTFR29G4K8102983" 
+  },
+  { 
+    id: "NR 4819-26", 
+    owners: [
+      { name: "Kojo Darko", email: "k.darko@darkotransport.com", phone: "+233 24 333 4455", role: "Primary" }
+    ], 
+    vehicle: "DAF XF Truck (2021)", 
+    region: "Northern", 
+    category: "Commercial", 
+    status: "Suspended", 
+    date: "16 May 2026", 
+    chassis: "XLRTE47M0E2918320" 
+  },
+  { 
+    id: "VR 201-26",  
+    owners: [
+      { name: "Efua Adjei", email: "efua.adjei@live.com", phone: "+233 20 555 6677", role: "Primary" }
+    ], 
+    vehicle: "Kia Sportage (2024)", 
+    region: "Volta", 
+    category: "Private", 
+    status: "Active", 
+    date: "16 May 2026", 
+    chassis: "KNDPM4AC8R7281923" 
+  },
+  { 
+    id: "CR 9921-25", 
+    owners: [
+      { name: "Fiifi Antwi", email: "f.antwi@capecoastbuilders.com", phone: "+233 24 777 8899", role: "Primary" }
+    ], 
+    vehicle: "Caterpillar Excavator (2020)", 
+    region: "Central", 
+    category: "Equipment", 
+    status: "Active", 
+    date: "15 May 2026", 
+    chassis: "CAT0320CCPH291823" 
+  },
 ];
 
 export default function PlatesSearchPage() {
@@ -25,7 +115,7 @@ export default function PlatesSearchPage() {
   const filteredPlates = PLATES_DB.filter((p) => {
     const matchesSearch =
       p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.owner.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.owners.some((o) => o.name.toLowerCase().includes(searchQuery.toLowerCase()) || o.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
       p.vehicle.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesRegion = selectedRegion === "All" || p.region === selectedRegion;
@@ -202,7 +292,16 @@ export default function PlatesSearchPage() {
                               {p.id}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 text-[#374167] font-semibold whitespace-nowrap">{p.owner}</td>
+                          <td className="px-5 py-3.5 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <span className="text-[#374167] font-semibold">{p.owners[0].name}</span>
+                              {p.owners.length > 1 && (
+                                <span className="text-[10px] text-[#81B71A] font-bold mt-0.5 flex items-center gap-1">
+                                  <span>👥</span> +{p.owners.length - 1} Co-owner{p.owners.length > 2 ? 's' : ''} ({p.owners.slice(1).map(o => o.name).join(', ')})
+                                </span>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-5 py-3.5 text-xs text-[#6b7a99] font-medium whitespace-nowrap">{p.category}</td>
                           <td className="px-5 py-3.5 text-xs text-[#6b7a99] font-medium whitespace-nowrap">{p.region}</td>
                           <td className="px-5 py-3.5 whitespace-nowrap">
@@ -322,10 +421,32 @@ export default function PlatesSearchPage() {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#9aa3be]">Owner &amp; Vehicle Specs</h4>
                 
                 <div className="space-y-3">
-                  <div>
-                    <p className="text-[10px] text-[#9aa3be] uppercase font-bold">Registered Owner</p>
-                    <p className="text-sm font-bold text-[#1a2e05]">{activePlate.owner}</p>
-                    <p className="text-xs text-[#6b7a99] font-medium">{activePlate.email}</p>
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-[#9aa3be] uppercase font-bold">Registered Owners ({activePlate.owners.length})</p>
+                    <div className="space-y-2">
+                      {activePlate.owners.map((owner, idx) => (
+                        <div key={idx} className="p-2.5 rounded-lg border border-[#e8edf5] bg-[#f8faff] shadow-sm">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-xs font-bold text-[#1a2e05]">{owner.name}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                              owner.role === "Primary" 
+                                ? "bg-[#81B71A]/10 text-[#3d6b08] border border-[#81B71A]/20" 
+                                : "bg-blue-50 text-blue-700 border border-blue-100"
+                            }`}>
+                              {owner.role}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-[#6b7a99] font-semibold flex items-center gap-1">
+                            <span className="opacity-75">✉️</span> {owner.email}
+                          </p>
+                          {owner.phone && (
+                            <p className="text-[10px] text-[#6b7a99] font-semibold flex items-center gap-1 mt-0.5">
+                              <span className="opacity-75">📞</span> {owner.phone}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div>

@@ -4,10 +4,52 @@ import { useState } from "react";
 
 // Mock database of pending applications
 const APPLICATIONS_DB = [
-  { id: "APP-2026-9081", name: "Kofi Annan", proposed: "GR 7777-26", category: "Private", region: "Greater Accra", date: "18 May 2026", email: "kofi.annan@gmail.com", status: "Pending" },
-  { id: "APP-2026-9079", name: "Gifty Mensah", proposed: "GIFTY 1", category: "Private", region: "Ashanti", date: "17 May 2026", email: "gifty.m@mensahgroup.com", status: "Pending" },
-  { id: "APP-2026-9064", name: "Ghana Water Co.", proposed: "GV 301-26", category: "Government", region: "Western", date: "16 May 2026", email: "fleet@gwc.com.gh", status: "Pending" },
-  { id: "APP-2026-9051", name: "Ebenezer Lartey", proposed: "GW 9821-26", category: "Commercial", region: "Greater Accra", date: "15 May 2026", email: "ebenezer.l@gmail.com", status: "Pending" },
+  { 
+    id: "APP-2026-9081", 
+    owners: [
+      { name: "Kofi Annan", email: "kofi.annan@gmail.com", phone: "+233 24 456 7890", role: "Primary" },
+      { name: "Adwoa Annan", email: "adwoa.annan@gmail.com", phone: "+233 20 123 4567", role: "Co-Applicant" }
+    ], 
+    proposed: "GR 7777-26", 
+    category: "Private", 
+    region: "Greater Accra", 
+    date: "18 May 2026", 
+    status: "Pending" 
+  },
+  { 
+    id: "APP-2026-9079", 
+    owners: [
+      { name: "Gifty Mensah", email: "gifty.m@mensahgroup.com", phone: "+233 50 111 2222", role: "Primary" }
+    ], 
+    proposed: "GIFTY 1", 
+    category: "Private", 
+    region: "Ashanti", 
+    date: "17 May 2026", 
+    status: "Pending" 
+  },
+  { 
+    id: "APP-2026-9064", 
+    owners: [
+      { name: "Ghana Water Co.", email: "fleet@gwc.com.gh", phone: "+233 30 299 8877", role: "Primary" }
+    ], 
+    proposed: "GV 301-26", 
+    category: "Government", 
+    region: "Western", 
+    date: "16 May 2026", 
+    status: "Pending" 
+  },
+  { 
+    id: "APP-2026-9051", 
+    owners: [
+      { name: "Ebenezer Lartey", email: "ebenezer.l@gmail.com", phone: "+233 27 666 5544", role: "Primary" },
+      { name: "Victoria Lartey", email: "vic.l@gmail.com", phone: "+233 24 888 9999", role: "Co-Applicant" }
+    ], 
+    proposed: "GW 9821-26", 
+    category: "Commercial", 
+    region: "Greater Accra", 
+    date: "15 May 2026", 
+    status: "Pending" 
+  },
 ];
 
 export default function PlateApplicationsPage() {
@@ -141,7 +183,16 @@ export default function PlateApplicationsPage() {
                         }`}
                       >
                         <td className="px-5 py-4 font-mono text-xs font-bold text-[#2d5009] whitespace-nowrap">{a.id}</td>
-                        <td className="px-5 py-4 font-semibold text-[#374167] whitespace-nowrap">{a.name}</td>
+                        <td className="px-5 py-4 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-[#374167]">{a.owners[0].name}</span>
+                            {a.owners.length > 1 && (
+                              <span className="text-[10px] text-[#81B71A] font-bold mt-0.5 flex items-center gap-1">
+                                <span>👥</span> Joint ({a.owners.length})
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-5 py-4 whitespace-nowrap">
                           <span className="font-mono text-xs font-bold tracking-wide px-2 py-1 rounded border border-slate-300 bg-[#fafafa]">
                             {a.proposed}
@@ -258,10 +309,32 @@ export default function PlateApplicationsPage() {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#9aa3be]">Applicant &amp; Review Specs</h4>
                 
                 <div className="space-y-3">
-                  <div>
-                    <p className="text-[10px] text-[#9aa3be] uppercase font-bold">Applicant Name</p>
-                    <p className="text-sm font-bold text-[#1a2e05]">{selectedApp.name}</p>
-                    <p className="text-xs text-[#6b7a99] font-medium">{selectedApp.email}</p>
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-[#9aa3be] uppercase font-bold">Applicants ({selectedApp.owners.length})</p>
+                    <div className="space-y-2">
+                      {selectedApp.owners.map((owner, idx) => (
+                        <div key={idx} className="p-2.5 rounded-lg border border-[#e8edf5] bg-[#f8faff] shadow-sm">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-xs font-bold text-[#1a2e05]">{owner.name}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                              owner.role === "Primary" 
+                                ? "bg-[#81B71A]/10 text-[#3d6b08] border border-[#81B71A]/20" 
+                                : "bg-blue-50 text-blue-700 border border-blue-100"
+                            }`}>
+                              {owner.role}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-[#6b7a99] font-semibold flex items-center gap-1">
+                            <span className="opacity-75">✉️</span> {owner.email}
+                          </p>
+                          {owner.phone && (
+                            <p className="text-[10px] text-[#6b7a99] font-semibold flex items-center gap-1 mt-0.5">
+                              <span className="opacity-75">📞</span> {owner.phone}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">

@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 /* ─── Data ─── */
 
 const TODAY = "Monday, 18 May 2026";
@@ -82,18 +86,83 @@ const QUICK_ACTIONS = [
 ];
 
 const RECENT = [
-  { id: "GR 8812-24", owner: "Kwame Asante",  initials: "KA", region: "Greater Accra", type: "Private",    status: "Approved", date: "18 May 2026" },
-  { id: "AS 3982-25", owner: "Abena Mensah",  initials: "AM", region: "Ashanti",       type: "Commercial", status: "Pending",  date: "18 May 2026" },
-  { id: "WR 8729-24", owner: "Yaw Boateng",   initials: "YB", region: "Western",       type: "Private",    status: "Approved", date: "17 May 2026" },
-  { id: "GV 928-26",  owner: "Ama Owusu",     initials: "AO", region: "Eastern",       type: "Government", status: "Approved", date: "17 May 2026" },
-  { id: "NR 4819-26", owner: "Kojo Darko",    initials: "KD", region: "Northern",      type: "Commercial", status: "Rejected", date: "16 May 2026" },
-  { id: "VR 201-26",  owner: "Efua Adjei",    initials: "EA", region: "Volta",         type: "Private",    status: "Pending",  date: "16 May 2026" },
-  { id: "CR 9921-25", owner: "Fiifi Antwi",   initials: "FA", region: "Central",       type: "Equipment",  status: "Approved", date: "15 May 2026" },
+  {
+    id: "GR 8812-24",
+    owners: [
+      { name: "Kwame Asante", initials: "KA", role: "Primary" },
+      { name: "Akua Asante", initials: "AA", role: "Co-Owner" }
+    ],
+    region: "Greater Accra",
+    type: "Private",
+    status: "Approved",
+    date: "18 May 2026"
+  },
+  {
+    id: "AS 3982-25",
+    owners: [
+      { name: "Abena Mensah", initials: "AM", role: "Primary" },
+      { name: "Kofi Mensah", initials: "KM", role: "Co-Owner" }
+    ],
+    region: "Ashanti",
+    type: "Commercial",
+    status: "Pending",
+    date: "18 May 2026"
+  },
+  {
+    id: "WR 8729-24",
+    owners: [
+      { name: "Yaw Boateng", initials: "YB", role: "Primary" }
+    ],
+    region: "Western",
+    type: "Private",
+    status: "Approved",
+    date: "17 May 2026"
+  },
+  {
+    id: "GV 928-26",
+    owners: [
+      { name: "Ama Owusu", initials: "AO", role: "Primary" }
+    ],
+    region: "Eastern",
+    type: "Government",
+    status: "Approved",
+    date: "17 May 2026"
+  },
+  {
+    id: "NR 4819-26",
+    owners: [
+      { name: "Kojo Darko", initials: "KD", role: "Primary" }
+    ],
+    region: "Northern",
+    type: "Commercial",
+    status: "Rejected",
+    date: "16 May 2026"
+  },
+  {
+    id: "VR 201-26",
+    owners: [
+      { name: "Efua Adjei", initials: "EA", role: "Primary" }
+    ],
+    region: "Volta",
+    type: "Private",
+    status: "Pending",
+    date: "16 May 2026"
+  },
+  {
+    id: "CR 9921-25",
+    owners: [
+      { name: "Fiifi Antwi", initials: "FA", role: "Primary" }
+    ],
+    region: "Central",
+    type: "Equipment",
+    status: "Approved",
+    date: "15 May 2026"
+  },
 ];
 
 const ACTIVITY = [
-  { type: "approved" as const, text: "Plate GR 8812-24 approved for Kwame Asante",    time: "2 min ago"  },
-  { type: "pending"  as const, text: "New application submitted — Abena Mensah",       time: "14 min ago" },
+  { type: "approved" as const, text: "Plate GR 8812-24 approved for Kwame Asante & Akua Asante",    time: "2 min ago"  },
+  { type: "pending"  as const, text: "New joint application submitted — Abena & Kofi Mensah",       time: "14 min ago" },
   { type: "rejected" as const, text: "Plate NR 4819-26 rejected — document mismatch", time: "1 hr ago"   },
   { type: "batch"    as const, text: "Batch renewal processed — 42 plates, Ashanti",  time: "3 hr ago"   },
   { type: "system"   as const, text: "System backup completed successfully",            time: "6 hr ago"   },
@@ -230,7 +299,30 @@ function BarChart() {
 }
 
 /* ── Page ── */
+const TRACKING_DB = [
+  { id: "GR 8812-24", chassis: "JTEBU5JR8P209871", category: "Private", owners: "Kwame Asante & Akua Asante", step: 5, date: "18 May 2026", details: "Embossing & tagging complete. Ready for physical pickup at the Greater Accra 37 regional office." },
+  { id: "AS 3982-25", chassis: "KMHDK41D7NU381920", category: "Commercial", owners: "Abena Mensah & Kofi Mensah", step: 3, date: "18 May 2026", details: "Chassis sequence checked and approved. Moving into the automated regional embossing queue." },
+  { id: "APP-2026-9081", chassis: "JN1BYSY61U391823", category: "Private", owners: "Kofi Annan & Adwoa Annan", step: 4, date: "18 May 2026", details: "Embossing complete. Smart identification tracking chip successfully paired with owner profiles." },
+  { id: "APP-2026-9051", chassis: "CAT0320CCPH291823", category: "Commercial", owners: "Ebenezer Lartey & Victoria Lartey", step: 2, date: "15 May 2026", details: "Requisition logged and owner details mapped. Pending payment and document confirmation." }
+];
+
+const STEPS = [
+  { step: 1, label: "Blanks Loaded", sub: "Inventory Allocated" },
+  { step: 2, label: "Requisition Booked", sub: "Owner & VIN Mapped" },
+  { step: 3, label: "Verified & Approved", sub: "Approved by Supervisor" },
+  { step: 4, label: "Embossed & Tagged", sub: "Smart-Chip Paired" },
+  { step: 5, label: "Ready for Pickup", sub: "Awaiting Collection" }
+];
+
 export default function DashboardPage() {
+  const [trackQuery, setTrackQuery] = useState("");
+  const [selectedTrack, setSelectedTrack] = useState(TRACKING_DB[0]);
+
+  // Filter based on input match
+  const matchedTracks = TRACKING_DB.filter(t => 
+    t.id.toLowerCase().includes(trackQuery.toLowerCase()) ||
+    t.chassis.toLowerCase().includes(trackQuery.toLowerCase())
+  );
   return (
     <div className="space-y-5 pb-8">
 
@@ -365,6 +457,119 @@ export default function DashboardPage() {
             </div>
           </button>
         ))}
+      </div>
+
+      {/* ── Plate Issuance Lifecycle Tracker (Up to Pickup) ── */}
+      <div className="bg-white rounded-xl border border-[#e8edf5] p-5 space-y-4"
+           style={{ boxShadow: "0 2px 14px rgba(0,0,0,0.055)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0f4f8] pb-3">
+          <div>
+            <h3 className="font-bold text-sm text-[#1a2e05] uppercase tracking-wider flex items-center gap-1.5">
+              <span>📋</span> Plate Issuance Lifecycle Tracker
+            </h3>
+            <p className="text-xs text-[#9aa3be] mt-0.5">Track plate requisition status sequentially all the way up to customer pickup.</p>
+          </div>
+          
+          {/* Quick search input */}
+          <div className="relative w-full sm:w-80">
+            <input
+              type="text"
+              value={trackQuery}
+              onChange={(e) => setTrackQuery(e.target.value)}
+              placeholder="Search Plate ID or Chassis VIN..."
+              className="w-full pl-9 pr-4 py-2 bg-[#f8faff] border border-[#e2e8f0] rounded-xl text-xs text-[#1a2e05] placeholder-[#9aa3be] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-medium"
+            />
+            <span className="absolute left-3 top-2.5 text-xs opacity-60">🔍</span>
+            
+            {/* Dropdown list matches */}
+            {trackQuery.trim() !== "" && (
+              <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-[#e2e8f0] rounded-xl shadow-lg z-50 overflow-hidden divide-y divide-[#f0f4f8] max-h-48 overflow-y-auto">
+                {matchedTracks.length > 0 ? (
+                  matchedTracks.map(t => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTrack(t);
+                        setTrackQuery("");
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-[#f8faff] transition text-xs font-semibold text-[#374167] flex items-center justify-between"
+                    >
+                      <span>{t.id} <span className="text-[10px] text-[#9aa3be] font-medium">({t.chassis})</span></span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-bold uppercase">{t.category}</span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="px-3 py-2 text-xs text-[#9aa3be] font-semibold">No active plate matches found</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Selected Plate Details Info Box */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#f8faff] p-4 rounded-xl border border-[#e8edf5]">
+          <div>
+            <span className="text-[9px] font-black uppercase text-[#9aa3be] tracking-wider block">PLATE ID / REQUISITION</span>
+            <span className="font-mono text-sm font-black text-slate-800 tracking-wider uppercase border-[1.5px] border-slate-900 px-2 py-0.5 rounded bg-white shadow-sm inline-block mt-1">
+              {selectedTrack.id}
+            </span>
+          </div>
+          <div>
+            <span className="text-[9px] font-black uppercase text-[#9aa3be] tracking-wider block">VEHICLE CHASSIS (VIN)</span>
+            <span className="text-xs font-bold text-[#374167] block mt-1.5">{selectedTrack.chassis}</span>
+          </div>
+          <div>
+            <span className="text-[9px] font-black uppercase text-[#9aa3be] tracking-wider block">REGISTERED CO-OWNERS</span>
+            <span className="text-xs font-bold text-[#1a2e05] block mt-1.5">👤 {selectedTrack.owners}</span>
+          </div>
+        </div>
+
+        {/* Stepper Timeline */}
+        <div className="pt-4 pb-2">
+          <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0">
+            {/* Step connectors */}
+            <div className="absolute top-[21px] left-5 md:left-[10%] right-[10%] bottom-5 md:bottom-auto h-full md:h-1 bg-[#cbd5e1] -z-10 hidden md:block" />
+            
+            {STEPS.map((s, idx) => {
+              const isCompleted = s.step <= selectedTrack.step;
+              const isCurrent = s.step === selectedTrack.step;
+              return (
+                <div key={s.step} className="flex md:flex-col items-center gap-3 md:gap-2 flex-1 relative text-left md:text-center px-2">
+                  {/* Step circle */}
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shadow-md border-2 transition duration-300 ${
+                    isCompleted 
+                      ? "bg-[#81B71A] border-[#81B71A] text-white" 
+                      : "bg-white border-[#cbd5e1] text-[#94a3b8]"
+                  } ${isCurrent ? "ring-4 ring-[#81B71A]/20 scale-105" : ""}`}>
+                    {isCompleted ? "✓" : s.step}
+                  </div>
+                  
+                  {/* Step details */}
+                  <div className="space-y-0.5">
+                    <p className={`text-xs font-bold transition duration-300 ${
+                      isCompleted ? "text-[#1a2e05]" : "text-[#94a3b8]"
+                    }`}>
+                      {s.label}
+                    </p>
+                    <p className="text-[10px] text-[#9aa3be] font-medium leading-tight max-w-[140px] md:mx-auto">
+                      {s.sub}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Detailed Status Notification Alert */}
+        <div className="p-3.5 rounded-xl border border-[#cbd5e1]/40 bg-[#fbfcfd] flex items-start gap-3">
+          <span className="text-lg leading-none mt-0.5">💡</span>
+          <div className="space-y-1">
+            <h4 className="text-xs font-bold text-[#374167]">Current Milestone Progress:</h4>
+            <p className="text-xs text-[#52607a] font-medium">{selectedTrack.details}</p>
+          </div>
+        </div>
       </div>
 
       {/* ── Charts row ── */}
@@ -502,12 +707,31 @@ export default function DashboardPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                          style={{ background: "linear-gradient(135deg, #2d5009, #81B71A)" }}>
-                          {r.initials}
+                      <div className="flex items-center">
+                        <div className="flex -space-x-2.5 overflow-hidden mr-2.5">
+                          {r.owners.map((owner, idx) => (
+                            <div key={idx} className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0 ring-2 ring-white"
+                              title={`${owner.name} (${owner.role})`}
+                              style={{ 
+                                background: owner.role === "Primary" 
+                                  ? "linear-gradient(135deg, #2d5009, #81B71A)" 
+                                  : "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+                                zIndex: r.owners.length - idx
+                              }}>
+                              {owner.initials}
+                            </div>
+                          ))}
                         </div>
-                        <span className="text-sm font-medium" style={{ color: "#374167" }}>{r.owner}</span>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-[#374167] leading-none">
+                            {r.owners[0].name}
+                          </span>
+                          {r.owners.length > 1 && (
+                            <span className="text-[10px] text-[#81B71A] font-bold mt-1 flex items-center gap-1">
+                              <span>👥</span> +{r.owners.length - 1} Co-owner
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-xs" style={{ color: "#6b7a99" }}>{r.region}</td>
