@@ -4,13 +4,15 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 
 const LABELS: Record<string, string> = {
-  "/dashboard":               "Dashboard",
-  "/dashboard/plates":        "Vehicle Plates",
-  "/dashboard/registrations": "Registrations",
-  "/dashboard/owners":        "Owners",
-  "/dashboard/reports":       "Reports",
-  "/dashboard/audit":         "Audit Log",
-  "/dashboard/settings":      "Settings",
+  "/dashboard":                      "Dashboard",
+  "/dashboard/booking":              "Booking Desk",
+  "/dashboard/plates":               "Vehicle Plates",
+  "/dashboard/plates/applications":  "Applications",
+  "/dashboard/plates/custom":        "Custom Plates",
+  "/dashboard/reports":              "Reports",
+  "/dashboard/audit":                "Audit Log",
+  "/dashboard/settings":             "Settings",
+  "/dashboard/help":                 "Help & Workflow",
 };
 
 interface TopbarProps {
@@ -39,9 +41,18 @@ export default function Topbar({ onMobileMenuOpen }: TopbarProps) {
         <div className="flex items-center gap-1.5 text-[10px] text-[#b0bbd6] uppercase tracking-widest font-medium">
           <span>DVLA</span>
           <span>/</span>
+          <span>Adenta</span>
+          <span>/</span>
           <span style={{ color: "#81B71A" }}>{pageTitle}</span>
         </div>
-        <h1 className="text-[#1a2e05] font-bold text-base mt-0.5">{pageTitle}</h1>
+        <div className="flex items-center gap-2 mt-0.5">
+          <h1 className="text-[#1a2e05] font-bold text-base">{pageTitle}</h1>
+          <span className="hidden lg:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest"
+            style={{ background: "rgba(129,183,26,0.1)", color: "#3d6b08", border: "1px solid rgba(129,183,26,0.2)" }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#81B71A" }} />
+            Adenta Branch
+          </span>
+        </div>
       </div>
 
       {/* Search */}
@@ -86,7 +97,7 @@ export default function Topbar({ onMobileMenuOpen }: TopbarProps) {
           </div>
           <div className="hidden sm:block text-left">
             <p className="text-xs font-semibold leading-none" style={{ color: "#1a2e05" }}>Admin</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "#9aa3be" }}>System Admin</p>
+            <p className="text-[10px] mt-0.5" style={{ color: "#9aa3be" }}>Adenta Branch Officer</p>
           </div>
           <ChevronIcon size={12} />
         </button>

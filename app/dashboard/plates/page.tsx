@@ -2,111 +2,160 @@
 
 import { useState } from "react";
 
-// Mock database of registered plates
+// Adenta Branch — all plates carry the AD prefix
 const PLATES_DB = [
-  { 
-    id: "GR 8812-24", 
+  {
+    id: "AD 0891-26",
     owners: [
-      { name: "Kwame Asante", email: "kwame.asante@gmail.com", phone: "+233 24 456 7890", role: "Primary" },
-      { name: "Akua Asante", email: "akua.asante@gmail.com", phone: "+233 20 987 6543", role: "Co-Owner" }
-    ], 
-    vehicle: "Toyota Land Cruiser (2024)", 
-    region: "Greater Accra", 
-    category: "Private", 
-    status: "Active", 
-    date: "18 May 2026", 
-    chassis: "JTEBU5JR8P209871" 
+      { name: "Kwame Asante",  email: "kwame.asante@gmail.com",    phone: "+233 24 456 7890", role: "Primary"  },
+      { name: "Akua Asante",   email: "akua.asante@gmail.com",     phone: "+233 20 987 6543", role: "Co-Owner" }
+    ],
+    vehicle:  "Toyota Land Cruiser (2024)",
+    zone:     "Adentan Frafraha",
+    category: "Private",
+    status:   "Active",
+    date:     "18 May 2026",
+    chassis:  "JTEBU5JR8P209871"
   },
-  { 
-    id: "AS 3982-25", 
+  {
+    id: "AD 1242-26",
     owners: [
-      { name: "Abena Mensah", email: "abena.m@yahoo.com", phone: "+233 50 123 4567", role: "Primary" },
-      { name: "Kofi Mensah", email: "kofi.m@yahoo.com", phone: "+233 24 987 6543", role: "Co-Owner" }
-    ], 
-    vehicle: "Hyundai Elantra (2023)", 
-    region: "Ashanti", 
-    category: "Commercial", 
-    status: "Active", 
-    date: "12 Feb 2026", 
-    chassis: "KMHDK41D7NU381920" 
+      { name: "Abena Mensah",  email: "abena.m@yahoo.com",         phone: "+233 50 123 4567", role: "Primary"  },
+      { name: "Kofi Mensah",   email: "kofi.m@yahoo.com",          phone: "+233 24 987 6543", role: "Co-Owner" }
+    ],
+    vehicle:  "Hyundai Elantra (2023)",
+    zone:     "Oyibi",
+    category: "Commercial",
+    status:   "Active",
+    date:     "12 Feb 2026",
+    chassis:  "KMHDK41D7NU381920"
   },
-  { 
-    id: "GV 928-26",  
+  {
+    id: "AD 0928-26",
     owners: [
-      { name: "Ministry of Health", email: "transport@moh.gov.gh", phone: "+233 30 223 4455", role: "Primary" }
-    ], 
-    vehicle: "Nissan Patrol (2025)", 
-    region: "Greater Accra", 
-    category: "Government", 
-    status: "Active", 
-    date: "05 May 2026", 
-    chassis: "JN1BYSY61U391823" 
+      { name: "Ministry of Local Government", email: "transport@molg.gov.gh", phone: "+233 30 223 4455", role: "Primary" }
+    ],
+    vehicle:  "Nissan Patrol (2025)",
+    zone:     "Adentan Frafraha",
+    category: "Government",
+    status:   "Active",
+    date:     "05 May 2026",
+    chassis:  "JN1BYSY61U391823"
   },
-  { 
-    id: "WR 8729-24", 
+  {
+    id: "AD 0729-24",
     owners: [
       { name: "Yaw Boateng", email: "yaw.b@boatenglogistics.com", phone: "+233 24 555 8899", role: "Primary" }
-    ], 
-    vehicle: "Mercedes-Benz C-Class (2022)", 
-    region: "Western", 
-    category: "Private", 
-    status: "Expired", 
-    date: "14 Nov 2024", 
-    chassis: "WDDGF4HB0DA829103" 
+    ],
+    vehicle:  "Mercedes-Benz C-Class (2022)",
+    zone:     "Madina",
+    category: "Private",
+    status:   "Expired",
+    date:     "14 Nov 2024",
+    chassis:  "WDDGF4HB0DA829103"
   },
-  { 
-    id: "ER 1029-25", 
+  {
+    id: "AD 1029-25",
     owners: [
       { name: "Ama Owusu", email: "ama.owusu@outlook.com", phone: "+233 27 111 2233", role: "Primary" }
-    ], 
-    vehicle: "Toyota Hilux (2023)", 
-    region: "Eastern", 
-    category: "Private", 
-    status: "Active", 
-    date: "17 May 2026", 
-    chassis: "AHTFR29G4K8102983" 
+    ],
+    vehicle:  "Toyota Hilux (2023)",
+    zone:     "Teshie-Nungua",
+    category: "Private",
+    status:   "Active",
+    date:     "17 May 2026",
+    chassis:  "AHTFR29G4K8102983"
   },
-  { 
-    id: "NR 4819-26", 
+  {
+    id: "AD 0819-26",
     owners: [
       { name: "Kojo Darko", email: "k.darko@darkotransport.com", phone: "+233 24 333 4455", role: "Primary" }
-    ], 
-    vehicle: "DAF XF Truck (2021)", 
-    region: "Northern", 
-    category: "Commercial", 
-    status: "Suspended", 
-    date: "16 May 2026", 
-    chassis: "XLRTE47M0E2918320" 
+    ],
+    vehicle:  "DAF XF Truck (2021)",
+    zone:     "Oyibi",
+    category: "Commercial",
+    status:   "Suspended",
+    date:     "16 May 2026",
+    chassis:  "XLRTE47M0E2918320"
   },
-  { 
-    id: "VR 201-26",  
+  {
+    id: "AD 0201-26",
     owners: [
       { name: "Efua Adjei", email: "efua.adjei@live.com", phone: "+233 20 555 6677", role: "Primary" }
-    ], 
-    vehicle: "Kia Sportage (2024)", 
-    region: "Volta", 
-    category: "Private", 
-    status: "Active", 
-    date: "16 May 2026", 
-    chassis: "KNDPM4AC8R7281923" 
+    ],
+    vehicle:  "Kia Sportage (2024)",
+    zone:     "Teshie-Nungua",
+    category: "Private",
+    status:   "Active",
+    date:     "16 May 2026",
+    chassis:  "KNDPM4AC8R7281923"
   },
-  { 
-    id: "CR 9921-25", 
+  {
+    id: "AD 3921-25",
     owners: [
-      { name: "Fiifi Antwi", email: "f.antwi@capecoastbuilders.com", phone: "+233 24 777 8899", role: "Primary" }
-    ], 
-    vehicle: "Caterpillar Excavator (2020)", 
-    region: "Central", 
-    category: "Equipment", 
-    status: "Active", 
-    date: "15 May 2026", 
-    chassis: "CAT0320CCPH291823" 
+      { name: "Fiifi Antwi", email: "f.antwi@adentabuilders.com", phone: "+233 24 777 8899", role: "Primary" }
+    ],
+    vehicle:  "Caterpillar Excavator (2020)",
+    zone:     "Dodowa",
+    category: "Equipment",
+    status:   "Active",
+    date:     "15 May 2026",
+    chassis:  "CAT0320CCPH291823"
+  },
+  {
+    id: "AD 0512-26",
+    owners: [
+      { name: "Nana Ama Darko",  email: "nana.darko@ghanalink.com",  phone: "+233 24 811 2290", role: "Primary"  },
+      { name: "Kofi Darko Jr",   email: "kofijr.darko@ghanalink.com",phone: "+233 20 122 8820", role: "Co-Owner" }
+    ],
+    vehicle:  "Toyota Camry (2025)",
+    zone:     "Adentan Frafraha",
+    category: "Private",
+    status:   "Active",
+    date:     "09 May 2026",
+    chassis:  "4T1BF3EK2AU572918"
+  },
+  {
+    id: "AD 0634-26",
+    owners: [
+      { name: "Adenta Municipal Assembly", email: "transport@adentan.gov.gh", phone: "+233 30 288 1020", role: "Primary" }
+    ],
+    vehicle:  "Toyota HiAce Bus (2024)",
+    zone:     "Adentan Frafraha",
+    category: "Government",
+    status:   "Active",
+    date:     "02 Apr 2026",
+    chassis:  "JTFPX22P8D0012940"
+  },
+  {
+    id: "AD 0088-25",
+    owners: [
+      { name: "Bright Asiedu", email: "b.asiedu@oyibilogistics.com", phone: "+233 54 901 2244", role: "Primary" }
+    ],
+    vehicle:  "Isuzu D-Max Truck (2023)",
+    zone:     "Oyibi",
+    category: "Commercial",
+    status:   "Active",
+    date:     "22 Jan 2025",
+    chassis:  "AHTFR29G4K8100011"
+  },
+  {
+    id: "AD 2290-24",
+    owners: [
+      { name: "Vida Mensah", email: "vida.mensah@gmail.com", phone: "+233 27 449 9182", role: "Primary" }
+    ],
+    vehicle:  "Hyundai Tucson (2022)",
+    zone:     "Madina",
+    category: "Private",
+    status:   "Expired",
+    date:     "30 Jun 2024",
+    chassis:  "KM8JUCAL4NU198302"
   },
 ];
 
 export default function PlatesSearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRegion, setSelectedRegion] = useState("All");
+  const [selectedZone, setSelectedZone] = useState("All");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [activePlate, setActivePlate] = useState<typeof PLATES_DB[0] | null>(PLATES_DB[0]);
@@ -118,11 +167,11 @@ export default function PlatesSearchPage() {
       p.owners.some((o) => o.name.toLowerCase().includes(searchQuery.toLowerCase()) || o.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
       p.vehicle.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesRegion = selectedRegion === "All" || p.region === selectedRegion;
+    const matchesZone     = selectedZone === "All"     || p.zone === selectedZone;
     const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
-    const matchesStatus = selectedStatus === "All" || p.status === selectedStatus;
+    const matchesStatus   = selectedStatus === "All"   || p.status === selectedStatus;
 
-    return matchesSearch && matchesRegion && matchesCategory && matchesStatus;
+    return matchesSearch && matchesZone && matchesCategory && matchesStatus;
   });
 
   return (
@@ -147,14 +196,14 @@ export default function PlatesSearchPage() {
             <div className="flex items-center gap-2 mb-1.5">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.6)" }} />
               <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 600 }}>
-                DVLA VEHICLE PLATE MANAGEMENT SYSTEM
+                DVLA — Adenta Branch · AD Plate Registry
               </p>
             </div>
             <h2 className="font-extrabold tracking-tight text-white text-2xl">
               Plate Registry &amp; Directory
             </h2>
             <p style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.85rem", marginTop: "0.25rem" }}>
-              Query, manage, and verify all registered vehicle plates across Ghana.
+              Manage and verify all AD-prefix plates issued from the Adenta Branch.
             </p>
           </div>
           <button className="px-5 py-2.5 rounded-xl text-xs font-bold transition hover:scale-[1.03] duration-200 shrink-0 shadow-lg"
@@ -167,10 +216,10 @@ export default function PlatesSearchPage() {
       {/* ── Metrics Row ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Plates", val: "24,839", sub: "Active across all regions", accent: "#81B71A", bg: "rgba(129,183,26,0.09)", icon: PlateIcon },
-          { label: "Private Category", val: "13,240", sub: "53.2% market share", accent: "#3b82f6", bg: "rgba(59,130,246,0.09)", icon: PrivateIcon },
-          { label: "Commercial Category", val: "6,820", sub: "Yellow license plates", accent: "#f59e0b", bg: "rgba(245,158,11,0.09)", icon: CommercialIcon },
-          { label: "Active Rate", val: "98.4%", sub: "+1.2% this quarter", accent: "#10b981", bg: "rgba(16,185,129,0.09)", icon: ActiveIcon },
+          { label: "AD Plates Total",     val: "2,481",  sub: "All active Adenta Branch plates",  accent: "#81B71A", bg: "rgba(129,183,26,0.09)", icon: PlateIcon      },
+          { label: "Private Category",    val: "1,280",  sub: "52% of all AD plates",             accent: "#3b82f6", bg: "rgba(59,130,246,0.09)", icon: PrivateIcon    },
+          { label: "Commercial Category", val: "648",    sub: "Yellow licence plates",             accent: "#f59e0b", bg: "rgba(245,158,11,0.09)", icon: CommercialIcon },
+          { label: "Active Rate",         val: "96.1%",  sub: "+0.8% this quarter",               accent: "#10b981", bg: "rgba(16,185,129,0.09)", icon: ActiveIcon     },
         ].map((m) => (
           <div key={m.label} className="bg-white rounded-xl border border-[#e8edf5] relative overflow-hidden"
             style={{ boxShadow: "0 2px 14px rgba(0,0,0,0.055)", padding: "1.2rem 1.25rem 1rem" }}>
@@ -208,18 +257,16 @@ export default function PlatesSearchPage() {
 
               <div>
                 <select
-                  value={selectedRegion}
-                  onChange={(e) => setSelectedRegion(e.target.value)}
+                  value={selectedZone}
+                  onChange={(e) => setSelectedZone(e.target.value)}
                   className="w-full px-3 py-2.5 bg-[#f8faff] border border-[#e2e8f0] rounded-lg text-sm text-[#1a2e05] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/30 transition font-medium"
                 >
-                  <option value="All">All Regions</option>
-                  <option value="Greater Accra">Greater Accra</option>
-                  <option value="Ashanti">Ashanti</option>
-                  <option value="Western">Western</option>
-                  <option value="Eastern">Eastern</option>
-                  <option value="Northern">Northern</option>
-                  <option value="Volta">Volta</option>
-                  <option value="Central">Central</option>
+                  <option value="All">All Zones</option>
+                  <option value="Adentan Frafraha">Adentan Frafraha</option>
+                  <option value="Oyibi">Oyibi</option>
+                  <option value="Madina">Madina</option>
+                  <option value="Teshie-Nungua">Teshie-Nungua</option>
+                  <option value="Dodowa">Dodowa</option>
                 </select>
               </div>
 
@@ -264,7 +311,7 @@ export default function PlatesSearchPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "linear-gradient(90deg, #f8faff 0%, #f4f6fb 100%)" }}>
-                    {["Plate ID", "Owner", "Category", "Region", "Status", "Date"].map((h) => (
+                    {["Plate ID", "Owner", "Category", "Zone", "Status", "Date"].map((h) => (
                       <th
                         key={h}
                         className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-[#9aa3be] whitespace-nowrap"
@@ -303,7 +350,7 @@ export default function PlatesSearchPage() {
                             </div>
                           </td>
                           <td className="px-5 py-3.5 text-xs text-[#6b7a99] font-medium whitespace-nowrap">{p.category}</td>
-                          <td className="px-5 py-3.5 text-xs text-[#6b7a99] font-medium whitespace-nowrap">{p.region}</td>
+                          <td className="px-5 py-3.5 text-xs text-[#6b7a99] font-medium whitespace-nowrap">{p.zone}</td>
                           <td className="px-5 py-3.5 whitespace-nowrap">
                             <span
                               className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border"
@@ -355,63 +402,108 @@ export default function PlatesSearchPage() {
               <div>
                 <h3 className="font-bold text-[#1a2e05] text-xs uppercase tracking-wider mb-4">Plate Visualizer</h3>
                 
-                {/* Ghanaian License Plate Visual Container */}
-                <div className="relative w-full max-w-[340px] mx-auto aspect-[4.2/1] rounded-xl border-[4px] border-slate-900 p-1 shadow-2xl overflow-hidden select-none flex items-center"
-                     style={{
-                       background: activePlate.category === "Commercial" 
-                         ? "linear-gradient(180deg, #ffe066 0%, #fcc419 60%, #fab005 100%)" 
-                         : activePlate.category === "Government"
-                         ? "linear-gradient(180deg, #2f9e44 0%, #2b8a3e 60%, #1e702e 100%)"
-                         : "linear-gradient(180deg, #f8f9fa 0%, #e9ecef 60%, #dee2e6 100%)",
-                       boxShadow: "0 15px 30px rgba(0,0,0,0.18), inset 0 3px 6px rgba(255,255,255,0.8), inset 0 -3px 6px rgba(0,0,0,0.2)"
-                     }}>
-                  
-                  {/* Embossed inner rim */}
-                  <div className="absolute inset-[2px] rounded-lg border border-slate-950/20 pointer-events-none" />
-
-                  {/* Reflective light shine overlay */}
-                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/20 to-white/40 z-10" />
-
-                  {/* Ghana Flag / Left Strip */}
-                  <div className="w-[12%] h-full shrink-0 flex flex-col items-center justify-between py-1 bg-[#0c3b87] rounded-l-[5px] relative overflow-hidden z-20"
-                       style={{ boxShadow: "1px 0 3px rgba(0,0,0,0.15)" }}>
-                    
-                    {/* Tiny Ghana Flag */}
-                    <div className="w-[85%] aspect-[3/2] flex flex-col rounded-sm overflow-hidden border border-white/10 shrink-0">
-                      <div className="flex-1 bg-red-600"></div>
-                      <div className="flex-1 bg-yellow-400 flex items-center justify-center relative">
-                        <span className="absolute text-[5px] text-black leading-none -top-[2px]">★</span>
+                {/* Ghanaian Licence Plate Visualizer */}
+                <div className="space-y-3">
+                  {/* Category colour legend */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {[
+                      { cat: "Private",    bg: "#e9ecef", text: "#1e293b", border: "#adb5bd" },
+                      { cat: "Commercial", bg: "#fcc419", text: "#1e293b", border: "#f08c00" },
+                      { cat: "Government", bg: "#2b8a3e", text: "#ffffff", border: "#1e5f2e" },
+                      { cat: "Equipment",  bg: "#e9ecef", text: "#1b8a3e", border: "#adb5bd" },
+                    ].map(({ cat, bg, border }) => (
+                      <div key={cat} className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded-sm border" style={{ background: bg, borderColor: border }} />
+                        <span className="text-[10px] font-semibold" style={{ color: activePlate.category === cat ? "#1a2e05" : "#9aa3be" }}>{cat}</span>
                       </div>
-                      <div className="flex-1 bg-green-600"></div>
-                    </div>
-                    
-                    {/* GH Letters */}
-                    <span className="text-[10px] font-black text-white leading-none tracking-tighter">GH</span>
+                    ))}
                   </div>
 
-                  {/* Embossed Letter Content */}
-                  <div className="flex-1 flex items-center justify-center px-3 relative h-full z-20">
-                    {/* Security Watermark / Gold Holographic Logo */}
-                    <div className="absolute right-3 top-1.5 w-5 h-5 rounded-full bg-gradient-to-tr from-yellow-300 via-amber-400 to-yellow-500 opacity-60 flex items-center justify-center"
-                         style={{ boxShadow: "0 0 5px rgba(245,158,11,0.6)", border: "0.5px solid rgba(255,255,255,0.2)" }}>
-                      <span className="text-[5px] font-black text-amber-950 select-none tracking-tighter">DVLA</span>
-                    </div>
+                  {/* Main plate */}
+                  <div className="relative w-full max-w-[340px] mx-auto rounded-xl border-[4px] border-slate-900 shadow-2xl overflow-hidden select-none"
+                       style={{
+                         background: activePlate.category === "Commercial"
+                           ? "linear-gradient(180deg, #ffe066 0%, #fcc419 60%, #fab005 100%)"
+                           : activePlate.category === "Government"
+                           ? "linear-gradient(180deg, #2f9e44 0%, #2b8a3e 60%, #1e702e 100%)"
+                           : "linear-gradient(180deg, #f8f9fa 0%, #e9ecef 60%, #dee2e6 100%)",
+                         boxShadow: "0 15px 30px rgba(0,0,0,0.2), inset 0 3px 6px rgba(255,255,255,0.8), inset 0 -3px 6px rgba(0,0,0,0.2)"
+                       }}>
 
-                    <span className="font-mono text-[20px] md:text-[22px] font-black tracking-wide whitespace-nowrap uppercase"
-                          style={{
-                            fontFamily: "'Courier New', Courier, monospace",
-                            letterSpacing: "3px",
-                            color: activePlate.category === "Government"
-                              ? "#ffffff"
-                              : activePlate.category === "Equipment"
-                              ? "#1b8a3e"
-                              : "#1e293b",
-                            textShadow: activePlate.category === "Government"
-                              ? "2px 2px 2px rgba(0,0,0,0.5), -1px -1px 0px rgba(0,0,0,0.3)"
-                              : "1.5px 1.5px 1px rgba(255,255,255,0.8), -1.5px -1.5px 1px rgba(0,0,0,0.5)"
-                          }}>
-                      {activePlate.id}
-                    </span>
+                    {/* Embossed inner rim */}
+                    <div className="absolute inset-[2px] rounded-lg border border-slate-950/20 pointer-events-none z-30" />
+                    {/* Light shine */}
+                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/20 to-white/40 z-20" />
+
+                    <div className="flex items-stretch h-[76px]">
+                      {/* Ghana flag strip */}
+                      <div className="w-[11%] shrink-0 flex flex-col items-center justify-between py-1.5 bg-[#0c3b87] rounded-l-[5px] z-20"
+                           style={{ boxShadow: "1px 0 3px rgba(0,0,0,0.15)" }}>
+                        <div className="w-[80%] aspect-[3/2] flex flex-col rounded-sm overflow-hidden border border-white/10">
+                          <div className="flex-1 bg-red-600" />
+                          <div className="flex-1 bg-yellow-400 relative flex items-center justify-center">
+                            <span className="absolute text-[5px] text-black leading-none font-black">★</span>
+                          </div>
+                          <div className="flex-1 bg-green-600" />
+                        </div>
+                        <span className="text-[9px] font-black text-white leading-none tracking-tighter">GH</span>
+                      </div>
+
+                      {/* Plate content */}
+                      <div className="flex-1 flex flex-col items-center justify-center px-3 relative z-20">
+                        {/* DVLA hologram */}
+                        <div className="absolute right-2.5 top-2 w-5 h-5 rounded-full bg-gradient-to-tr from-yellow-300 via-amber-400 to-yellow-500 opacity-55 flex items-center justify-center"
+                             style={{ boxShadow: "0 0 5px rgba(245,158,11,0.5)", border: "0.5px solid rgba(255,255,255,0.2)" }}>
+                          <span className="text-[4.5px] font-black text-amber-950 tracking-tighter">DVLA</span>
+                        </div>
+
+                        {/* Branch label above plate number */}
+                        <span className="text-[8px] font-black uppercase tracking-[0.22em] mb-0.5"
+                              style={{
+                                color: activePlate.category === "Government" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.38)",
+                                fontFamily: "system-ui, sans-serif"
+                              }}>
+                          ADENTA · GHANA
+                        </span>
+
+                        {/* Plate number */}
+                        <span className="font-mono font-black whitespace-nowrap uppercase leading-none"
+                              style={{
+                                fontFamily: "'Courier New', Courier, monospace",
+                                fontSize: "clamp(16px, 5vw, 24px)",
+                                letterSpacing: "4px",
+                                color: activePlate.category === "Government"
+                                  ? "#ffffff"
+                                  : activePlate.category === "Equipment"
+                                  ? "#1b8a3e"
+                                  : "#1e293b",
+                                textShadow: activePlate.category === "Government"
+                                  ? "2px 2px 2px rgba(0,0,0,0.5)"
+                                  : "1.5px 1.5px 1px rgba(255,255,255,0.9), -1px -1px 0 rgba(0,0,0,0.45)"
+                              }}>
+                          {activePlate.id}
+                        </span>
+
+                        {/* Category sub-label */}
+                        <span className="text-[7px] font-bold uppercase tracking-[0.18em] mt-0.5"
+                              style={{
+                                color: activePlate.category === "Government" ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.32)",
+                                fontFamily: "system-ui, sans-serif"
+                              }}>
+                          {activePlate.category} · {activePlate.zone}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bolt indicators below plate */}
+                  <div className="flex justify-between px-4 max-w-[340px] mx-auto">
+                    {[0, 1].map(i => (
+                      <div key={i} className="w-4 h-4 rounded-full border-2 border-[#94a3b8] flex items-center justify-center"
+                           style={{ background: "linear-gradient(135deg, #e2e8f0, #cbd5e1)" }}>
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#64748b]" />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -457,8 +549,8 @@ export default function PlatesSearchPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-[10px] text-[#9aa3be] uppercase font-bold">Region</p>
-                      <p className="text-xs font-bold text-[#374167] mt-0.5">{activePlate.region}</p>
+                      <p className="text-[10px] text-[#9aa3be] uppercase font-bold">Zone</p>
+                      <p className="text-xs font-bold text-[#374167] mt-0.5">{activePlate.zone}</p>
                     </div>
                     <div>
                       <p className="text-[10px] text-[#9aa3be] uppercase font-bold">Category</p>

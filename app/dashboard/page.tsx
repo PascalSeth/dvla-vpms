@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 /* ─── Data ─── */
 
@@ -9,151 +10,150 @@ const TODAY = "Monday, 18 May 2026";
 const STATS = [
   {
     label: "Total Plates Issued",
-    value: "24,839",
+    value: "2,481",
     change: "+3.2%",
     up: true,
     icon: PlateStatIcon,
     accent: "#81B71A",
     bg: "rgba(129,183,26,0.09)",
-    sub: "All regions combined",
-    spark: [1820, 2340, 1990, 2760, 3120, 2580, 3240],
+    sub: "Adenta Branch — AD plates",
+    spark: [182, 234, 199, 276, 312, 258, 324],
   },
   {
     label: "Pending Applications",
-    value: "1,042",
+    value: "142",
     change: "+12.5%",
     up: true,
     icon: ClockStatIcon,
     accent: "#f59e0b",
     bg: "rgba(245,158,11,0.09)",
     sub: "Awaiting review",
-    spark: [820, 940, 790, 1060, 920, 1080, 1042],
+    spark: [82, 94, 79, 106, 92, 108, 142],
   },
   {
     label: "Approved Today",
-    value: "186",
+    value: "23",
     change: "+8.1%",
     up: true,
     icon: CheckStatIcon,
     accent: "#3b82f6",
     bg: "rgba(59,130,246,0.09)",
-    sub: "Across all offices",
-    spark: [140, 165, 130, 180, 155, 172, 186],
+    sub: "Adenta Branch office",
+    spark: [14, 16, 13, 18, 15, 17, 23],
   },
   {
     label: "Expired / Flagged",
-    value: "317",
+    value: "48",
     change: "−4.3%",
     up: false,
     icon: AlertStatIcon,
     accent: "#ef4444",
     bg: "rgba(239,68,68,0.09)",
     sub: "Requires action",
-    spark: [380, 355, 340, 360, 330, 320, 317],
+    spark: [58, 55, 54, 56, 53, 52, 48],
   },
 ];
 
 const MONTHLY = [
-  { month: "Jan", value: 1820 },
-  { month: "Feb", value: 2340 },
-  { month: "Mar", value: 1990 },
-  { month: "Apr", value: 2760 },
-  { month: "May", value: 3120 },
-  { month: "Jun", value: 2580 },
+  { month: "Jan", value: 182 },
+  { month: "Feb", value: 234 },
+  { month: "Mar", value: 199 },
+  { month: "Apr", value: 276 },
+  { month: "May", value: 312 },
+  { month: "Jun", value: 258 },
 ];
 
 const PLATE_TYPES = [
-  { label: "Private",    count: 13240, pct: 53, color: "#81B71A" },
-  { label: "Commercial", count:  6820, pct: 27, color: "#3b82f6" },
-  { label: "Government", count:  2569, pct: 10, color: "#f59e0b" },
-  { label: "Equipment",  count:  2210, pct: 10, color: "#8b5cf6" },
+  { label: "Private",    count: 1280, pct: 52, color: "#81B71A" },
+  { label: "Commercial", count:  648, pct: 26, color: "#3b82f6" },
+  { label: "Government", count:  298, pct: 12, color: "#f59e0b" },
+  { label: "Equipment",  count:  255, pct: 10, color: "#8b5cf6" },
 ];
 
 const REGIONS = [
-  { name: "Greater Accra", plates: 8420, pct: 34, highlight: true  },
-  { name: "Ashanti",       plates: 5890, pct: 24, highlight: true  },
-  { name: "Western",       plates: 3210, pct: 13, highlight: false },
-  { name: "Eastern",       plates: 2840, pct: 11, highlight: false },
-  { name: "Northern",      plates: 2360, pct:  9, highlight: false },
-  { name: "Others",        plates: 2119, pct:  9, highlight: false },
+  { name: "Adentan Frafraha", plates: 842, pct: 34, highlight: true  },
+  { name: "Oyibi",            plates: 589, pct: 24, highlight: true  },
+  { name: "Madina",           plates: 421, pct: 17, highlight: false },
+  { name: "Teshie-Nungua",    plates: 297, pct: 12, highlight: false },
+  { name: "Dodowa",           plates: 182, pct:  7, highlight: false },
+  { name: "Others",           plates: 150, pct:  6, highlight: false },
 ];
 
 const QUICK_ACTIONS = [
-  { label: "New Application", sub: "Register a new plate",   color: "#81B71A", bg: "rgba(129,183,26,0.09)", icon: PlusQAIcon    },
-  { label: "Search Registry",  sub: "Find by plate or owner", color: "#3b82f6", bg: "rgba(59,130,246,0.09)", icon: SearchQAIcon  },
-  { label: "Batch Renewal",    sub: "Process bulk renewals",  color: "#f59e0b", bg: "rgba(245,158,11,0.09)", icon: RefreshQAIcon },
-  { label: "Export Report",    sub: "Download CSV or PDF",    color: "#8b5cf6", bg: "rgba(139,92,246,0.09)", icon: DownloadQAIcon},
+  { label: "New Application", sub: "Register a new plate",   color: "#81B71A", bg: "rgba(129,183,26,0.09)", icon: PlusQAIcon,     href: "/dashboard/booking"             },
+  { label: "Search Registry",  sub: "Find by plate or owner", color: "#3b82f6", bg: "rgba(59,130,246,0.09)", icon: SearchQAIcon,   href: "/dashboard/plates"              },
+  { label: "Export Report",    sub: "Download CSV or PDF",    color: "#8b5cf6", bg: "rgba(139,92,246,0.09)", icon: DownloadQAIcon, href: "/dashboard/reports"             },
 ];
 
 const RECENT = [
   {
-    id: "GR 8812-24",
+    id: "AD 0891-26",
     owners: [
       { name: "Kwame Asante", initials: "KA", role: "Primary" },
-      { name: "Akua Asante", initials: "AA", role: "Co-Owner" }
+      { name: "Akua Asante",  initials: "AA", role: "Co-Owner" }
     ],
-    region: "Greater Accra",
+    region: "Adentan Frafraha",
     type: "Private",
     status: "Approved",
     date: "18 May 2026"
   },
   {
-    id: "AS 3982-25",
+    id: "AD 1242-26",
     owners: [
       { name: "Abena Mensah", initials: "AM", role: "Primary" },
-      { name: "Kofi Mensah", initials: "KM", role: "Co-Owner" }
+      { name: "Kofi Mensah",  initials: "KM", role: "Co-Owner" }
     ],
-    region: "Ashanti",
+    region: "Oyibi",
     type: "Commercial",
     status: "Pending",
     date: "18 May 2026"
   },
   {
-    id: "WR 8729-24",
+    id: "AD 0729-26",
     owners: [
       { name: "Yaw Boateng", initials: "YB", role: "Primary" }
     ],
-    region: "Western",
+    region: "Adentan Frafraha",
     type: "Private",
     status: "Approved",
     date: "17 May 2026"
   },
   {
-    id: "GV 928-26",
+    id: "AD 0928-26",
     owners: [
       { name: "Ama Owusu", initials: "AO", role: "Primary" }
     ],
-    region: "Eastern",
+    region: "Madina",
     type: "Government",
     status: "Approved",
     date: "17 May 2026"
   },
   {
-    id: "NR 4819-26",
+    id: "AD 0819-26",
     owners: [
       { name: "Kojo Darko", initials: "KD", role: "Primary" }
     ],
-    region: "Northern",
+    region: "Oyibi",
     type: "Commercial",
     status: "Rejected",
     date: "16 May 2026"
   },
   {
-    id: "VR 201-26",
+    id: "AD 0201-26",
     owners: [
       { name: "Efua Adjei", initials: "EA", role: "Primary" }
     ],
-    region: "Volta",
+    region: "Teshie-Nungua",
     type: "Private",
     status: "Pending",
     date: "16 May 2026"
   },
   {
-    id: "CR 9921-25",
+    id: "AD 3921-25",
     owners: [
       { name: "Fiifi Antwi", initials: "FA", role: "Primary" }
     ],
-    region: "Central",
+    region: "Dodowa",
     type: "Equipment",
     status: "Approved",
     date: "15 May 2026"
@@ -161,12 +161,12 @@ const RECENT = [
 ];
 
 const ACTIVITY = [
-  { type: "approved" as const, text: "Plate GR 8812-24 approved for Kwame Asante & Akua Asante",    time: "2 min ago"  },
-  { type: "pending"  as const, text: "New joint application submitted — Abena & Kofi Mensah",       time: "14 min ago" },
-  { type: "rejected" as const, text: "Plate NR 4819-26 rejected — document mismatch", time: "1 hr ago"   },
-  { type: "batch"    as const, text: "Batch renewal processed — 42 plates, Ashanti",  time: "3 hr ago"   },
-  { type: "system"   as const, text: "System backup completed successfully",            time: "6 hr ago"   },
-  { type: "pending"  as const, text: "Expiry notice sent to 78 plate owners",           time: "Yesterday"  },
+  { type: "approved" as const, text: "Plate AD 0891-26 approved for Kwame Asante & Akua Asante",  time: "2 min ago"  },
+  { type: "pending"  as const, text: "New joint application submitted — Abena & Kofi Mensah",     time: "14 min ago" },
+  { type: "rejected" as const, text: "Plate AD 0819-26 rejected — document mismatch",             time: "1 hr ago"   },
+  { type: "batch"    as const, text: "Batch renewal processed — 12 plates, Adenta Branch",        time: "3 hr ago"   },
+  { type: "system"   as const, text: "System backup completed successfully",                       time: "6 hr ago"   },
+  { type: "pending"  as const, text: "Expiry notice sent to 18 AD plate owners",                  time: "Yesterday"  },
 ];
 
 const ACTIVITY_CONFIG: Record<string, { dot: string; bg: string; color: string }> = {
@@ -228,9 +228,9 @@ function DonutChart() {
         />
       ))}
       <text x={cx} y={cy - 7} textAnchor="middle" fontSize="19" fontWeight="700"
-        fill="#1a2e05" fontFamily="system-ui,sans-serif">24.8k</text>
+        fill="#1a2e05" fontFamily="system-ui,sans-serif">2.5k</text>
       <text x={cx} y={cy + 11} textAnchor="middle" fontSize="8.5" fill="#9aa3be"
-        fontFamily="system-ui,sans-serif" letterSpacing="0.8">TOTAL PLATES</text>
+        fontFamily="system-ui,sans-serif" letterSpacing="0.8">AD PLATES</text>
     </svg>
   );
 }
@@ -300,10 +300,10 @@ function BarChart() {
 
 /* ── Page ── */
 const TRACKING_DB = [
-  { id: "GR 8812-24", chassis: "JTEBU5JR8P209871", category: "Private", owners: "Kwame Asante & Akua Asante", step: 5, date: "18 May 2026", details: "Embossing & tagging complete. Ready for physical pickup at the Greater Accra 37 regional office." },
-  { id: "AS 3982-25", chassis: "KMHDK41D7NU381920", category: "Commercial", owners: "Abena Mensah & Kofi Mensah", step: 3, date: "18 May 2026", details: "Chassis sequence checked and approved. Moving into the automated regional embossing queue." },
-  { id: "APP-2026-9081", chassis: "JN1BYSY61U391823", category: "Private", owners: "Kofi Annan & Adwoa Annan", step: 4, date: "18 May 2026", details: "Embossing complete. Smart identification tracking chip successfully paired with owner profiles." },
-  { id: "APP-2026-9051", chassis: "CAT0320CCPH291823", category: "Commercial", owners: "Ebenezer Lartey & Victoria Lartey", step: 2, date: "15 May 2026", details: "Requisition logged and owner details mapped. Pending payment and document confirmation." }
+  { id: "AD 0891-26", chassis: "JTEBU5JR8P209871",  category: "Private",    owners: "Kwame Asante & Akua Asante",         step: 5, date: "18 May 2026", details: "Embossing & tagging complete. Ready for physical pickup at the Adenta Branch office, Frafraha." },
+  { id: "AD 1242-26", chassis: "KMHDK41D7NU381920", category: "Commercial", owners: "Abena Mensah & Kofi Mensah",          step: 3, date: "18 May 2026", details: "Chassis sequence verified and approved. Moving into the Adenta embossing queue." },
+  { id: "AD 0928-26", chassis: "JN1BYSY61U391823",  category: "Government", owners: "Ministry of Local Government",        step: 4, date: "18 May 2026", details: "Embossing complete. Smart chip paired with govt. fleet profile. Awaiting final sign-off." },
+  { id: "AD 0819-26", chassis: "CAT0320CCPH291823", category: "Commercial", owners: "Ebenezer Lartey & Victoria Lartey",  step: 2, date: "15 May 2026", details: "Requisition logged and owner details mapped. Pending payment and document confirmation." }
 ];
 
 const STEPS = [
@@ -360,14 +360,14 @@ export default function DashboardPage() {
                 Welcome back, Administrator
               </h2>
               <p style={{ color: "rgba(255,255,255,0.58)", fontSize: "0.85rem", marginTop: "0.35rem" }}>
-                Here&apos;s an overview of DVLA Vehicle Plate Management today.
+                Adenta Branch — AD plates overview for today.
               </p>
               {/* Mini stat pills */}
               <div className="flex flex-wrap gap-2.5 mt-4">
                 {[
-                  { label: "Registrations Today", val: "186"    },
-                  { label: "Processing Queue",     val: "1,042"  },
-                  { label: "System Uptime",        val: "99.8%"  },
+                  { label: "AD Plates Today",  val: "23"     },
+                  { label: "Processing Queue", val: "142"    },
+                  { label: "System Uptime",    val: "99.8%"  },
                 ].map(s => (
                   <div key={s.label} style={{
                     padding: "0.45rem 0.85rem",
@@ -383,22 +383,24 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex flex-col gap-2 shrink-0">
-              <button style={{
+              <Link href="/dashboard/booking" style={{
+                display: "block", textAlign: "center", textDecoration: "none",
                 padding: "0.6rem 1.3rem", borderRadius: "0.75rem",
                 fontSize: "0.825rem", fontWeight: 700,
-                background: "white", color: "#2d5009", border: "none", cursor: "pointer",
+                background: "white", color: "#2d5009",
                 boxShadow: "0 4px 18px rgba(0,0,0,0.22)", letterSpacing: "-0.01em",
               }}>
                 + New Application
-              </button>
-              <button style={{
+              </Link>
+              <Link href="/dashboard/reports" style={{
+                display: "block", textAlign: "center", textDecoration: "none",
                 padding: "0.6rem 1.3rem", borderRadius: "0.75rem",
                 fontSize: "0.825rem", fontWeight: 600,
                 background: "rgba(255,255,255,0.1)", color: "white",
-                border: "1px solid rgba(255,255,255,0.24)", cursor: "pointer",
+                border: "1px solid rgba(255,255,255,0.24)",
               }}>
                 Export Report
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -440,12 +442,12 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Quick Actions ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {QUICK_ACTIONS.map((a) => (
-          <button key={a.label}
-            className="bg-white rounded-xl border border-[#e8edf5] flex items-center gap-3.5 text-left
-              hover:shadow-md hover:border-[#d8e4f0] transition-all duration-200 group"
-            style={{ padding: "1rem 1.1rem", boxShadow: "0 1px 8px rgba(0,0,0,0.042)", cursor: "pointer" }}>
+          <Link key={a.label} href={a.href}
+            className="bg-white rounded-xl border border-[#e8edf5] flex items-center gap-3.5
+              hover:shadow-md hover:border-[#d8e4f0] transition-all duration-200 group no-underline"
+            style={{ padding: "1rem 1.1rem", boxShadow: "0 1px 8px rgba(0,0,0,0.042)" }}>
             <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0
               transition-transform duration-200 group-hover:scale-110"
               style={{ background: a.bg, color: a.color }}>
@@ -455,7 +457,7 @@ export default function DashboardPage() {
               <p className="text-sm font-semibold" style={{ color: "#1a2e05" }}>{a.label}</p>
               <p className="text-[11px] mt-0.5" style={{ color: "#9aa3be" }}>{a.sub}</p>
             </div>
-          </button>
+          </Link>
         ))}
       </div>
 
@@ -581,7 +583,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="font-semibold text-sm" style={{ color: "#1a2e05" }}>Monthly Registrations</h3>
-              <p className="text-xs mt-0.5" style={{ color: "#9aa3be" }}>Jan – Jun 2026</p>
+              <p className="text-xs mt-0.5" style={{ color: "#9aa3be" }}>Adenta Branch — Jan – Jun 2026</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5 text-xs" style={{ color: "#9aa3be" }}>
@@ -632,8 +634,8 @@ export default function DashboardPage() {
         style={{ boxShadow: "0 2px 14px rgba(0,0,0,0.045)" }}>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="font-semibold text-sm" style={{ color: "#1a2e05" }}>Regional Distribution</h3>
-            <p className="text-xs mt-0.5" style={{ color: "#9aa3be" }}>Plates issued by region, 2026</p>
+            <h3 className="font-semibold text-sm" style={{ color: "#1a2e05" }}>Adenta Coverage Zones</h3>
+            <p className="text-xs mt-0.5" style={{ color: "#9aa3be" }}>AD plates by coverage zone — 2026</p>
           </div>
           <button className="text-xs font-medium hover:underline" style={{ color: "#81B71A" }}>
             View all regions →
@@ -676,7 +678,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#f0f3f8]">
             <div>
               <h3 className="font-semibold text-sm" style={{ color: "#1a2e05" }}>Recent Registrations</h3>
-              <p className="text-[11px] mt-0.5" style={{ color: "#9aa3be" }}>Latest plate activity across all regions</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "#9aa3be" }}>Latest AD plate activity — Adenta Branch</p>
             </div>
             <button className="text-xs font-semibold hover:underline" style={{ color: "#81B71A" }}>
               View all →

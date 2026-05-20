@@ -17,6 +17,7 @@ const NAV_SECTIONS = [
     title: "Main",
     items: [
       { label: "Dashboard",      href: "/dashboard",               icon: DashIcon },
+      { label: "Booking",        href: "/dashboard/booking",       icon: BookingIcon },
       {
         label: "Vehicle Plates",
         icon: PlateIcon,
@@ -24,7 +25,6 @@ const NAV_SECTIONS = [
           { label: "Search & Registry", href: "/dashboard/plates" },
           { label: "Applications",      href: "/dashboard/plates/applications" },
           { label: "Custom Plates",     href: "/dashboard/plates/custom" },
-          { label: "Inventory / Batches", href: "/dashboard/plates/inventory" },
         ]
       },
     ],
@@ -70,12 +70,19 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
             style={{ background: "rgba(255,255,255,0.25)", padding: 3 }} />
         </div>
         <div className={`overflow-hidden transition-all duration-300 flex flex-col justify-center
-          ${collapsed ? "max-w-0 opacity-0 pointer-events-none" : "max-w-40 opacity-100"}`}>
+          ${collapsed ? "max-w-0 opacity-0 pointer-events-none" : "max-w-48 opacity-100"}`}>
           <p className="text-white font-bold text-sm tracking-widest uppercase leading-none whitespace-nowrap">DVLA</p>
           <p className="text-[10px] tracking-wider uppercase mt-0.5 whitespace-nowrap"
             style={{ color: "rgba(255,255,255,0.65)" }}>
             Vehicle Plate System
           </p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="w-1 h-1 rounded-full shrink-0" style={{ background: "#81B71A" }} />
+            <span className="text-[9px] font-bold tracking-widest uppercase whitespace-nowrap"
+              style={{ color: "#81B71A" }}>
+              Adenta Branch
+            </span>
+          </div>
         </div>
       </div>
 
@@ -256,7 +263,7 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
           <div className={`flex-1 overflow-hidden transition-all duration-300 flex flex-col justify-center
             ${collapsed ? "max-w-0 opacity-0 pointer-events-none" : "max-w-40 opacity-100"}`}>
             <p className="text-white text-xs font-semibold truncate leading-none">Administrator</p>
-            <p className="text-[10px] truncate mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>admin@dvla.gov.gh</p>
+            <p className="text-[10px] truncate mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>adenta@dvla.gov.gh</p>
           </div>
           {!collapsed && (
             <button onClick={() => router.push("/login")} title="Sign out"
@@ -368,6 +375,15 @@ function HelpIcon({ size = 20 }: { size?: number }) {
       <circle cx="12" cy="12" r="10" />
       <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
       <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
+function BookingIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
     </svg>
   );
 }

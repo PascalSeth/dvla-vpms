@@ -12,6 +12,14 @@ const PAGES_GUIDE = [
     bg: "rgba(129,183,26,0.08)",
   },
   {
+    title: "📖 Booking Desk",
+    route: "/dashboard/booking",
+    purpose: "Digitized Register Book",
+    description: "This page replaces the paper register book. You can enter all columns from the paper sheets (owner, full vehicle specs, tyre sizes, payments, and officers). It includes a scan simulator and a live book preview.",
+    color: "#81B71A",
+    bg: "rgba(129,183,26,0.08)",
+  },
+  {
     title: "🔍 Search & Registry",
     route: "/dashboard/plates",
     purpose: "Search Issued Plates",
@@ -34,14 +42,6 @@ const PAGES_GUIDE = [
     description: "This page lets customers apply for a custom vanity plate. It checks that the text is valid, blocks bad words, and lets you add up to 4 co-owners to the plate.",
     color: "#8b5cf6",
     bg: "rgba(139,92,246,0.08)",
-  },
-  {
-    title: "📦 Inventory & Production",
-    route: "/dashboard/plates/inventory",
-    purpose: "Manage Plate Blanks & Stock",
-    description: "This page tracks physical plates in stock. You can see how many blanks are left and start a new production batch for any region.",
-    color: "#ec4899",
-    bg: "rgba(236,72,153,0.08)",
   }
 ];
 
