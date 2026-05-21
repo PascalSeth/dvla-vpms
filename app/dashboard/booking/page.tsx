@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { getStoredReservations, checkPlateReservation, saveStoredReservations, Reservation } from "../../../components/reservationsData";
+import { VRS_INVOICES } from "../../../components/vrsData";
 
 /* ─── Static reference data ─── */
 
 const BOOKING_TYPES = [
   { id: "REGISTRATION",         label: "Registration",                              sub: "New plate issuance", icon: BookingNewIcon      },
-  { id: "REG_SPECIAL",          label: "Special Number",                            sub: "Custom plate request", icon: BookingStarIcon   },
+  { id: "REG_SPECIAL",          label: "Registration + Special Number",                            sub: "Custom plate request", icon: BookingStarIcon   },
   { id: "REG_TRANSFER",         label: "Registration & Transfer",                   sub: "Ownership change",   icon: BookingTransferIcon },
-  { id: "REG_TRANSFER_SPECIAL", label: "Transfer + Special",                        sub: "Transfer with custom", icon: BookingComboIcon  },
+  { id: "REG_TRANSFER_SPECIAL", label: "Registration Transfer + Special Number",                        sub: "Transfer with custom", icon: BookingComboIcon  },
 ];
 
 const CLASSIFICATIONS = [
@@ -133,17 +136,73 @@ function SectionHead({ n, title, icon }: { n: number; title: string; icon: React
 }
 
 /* ════════════════════════════════ PAGE ════════════════════════════════ */
-export default function BookingPage() {
+function BookingDeskContent() {
+
+  const searchParams = useSearchParams();
+  const isPrefill = searchParams ? searchParams.get("prefill") === "1" : false;
 
   /* ── Selectors ── */
-  const [bookingType,    setBookingType]    = useState("REGISTRATION");
-  const [classification, setClassification] = useState("PRIVATE");
+  const [bookingType,    setBookingType]    = useState(() => {
+    if (isPrefill && searchParams) {
+      const platePattern = searchParams.get("platePattern");
+      const rangeStart = searchParams.get("rangeStart");
+      if (platePattern || rangeStart) return "REG_SPECIAL";
+    }
+    return "REGISTRATION";
+  });
+
+  const [classification, setClassification] = useState(() => {
+    if (isPrefill && searchParams) {
+      const holder = searchParams.get("holder");
+      if (holder) {
+        const lowerHolder = holder.toLowerCase();
+        if (
+          lowerHolder.includes("police") ||
+          lowerHolder.includes("state house") ||
+          lowerHolder.includes("ministry") ||
+          lowerHolder.includes("assembly") ||
+          lowerHolder.includes("government")
+        ) {
+          return "GOVERNMENT";
+        }
+      }
+    }
+    return "PRIVATE";
+  });
+
+  /* ── VRS Quick-Fill states ── */
+  const [vrsInvoiceNo, setVrsInvoiceNo] = useState("");
+  const [isFetchingVrs, setIsFetchingVrs] = useState(false);
+  const [vrsSuccessMessage, setVrsSuccessMessage] = useState("");
+  const [auditHighlightActive, setAuditHighlightActive] = useState(false);
 
   /* ── Owner ── */
-  const [regNo,        setRegNo]        = useState("AD 0001-26");
-  const [ownerName,    setOwnerName]    = useState("");
-  const [address,      setAddress]      = useState("");
-  const [phone,        setPhone]        = useState("");
+  const [regNo,        setRegNo]        = useState(() => {
+    if (isPrefill && searchParams) {
+      const platePattern = searchParams.get("platePattern");
+      if (platePattern) return platePattern;
+      const rangeStart = searchParams.get("rangeStart");
+      if (rangeStart) {
+        const prefix = searchParams.get("prefix") || "AD";
+        const year = searchParams.get("year") || "26";
+        return `${prefix} ${rangeStart}-${year}`;
+      }
+    }
+    return "";
+  });
+
+  const [ownerName,    setOwnerName]    = useState(() => {
+    return isPrefill && searchParams ? (searchParams.get("holder") || "") : "";
+  });
+
+  const [address,      setAddress]      = useState(() => {
+    return isPrefill ? "Adenta Municipal Area, Accra" : "";
+  });
+
+  const [phone,        setPhone]        = useState(() => {
+    return isPrefill ? "+233 24 123 4567" : "";
+  });
+
   const [oldOwnerName, setOldOwnerName] = useState("");
   const [oldOwnerAddr, setOldOwnerAddr] = useState("");
 
@@ -180,6 +239,17 @@ export default function BookingPage() {
   /* ── UI state ── */
   const [isSuccess,    setIsSuccess]    = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
+
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setReservations(getStoredReservations());
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const activeReservation = checkPlateReservation(regNo, reservations);
 
   const isTransfer = bookingType.startsWith("REG_TRANSFER");
   const vinLen     = chassisNo.replace(/\s/g, "").length;
@@ -241,11 +311,76 @@ export default function BookingPage() {
     setTyreFW(""); setTyreFD(""); setTyreMW(""); setTyreMD(""); setTyreRW(""); setTyreRD("");
     setReceiptNo(""); setCustomsNo(""); setCustomsDate("2026-05-19"); setSupervisor("Eric");
     setCylinders("4"); setFuelType("PETROL"); setPresetSearch("");
-    setRegNo("AD 0001-26");
+    setRegNo("");
+    setVrsInvoiceNo("");
+    setVrsSuccessMessage("");
+    setAuditHighlightActive(false);
+  }
+
+  function handleFetchVrs(invoiceNoToFetch: string) {
+    if (!invoiceNoToFetch) return;
+    setIsFetchingVrs(true);
+    setVrsSuccessMessage("");
+    setAuditHighlightActive(false);
+
+    setTimeout(() => {
+      const invoice = VRS_INVOICES.find(i => i.invoiceNo === invoiceNoToFetch.trim());
+      if (invoice) {
+        setBookingType(invoice.bookingType);
+        setClassification(invoice.classification);
+        setRegNo(invoice.regNo);
+        setOwnerName(invoice.ownerName);
+        setAddress(invoice.address);
+        setPhone(invoice.phone);
+        
+        setMake(invoice.make);
+        setYearModel(invoice.yearModel);
+        setEngineCC(invoice.engineCC);
+        setCylinders(invoice.cylinders);
+        setEngineNo(invoice.engineNo);
+        setChassisNo(invoice.chassisNo);
+        setBodyType(invoice.bodyType);
+        setFuelType(invoice.fuelType);
+        setNetWeight(invoice.netWeight);
+        setGrossWeight(invoice.grossWeight);
+
+        setTyreFW(invoice.tyreFW);
+        setTyreFD(invoice.tyreFD);
+        setTyreMW(invoice.tyreMW);
+        setTyreMD(invoice.tyreMD);
+        setTyreRW(invoice.tyreRW);
+        setTyreRD(invoice.tyreRD);
+
+        // Clear Step 4 Audit & Payment inputs so that the user is forced to fill them manually!
+        setReceiptNo("");
+        setCustomsNo("");
+        setCustomsDate("");
+
+        setVrsSuccessMessage(`🎉 VRS Invoice ${invoice.invoiceNo} successfully fetched! Steps 1, 2, and 3 have been auto-populated. Please complete Step 4 (Audit & Payment) manually below.`);
+        setAuditHighlightActive(true);
+      } else {
+        alert("Invoice not found in VRS. Please check the 14-digit invoice number (e.g. 40726012083437).");
+      }
+      setIsFetchingVrs(false);
+    }, 650);
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const activeRes = checkPlateReservation(regNo, reservations);
+    if (activeRes) {
+      const updated = reservations.map(r => {
+        if (r.id === activeRes.id) {
+          return {
+            ...r,
+            claimedCount: Math.min(r.totalCount, r.claimedCount + 1)
+          };
+        }
+        return r;
+      });
+      setReservations(updated);
+      saveStoredReservations(updated);
+    }
     setIsSuccess(true);
   }
 
@@ -368,93 +503,208 @@ export default function BookingPage() {
             </button>
           </div>
         </div>
-
       ) : (
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+        <div className="space-y-6">
+          {/* VRS Integration Terminal Success Alert */}
+          {vrsSuccessMessage && (
+            <div className="bg-emerald-50 border-2 border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3 shadow-lg shadow-emerald-500/5 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">VRS Auto-Population Success</h4>
+                <p className="text-[11px] font-semibold text-emerald-800 mt-0.5 leading-relaxed">{vrsSuccessMessage}</p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setVrsSuccessMessage("")}
+                className="text-emerald-500 hover:text-emerald-700 transition"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
 
-          {/* ── Left panel (2/3) ── */}
-          <div className="xl:col-span-2 space-y-5">
+          {/* VRS Live Integration Terminal Card */}
+          <div className="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl border border-slate-200 p-6 relative overflow-hidden shadow-md shadow-slate-100/50">
+            {/* Ambient background glow decoration */}
+            <div className="absolute -right-16 -top-16 w-36 h-36 rounded-full bg-[#81B71A]/5 blur-3xl pointer-events-none" />
+            <div className="absolute -left-16 -bottom-16 w-36 h-36 rounded-full bg-[#81B71A]/5 blur-3xl pointer-events-none" />
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-lg shadow-slate-950/20">
+                  <svg className="w-5 h-5 text-[#81B71A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 tracking-tight">VRS Integration Terminal</h3>
+                  <p className="text-[11px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">High-Speed Paid Invoice Filing Desk</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 self-start md:self-center">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-[9px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/50">
+                  VRS Live Database Connected
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-5 relative z-10">
+              <div className="lg:col-span-2 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center justify-between">
+                    <span>14-Digit VRS Invoice Number</span>
+                    <span className="font-mono text-[9px] text-slate-400">{vrsInvoiceNo.length}/14 Digits</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </span>
+                    <input
+                      type="text"
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                      value={vrsInvoiceNo}
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 14);
+                        setVrsInvoiceNo(val);
+                      }}
+                      placeholder="e.g. 40726012083437"
+                      className="w-full pl-10 pr-24 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold font-mono tracking-widest text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-[#81B71A]/20 focus:border-[#81B71A] transition-all shadow-sm"
+                    />
+                    <button
+                      type="button"
+                      disabled={vrsInvoiceNo.length !== 14 || isFetchingVrs}
+                      onClick={() => handleFetchVrs(vrsInvoiceNo)}
+                      className="absolute right-2 top-1.5 bottom-1.5 px-3 rounded-lg text-[10px] font-black uppercase text-white transition-all disabled:opacity-35 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-sm shadow-[#81B71A]/20 animate-none hover:opacity-90 active:scale-[0.98]"
+                      style={{ background: "linear-gradient(135deg, #1a2e05, #81B71A)" }}
+                    >
+                      {isFetchingVrs ? (
+                        <>
+                          <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Syncing
+                        </>
+                      ) : "Fetch"}
+                    </button>
+                  </div>
+                  <p className="text-[9px] font-semibold text-slate-400">
+                    Entering a valid paid invoice connects directly to the Virtual Registration System to retrieve specs instantly.
+                  </p>
+                </div>
+              </div>
+
+              <div className="lg:col-span-3 space-y-2.5">
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-[#81B71A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">
+                    Prefilled Illustrative Presets
+                  </label>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                  {VRS_INVOICES.map(inv => {
+                    const isCorolla = inv.make.toLowerCase().includes("toyota");
+                    const isTucson = inv.make.toLowerCase().includes("hyundai");
+                    
+                    let iconBg = "bg-blue-50 text-blue-600";
+                    let emoji = "🚗";
+                    if (isTucson) {
+                      iconBg = "bg-amber-50 text-amber-600";
+                      emoji = "🚙";
+                    } else if (!isCorolla) {
+                      iconBg = "bg-emerald-50 text-emerald-600";
+                      emoji = "🛻";
+                    }
+
+                    return (
+                      <button
+                        key={inv.invoiceNo}
+                        type="button"
+                        onClick={() => {
+                          setVrsInvoiceNo(inv.invoiceNo);
+                          handleFetchVrs(inv.invoiceNo);
+                        }}
+                        disabled={isFetchingVrs}
+                        className="group flex flex-col justify-between p-3 bg-white border border-slate-200/80 hover:border-[#81B71A]/60 hover:shadow-md hover:shadow-slate-100 hover:-translate-y-0.5 rounded-xl text-left transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none disabled:translate-y-0 relative overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-[#81B71A]/1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        
+                        <div className="flex items-center gap-2">
+                          <span className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${iconBg}`}>
+                            {emoji}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-black text-slate-800 truncate leading-snug group-hover:text-[#2d5009] transition-colors">{inv.ownerName}</p>
+                            <p className="text-[9px] font-extrabold text-slate-400 tracking-wider uppercase leading-none mt-0.5">{inv.make} {inv.bodyType.split(" ")[0]}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2 w-full">
+                          <code className="text-[10px] font-bold font-mono text-slate-500 tracking-tight group-hover:text-[#81B71A] transition-colors">{inv.invoiceNo}</code>
+                          <span className="text-[9px] font-black text-[#81B71A] opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                            →
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+
+            {/* ── Left panel (2/3) ── */}
+            <div className="xl:col-span-2 space-y-5">
 
             {/* ══ Section 1: Booking Details ══ */}
             <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-6"
               style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
               <SectionHead n={1} title="Booking Type &amp; Owner Details" icon={<OwnerIcon />} />
 
-              {/* ── Booking Type — card selector ── */}
-              <div>
-                <p className={LABEL + " mb-2.5"}>Booking / Service Type</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                  {BOOKING_TYPES.map(b => {
-                    const active = bookingType === b.id;
-                    const Icon = b.icon;
-                    return (
-                      <button key={b.id} type="button" onClick={() => setBookingType(b.id)}
-                        className="relative flex flex-col items-start gap-2 p-3.5 rounded-xl border text-left transition-all"
-                        style={{
-                          background:   active ? "rgba(129,183,26,0.07)" : "#fafbfe",
-                          borderColor:  active ? "#81B71A"               : "#e8edf5",
-                          boxShadow:    active ? "0 0 0 2px rgba(129,183,26,0.15), 0 2px 8px rgba(129,183,26,0.08)" : "none",
-                        }}>
-                        {active && (
-                          <span className="absolute top-2.5 right-2.5 w-4 h-4 rounded-full flex items-center justify-center"
-                            style={{ background: "#81B71A" }}>
-                            <svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M20 6L9 17l-5-5" />
-                            </svg>
-                          </span>
-                        )}
-                        <span style={{ color: active ? "#81B71A" : "#9aa3be" }}>
-                          <Icon />
-                        </span>
-                        <div>
-                          <p className="text-[11px] font-bold leading-tight" style={{ color: active ? "#1a2e05" : "#374167" }}>{b.label}</p>
-                          <p className="text-[10px] mt-0.5 font-medium" style={{ color: active ? "#6b7a99" : "#b0bbd6" }}>{b.sub}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* ── Booking Type — dropdown selector ── */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                <Field label="Booking / Service Type" required>
+                  <select value={bookingType} onChange={(e) => setBookingType(e.target.value)} className={INPUT}>
+                    {BOOKING_TYPES.map(b => (
+                      <option key={b.id} value={b.id}>
+                        {b.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
 
-              {/* ── Classification — card selector ── */}
-              <div>
-                <p className={LABEL + " mb-2.5"}>Vehicle / Plate Classification</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                  {CLASSIFICATIONS.map(c => {
-                    const active = classification === c.id;
-                    const Icon = c.icon;
-                    return (
-                      <button key={c.id} type="button" onClick={() => setClassification(c.id)}
-                        className="relative flex flex-col items-start gap-2 p-3.5 rounded-xl border text-left transition-all"
-                        style={{
-                          background:  active ? "rgba(129,183,26,0.07)" : "#fafbfe",
-                          borderColor: active ? "#81B71A"               : "#e8edf5",
-                          boxShadow:   active ? "0 0 0 2px rgba(129,183,26,0.15), 0 2px 8px rgba(129,183,26,0.08)" : "none",
-                        }}>
-                        {active && (
-                          <span className="absolute top-2.5 right-2.5 w-4 h-4 rounded-full flex items-center justify-center"
-                            style={{ background: "#81B71A" }}>
-                            <svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M20 6L9 17l-5-5" />
-                            </svg>
-                          </span>
-                        )}
-                        <span style={{ color: active ? "#81B71A" : "#9aa3be" }}>
-                          <Icon />
-                        </span>
-                        <div>
-                          <p className="text-[11px] font-bold leading-tight" style={{ color: active ? "#1a2e05" : "#374167" }}>{c.label}</p>
-                          <p className="text-[10px] mt-0.5 font-medium" style={{ color: active ? "#6b7a99" : "#b0bbd6" }}>{c.sub}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* ── Classification — dropdown selector ── */}
+                <Field label="Vehicle / Plate Classification" required>
+                  <select value={classification} onChange={(e) => setClassification(e.target.value)} className={INPUT}>
+                    {CLASSIFICATIONS.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
               </div>
 
               {/* ── Registration No + Owner Name ── */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Registration Number" required>
+                <Field label="Registration Number of Vehicle" required>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                       <PlateFieldIcon />
@@ -474,6 +724,26 @@ export default function BookingPage() {
                       </button>
                     )}
                   </div>
+                  {activeReservation && (
+                    <div className="mt-3 p-3.5 rounded-xl border border-amber-200/80 bg-amber-50/60 text-amber-900 text-xs space-y-2 shadow-sm backdrop-blur-sm">
+                      <div className="flex items-start gap-2.5">
+                        <div className="p-1 rounded-lg bg-amber-100/80 text-amber-700 shrink-0">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <p className="font-extrabold text-amber-800 tracking-wide text-xs">🛡️ Reserved Allocation Detected</p>
+                          <p className="text-[11px] text-amber-850 leading-relaxed font-medium">
+                            This registration number belongs to a reserved block held by <strong className="text-amber-950 font-bold bg-amber-100/60 px-1.5 py-0.5 rounded">{activeReservation.holder}</strong> under authorization reference <code className="bg-amber-100/80 px-1.5 py-0.5 rounded text-[10px] font-bold font-mono text-amber-900">{activeReservation.authRef}</code>.
+                          </p>
+                          <p className="text-[10px] text-amber-700 leading-relaxed font-semibold">
+                            ⚠️ This is an informational alert. Booking is unlocked and will automatically register the vehicle, incrementing the claimed slot count for this block.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </Field>
                 <Field label={isTransfer ? "New Owner Name (Transferee)" : "Name of Owner"} required>
                   <div className="relative">
@@ -635,9 +905,9 @@ export default function BookingPage() {
                     {["N/A", "2", "4", "6", "8", "12"].map(n => <option key={n}>{n}</option>)}
                   </select>
                 </Field>
-                <Field label="Engine Number" required>
+                <Field label="Engine Number">
                   <input value={engineNo} onChange={e => setEngineNo(e.target.value)}
-                    required placeholder="e.g. 1VD-FTV8912" className={INPUT} />
+                    placeholder="e.g. 1VD-FTV8912" className={INPUT} />
                 </Field>
                 <Field label={`Chassis / VIN${vinLen > 0 ? ` (${vinLen}/17)` : ""}`} required>
                   <div className="relative">
@@ -815,8 +1085,14 @@ export default function BookingPage() {
           <div className="space-y-4 xl:sticky xl:top-20">
 
             {/* ══ Section 4: Audit & Payment ══ */}
-            <div className="bg-white rounded-2xl border border-[#e8edf5] p-5 space-y-4"
-              style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
+            <div 
+              className={`rounded-2xl border p-5 space-y-4 transition-all duration-500 ${
+                auditHighlightActive 
+                  ? "bg-emerald-50/20 border-emerald-400 ring-4 ring-emerald-500/15 shadow-xl shadow-emerald-500/10 animate-[pulse_2s_infinite]" 
+                  : "bg-white border-[#e8edf5]"
+              }`}
+              style={{ boxShadow: auditHighlightActive ? undefined : "0 2px 16px rgba(0,0,0,0.045)" }}
+            >
               <SectionHead n={4} title="Audit &amp; Payment" icon={<AuditIcon />} />
 
               <Field label="Receipt Number" required>
@@ -824,8 +1100,8 @@ export default function BookingPage() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
                     <ReceiptFieldIcon />
                   </span>
-                  <input value={receiptNo} onChange={e => setReceiptNo(e.target.value)}
-                    required placeholder="e.g. R-908123" className={INPUT + " pl-8"} />
+                  <input value={receiptNo} onChange={e => { setReceiptNo(e.target.value); setAuditHighlightActive(false); }}
+                    required placeholder="470260*****" className={INPUT + " pl-8"} />
                 </div>
               </Field>
 
@@ -834,7 +1110,7 @@ export default function BookingPage() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
                     <CalendarFieldIcon />
                   </span>
-                  <input type="date" value={regDate} onChange={e => setRegDate(e.target.value)}
+                  <input type="date" value={regDate} onChange={e => { setRegDate(e.target.value); setAuditHighlightActive(false); }}
                     className={INPUT + " pl-8"} />
                 </div>
               </Field>
@@ -842,8 +1118,8 @@ export default function BookingPage() {
               <div className="h-px bg-[#f0f3f8]" />
 
               <Field label="Customs Number" required>
-                <input value={customsNo} onChange={e => setCustomsNo(e.target.value)}
-                  required placeholder="e.g. C-182901-ADT" className={INPUT} />
+                <input value={customsNo} onChange={e => { setCustomsNo(e.target.value); setAuditHighlightActive(false); }}
+                  required placeholder="470260*****/**" className={INPUT} />
               </Field>
 
               <Field label="Customs Date" required>
@@ -851,7 +1127,7 @@ export default function BookingPage() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
                     <CalendarFieldIcon />
                   </span>
-                  <input type="date" value={customsDate} onChange={e => setCustomsDate(e.target.value)}
+                  <input type="date" value={customsDate} onChange={e => { setCustomsDate(e.target.value); setAuditHighlightActive(false); }}
                     required className={INPUT + " pl-8"} />
                 </div>
               </Field>
@@ -863,7 +1139,7 @@ export default function BookingPage() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
                     <PersonFieldIcon />
                   </span>
-                  <select value={supervisor} onChange={e => setSupervisor(e.target.value)}
+                  <select value={supervisor} onChange={e => { setSupervisor(e.target.value); setAuditHighlightActive(false); }}
                     className={INPUT + " pl-8"}>
                     <option value="Eric">Eric</option>
                     <option value="Saviour">Saviour</option>
@@ -873,7 +1149,7 @@ export default function BookingPage() {
               </Field>
 
               <button type="submit"
-                className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-95 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all flex items-center justify-center gap-2 hover:opacity-95"
                 style={{ background: "linear-gradient(115deg, #2d5009, #81B71A)", boxShadow: "0 4px 18px rgba(129,183,26,0.35)" }}>
                 <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 6L9 17l-5-5" />
@@ -898,6 +1174,73 @@ export default function BookingPage() {
                   style={{ background: "rgba(129,183,26,0.15)", color: "#81B71A", border: "1px solid rgba(129,183,26,0.2)" }}>
                   {CLASSIFICATIONS.find(c => c.id === classification)?.label}
                 </span>
+              </div>
+
+              {/* Plate visual */}
+              <div className="px-4 pt-4 pb-1">
+                <div
+                  className="relative w-full max-w-[320px] aspect-[4.2/1] mx-auto rounded-xl border-4 border-slate-900 p-1 shadow-2xl overflow-hidden select-none flex items-center"
+                  style={{
+                    background:
+                      CLASSIFICATIONS.find(c => c.id === classification)?.id === "COMMERCIAL"
+                        ? "linear-gradient(180deg, #ffe066 0%, #fcc419 60%, #fab005 100%)"
+                        : CLASSIFICATIONS.find(c => c.id === classification)?.id === "GOVERNMENT"
+                        ? "linear-gradient(180deg, #2f9e44 0%, #2b8a3e 60%, #1e702e 100%)"
+                        : "linear-gradient(180deg, #f8f9fa 0%, #e9ecef 60%, #dee2e6 100%)",
+                    boxShadow: "0 15px 30px rgba(0,0,0,0.18), inset 0 3px 6px rgba(255,255,255,0.8), inset 0 -3px 6px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  {/* Embossed inner rim */}
+                  <div className="absolute inset-0.5 rounded-lg border border-slate-950/20 pointer-events-none" />
+
+                  {/* Reflective light shine */}
+                  <div className="absolute inset-0 pointer-events-none bg-linear-to-tr from-transparent via-white/20 to-white/40 z-10" />
+
+                  {/* Ghana flag / left strip */}
+                  <div
+                    className="w-[12%] h-full shrink-0 flex flex-col items-center justify-between py-1 bg-[#0c3b87] rounded-l-[5px] relative overflow-hidden z-20"
+                    style={{ boxShadow: "1px 0 3px rgba(0,0,0,0.15)" }}
+                  >
+                    <div className="w-[85%] aspect-3/2 flex flex-col rounded-sm overflow-hidden border border-white/10 shrink-0">
+                      <div className="flex-1 bg-red-600" />
+                      <div className="flex-1 bg-yellow-400 flex items-center justify-center relative">
+                        <span className="absolute text-[5px] text-black leading-none -top-0.5">★</span>
+                      </div>
+                      <div className="flex-1 bg-green-600" />
+                    </div>
+                    <span className="text-[10px] font-black text-white leading-none tracking-tighter">GH</span>
+                  </div>
+
+                  {/* Plate text */}
+                  <div className="flex-1 flex items-center justify-center px-3 relative h-full z-20">
+                    <div
+                      className="absolute right-3 top-1.5 w-5 h-5 rounded-full bg-linear-to-tr from-yellow-300 via-amber-400 to-yellow-500 opacity-60 flex items-center justify-center"
+                      style={{ boxShadow: "0 0 5px rgba(245,158,11,0.6)", border: "0.5px solid rgba(255,255,255,0.2)" }}
+                    >
+                      <span className="text-[5px] font-black text-amber-950 select-none tracking-tighter">DVLA</span>
+                    </div>
+
+                    <span
+                      className="font-mono text-[18px] md:text-[20px] font-black tracking-wide whitespace-nowrap uppercase"
+                      style={{
+                        fontFamily: "'Courier New', Courier, monospace",
+                        letterSpacing: "3px",
+                        color:
+                          CLASSIFICATIONS.find(c => c.id === classification)?.id === "GOVERNMENT"
+                            ? "#ffffff"
+                            : CLASSIFICATIONS.find(c => c.id === classification)?.id === "EQUIPMENT"
+                            ? "#1b8a3e"
+                            : "#1e293b",
+                        textShadow:
+                          CLASSIFICATIONS.find(c => c.id === classification)?.id === "GOVERNMENT"
+                            ? "2px 2px 2px rgba(0,0,0,0.5), -1px -1px 0px rgba(0,0,0,0.3)"
+                            : "1.5px 1.5px 1px rgba(255,255,255,0.8), -1.5px -1.5px 1px rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      {regNo || "—"}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div className="p-4 space-y-3 font-mono text-[10px]" style={{ color: "#c5d9a8" }}>
@@ -946,7 +1289,10 @@ export default function BookingPage() {
             </div>
           </div>
         </form>
-      )}
+      </div>
+    )}
+
+
     </div>
   );
 }
@@ -1283,5 +1629,17 @@ function TyreRearIcon() {
       <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" />
       <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" /><line x1="16.95" y1="16.95" x2="19.07" y2="19.07" />
     </svg>
+  );
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-100 text-slate-500 font-semibold text-xs bg-slate-900/10 backdrop-blur-md rounded-2xl border border-slate-200/50">
+        Loading Booking Desk Registry...
+      </div>
+    }>
+      <BookingDeskContent />
+    </Suspense>
   );
 }

@@ -26,22 +26,6 @@ const PAGES_GUIDE = [
     description: "This page lets you search all issued plates. You can search by plate number or owner names. It shows pictures of the plates and displays the details of all co-owners.",
     color: "#3b82f6",
     bg: "rgba(59,130,246,0.08)",
-  },
-  {
-    title: "📝 Applications Review",
-    route: "/dashboard/plates/applications",
-    purpose: "Approve or Reject Requests",
-    description: "This page is for supervisors. You can look at new plate requests, check co-owners, verify the Chassis Number, and click Approve or Reject to send it to production.",
-    color: "#f59e0b",
-    bg: "rgba(245,158,11,0.08)",
-  },
-  {
-    title: "✨ Custom Plates Workshop",
-    route: "/dashboard/plates/custom",
-    purpose: "Apply for Custom Plates",
-    description: "This page lets customers apply for a custom vanity plate. It checks that the text is valid, blocks bad words, and lets you add up to 4 co-owners to the plate.",
-    color: "#8b5cf6",
-    bg: "rgba(139,92,246,0.08)",
   }
 ];
 

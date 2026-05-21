@@ -7,8 +7,6 @@ const LABELS: Record<string, string> = {
   "/dashboard":                      "Dashboard",
   "/dashboard/booking":              "Booking Desk",
   "/dashboard/plates":               "Vehicle Plates",
-  "/dashboard/plates/applications":  "Applications",
-  "/dashboard/plates/custom":        "Custom Plates",
   "/dashboard/reports":              "Reports",
   "/dashboard/audit":                "Audit Log",
   "/dashboard/settings":             "Settings",

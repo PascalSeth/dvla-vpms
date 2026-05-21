@@ -12,21 +12,30 @@ export interface SidebarProps {
   onMobileClose: () => void;
 }
 
-const NAV_SECTIONS = [
+export interface NavSubItem {
+  label: string;
+  href: string;
+}
+
+export interface NavItem {
+  label: string;
+  href?: string;
+  icon: any;
+  subItems?: NavSubItem[];
+}
+
+export interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
   {
     title: "Main",
     items: [
       { label: "Dashboard",      href: "/dashboard",               icon: DashIcon },
       { label: "Booking",        href: "/dashboard/booking",       icon: BookingIcon },
-      {
-        label: "Vehicle Plates",
-        icon: PlateIcon,
-        subItems: [
-          { label: "Search & Registry", href: "/dashboard/plates" },
-          { label: "Applications",      href: "/dashboard/plates/applications" },
-          { label: "Custom Plates",     href: "/dashboard/plates/custom" },
-        ]
-      },
+      { label: "Vehicle Plates", href: "/dashboard/plates", icon: PlateIcon },
     ],
   },
   {
@@ -101,7 +110,9 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
                 const hasSubItems = "subItems" in item;
                 const active = hasSubItems
                   ? pathname.startsWith("/dashboard/plates")
-                  : pathname === item.href;
+                  : item.href === "/dashboard/plates"
+                    ? pathname.startsWith("/dashboard/plates")
+                    : pathname === item.href;
                 const Icon = item.icon;
 
                 if (hasSubItems) {
