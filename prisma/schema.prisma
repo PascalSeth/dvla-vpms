@@ -1,0 +1,168 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String   // e.g. "DVLA Adenta HQ", "State House Fleet", "Ghana Police Service"
+  slug        String   @unique // e.g. "dvla-adenta", "state-house", "gps"
+  code        String   @unique // e.g. "DVLA-HQ", "STH-FLEET", "GPS-OPS"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users               User[]
+  reservations        Reservation[]
+  vrsInvoices         VrsInvoice[]
+  bookings            Booking[]
+  pickupRegistrations PickupRegistration[]
+  auditLogs           AuditLog[]
+}
+enum UserRole {
+  SUPERADMIN
+  SUPERVISOR
+  DATA_ENTRY
+}
+
+model User {
+  id             String        @id @default(cuid())
+  username       String        @unique
+  email          String?       @unique
+  password       String
+  name           String
+  role           UserRole      @default(DATA_ENTRY)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+}
+
+model Reservation {
+  id             String        @id @default(cuid())
+  type           String        // "Single" | "Range"
+  platePattern   String?
+  rangeStart     Int?
+  rangeEnd       Int?
+  prefix         String
+  year           String
+  holder         String
+  authRef        String
+  expiryDate     String
+  status         String        // "Active" | "Alert" | "Expired"
+  claimedCount   Int           @default(0)
+  totalCount     Int           @default(1)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  bookings       Booking[]
+
+  @@index([organizationId])
+  @@index([authRef])
+  @@index([status])
+}
+
+model VrsInvoice {
+  id             String        @id @default(cuid())
+  invoiceNo      String        @unique
+  bookingType    String
+  classification String
+  regNo          String
+  ownerName      String
+  address        String
+  phone          String
+  make           String
+  yearModel      String
+  engineCC       String
+  cylinders      String
+  engineNo       String
+  chassisNo      String
+  bodyType       String
+  fuelType       String
+  netWeight      String
+  grossWeight    String
+  tyreFW         String
+  tyreFD         String
+  tyreMW         String
+  tyreMD         String
+  tyreRW         String
+  tyreRD         String
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+
+  bookings       Booking[]
+
+  @@index([organizationId])
+  @@index([regNo])
+  @@index([chassisNo])
+  @@index([invoiceNo])
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  type           String
+  status         String        // "pending" | "approved" | "rejected"
+  owner          String
+  vehicle        String
+  plate          String?
+  date           String
+  classification String
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  
+  vrsInvoiceId   String?
+  vrsInvoice     VrsInvoice?   @relation(fields: [vrsInvoiceId], references: [id], onDelete: SetNull)
+  
+  reservationId String?
+  reservation   Reservation?  @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([plate])
+  @@index([createdAt])
+}
+
+model PickupRegistration {
+  id             String        @id @default(cuid())
+  name           String
+  phone          String
+  plateNumber    String?
+  timestamp      String
+  status         String        // "pending" | "completed"
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([plateNumber])
+  @@index([phone])
+}
+
+model AuditLog {
+  id             String        @id @default(cuid())
+  action         String        // "PLATE_REGISTERED" | "RESERVATION_LOCKED" | "USER_LOGIN" | "SYSTEM_AUDIT"
+  details        String        // Detailed JSON or text description of change
+  performedBy    String        // User ID or username
+  ipAddress      String?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+
+  @@index([organizationId])
+  @@index([action])
+  @@index([createdAt])
+}

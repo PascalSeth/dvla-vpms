@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -37,15 +37,42 @@ const PARTICLES: Particle[] = [
   { left: "88%", bottom: "2%", size: 3, delay: "3.8s", duration: "10s", drift: "-10px" },
 ];
 
+interface OrganizationOption {
+  id: string;
+  name: string;
+  code: string;
+  slug: string;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("1234");
+  const [organizations, setOrganizations] = useState<OrganizationOption[]>([]);
+  const [selectedOrgId, setSelectedOrgId] = useState<string>("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    async function loadOrgs() {
+      try {
+        const res = await fetch("/api/organizations");
+        if (res.ok) {
+          const data = await res.json();
+          setOrganizations(data);
+          if (data.length > 0) {
+            setSelectedOrgId(data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load organizations:", err);
+      }
+    }
+    loadOrgs();
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!username || !password) {
@@ -53,14 +80,42 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+          organizationId: selectedOrgId || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        localStorage.setItem("dvla_session", JSON.stringify(data.user));
+        router.push("/dashboard");
+      } else {
+        setError(data.error || "Invalid username or password. Please try again.");
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      // Fallback for offline demo credentials
       if (username === "admin" && password === "1234") {
+        localStorage.setItem("dvla_session", JSON.stringify({
+          username: "admin",
+          name: "System Administrator",
+          role: "SUPERADMIN",
+          organization: { name: "DVLA HQ", code: "DVLA-HQ" }
+        }));
         router.push("/dashboard");
       } else {
         setLoading(false);
-        setError("Invalid username or password. Please try again.");
+        setError("Network error. Could not connect to authentication service.");
       }
-    }, 800);
+    }
   }
 
   return (

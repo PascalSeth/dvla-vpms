@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DVLA VPMS — Adenta Branch",
-  description: "Driver & Vehicle Licensing Authority — Adenta Branch Vehicle Plate Management System",
+  title: "DVLA VPMS — DVLA HQ",
+  description: "Driver & Vehicle Licensing Authority — DVLA HQ Vehicle Plate Management System",
 };
 
 export default function RootLayout({

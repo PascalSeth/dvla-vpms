@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 const LABELS: Record<string, string> = {
@@ -20,7 +20,53 @@ interface TopbarProps {
 export default function Topbar({ onMobileMenuOpen }: TopbarProps) {
   const pathname = usePathname();
   const [searchFocused, setSearchFocused] = useState(false);
+  const [userSession, setUserSession] = useState<{ username: string; name: string; role: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    const loadSession = () => {
+      try {
+        const stored = localStorage.getItem("dvla_session");
+        if (stored) {
+          setUserSession(JSON.parse(stored));
+        } else {
+          setUserSession({ username: "admin", name: "System Administrator", role: "SUPERADMIN", email: "admin@dvla.gov.gh" });
+        }
+      } catch (e) {
+        setUserSession({ username: "admin", name: "System Administrator", role: "SUPERADMIN", email: "admin@dvla.gov.gh" });
+      }
+    };
+
+    loadSession();
+    window.addEventListener("dvla_session_change", loadSession);
+    return () => window.removeEventListener("dvla_session_change", loadSession);
+  }, []);
+
+  const handleRoleChange = (newRole: string) => {
+    let name = "System Administrator";
+    let username = "admin";
+
+    if (newRole === "SUPERVISOR") {
+      name = "Adenta Licensing Officer";
+      username = "dvla_officer";
+    } else if (newRole === "DATA_ENTRY") {
+      name = "Police Transport Controller";
+      username = "police_ops";
+    }
+
+    const updated = {
+      username,
+      name,
+      role: newRole,
+      email: `${username}@dvla.gov.gh`,
+    };
+
+    setUserSession(updated);
+    localStorage.setItem("dvla_session", JSON.stringify(updated));
+    window.dispatchEvent(new Event("dvla_session_change"));
+  };
+
   const pageTitle = LABELS[pathname] ?? "Dashboard";
+  const orgName = (userSession as any)?.organization?.name || "DVLA HQ";
 
   return (
     <header className="sticky top-0 z-30 flex items-center gap-4 px-5 h-16 bg-white border-b border-[#e8edf5] shrink-0"
@@ -39,7 +85,7 @@ export default function Topbar({ onMobileMenuOpen }: TopbarProps) {
         <div className="flex items-center gap-1.5 text-[10px] text-[#b0bbd6] uppercase tracking-widest font-medium">
           <span>DVLA</span>
           <span>/</span>
-          <span>Adenta</span>
+          <span>{orgName}</span>
           <span>/</span>
           <span style={{ color: "#81B71A" }}>{pageTitle}</span>
         </div>
@@ -48,7 +94,7 @@ export default function Topbar({ onMobileMenuOpen }: TopbarProps) {
           <span className="hidden lg:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest"
             style={{ background: "rgba(129,183,26,0.1)", color: "#3d6b08", border: "1px solid rgba(129,183,26,0.2)" }}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#81B71A" }} />
-            Adenta Branch
+            {orgName}
           </span>
         </div>
       </div>
@@ -87,18 +133,36 @@ export default function Topbar({ onMobileMenuOpen }: TopbarProps) {
         {/* Divider */}
         <div className="w-px h-6 mx-1" style={{ background: "#e8edf5" }} />
 
-        {/* User pill */}
-        <button className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-lg transition-colors hover:bg-[#f4f6fb]">
+        {/* Role Switcher Dropdown for Testing */}
+        <div className="flex items-center gap-1.5 bg-[#f4f6fb] px-2.5 py-1 rounded-lg border border-[#e8edf5]">
+          <span className="text-[10px] font-bold text-[#6b7a99] uppercase tracking-wider hidden md:inline">Role:</span>
+          <select
+            value={userSession?.role?.toUpperCase() || "SUPERADMIN"}
+            onChange={(e) => handleRoleChange(e.target.value)}
+            className="bg-transparent text-xs font-black text-[#1a2e05] outline-none cursor-pointer"
+          >
+            <option value="SUPERADMIN">SuperAdmin</option>
+            <option value="SUPERVISOR">Supervisor (Admin)</option>
+            <option value="DATA_ENTRY">Data Entry (Booking)</option>
+          </select>
+        </div>
+
+        {/* Divider */}
+        <div className="w-px h-6 mx-1" style={{ background: "#e8edf5" }} />
+
+        {/* User Profile Pill */}
+        <div className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-lg">
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 border-2"
             style={{ background: "#81B71A", borderColor: "#6a9a15" }}>
-            A
+            {userSession?.name ? userSession.name.charAt(0).toUpperCase() : "A"}
           </div>
           <div className="hidden sm:block text-left">
-            <p className="text-xs font-semibold leading-none" style={{ color: "#1a2e05" }}>Admin</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "#9aa3be" }}>Adenta Branch Officer</p>
+            <p className="text-xs font-semibold leading-none" style={{ color: "#1a2e05" }}>{userSession?.name || "Administrator"}</p>
+            <p className="text-[10px] font-bold mt-0.5" style={{ color: userSession?.role === "SUPERADMIN" ? "#ef4444" : userSession?.role === "SUPERVISOR" ? "#f59e0b" : "#3b82f6" }}>
+              {userSession?.role === "SUPERADMIN" ? "SuperAdmin" : userSession?.role === "SUPERVISOR" ? "Supervisor (Admin)" : "Data Entry"}
+            </p>
           </div>
-          <ChevronIcon size={12} />
-        </button>
+        </div>
       </div>
     </header>
   );

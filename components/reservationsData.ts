@@ -1,7 +1,7 @@
 export interface Reservation {
   id: string;
   type: "Single" | "Range";
-  platePattern?: string; // For single plate, e.g., "AD 1111-26"
+  platePattern?: string; // For single plate, e.g., "AB 1111-AD"
   rangeStart?: number;   // For range block, e.g., 9000
   rangeEnd?: number;     // For range block, e.g., 9099
   prefix: string;        // e.g., "AD"
@@ -14,49 +14,45 @@ export interface Reservation {
   totalCount: number;
 }
 
-export const INITIAL_RESERVATIONS: Reservation[] = [
-  {
-    id: "res-1",
-    type: "Range",
-    rangeStart: 9000,
-    rangeEnd: 9099,
-    prefix: "AD",
-    year: "26",
-    holder: "State House VIP Fleet",
-    authRef: "DVLA-HQ-RES-9022",
-    expiryDate: "2028-05-21",
-    status: "Active",
-    claimedCount: 15,
-    totalCount: 100,
-  },
-  {
-    id: "res-2",
-    type: "Range",
-    rangeStart: 8500,
-    rangeEnd: 8550,
-    prefix: "AD",
-    year: "26",
-    holder: "Ghana Police Service Fleet",
-    authRef: "GPS-OPS-2026-85",
-    expiryDate: "2026-06-25",
-    status: "Alert",
-    claimedCount: 35,
-    totalCount: 50,
-  },
-  {
-    id: "res-3",
-    type: "Single",
-    platePattern: "AD 1111-26",
-    prefix: "AD",
-    year: "26",
-    holder: "Otumfuo Osei Tutu II (Vanity)",
-    authRef: "DVLA-ROYAL-001",
-    expiryDate: "2028-01-10",
-    status: "Active",
-    claimedCount: 0,
-    totalCount: 1,
+export const INITIAL_RESERVATIONS: Reservation[] = [];
+
+/**
+ * Fetches reservations from the Prisma database API.
+ */
+export async function fetchReservationsFromDB(): Promise<Reservation[]> {
+  try {
+    const res = await fetch("/api/reservations");
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        saveStoredReservations(data);
+        return data;
+      }
+    }
+  } catch (e) {
+    console.error("Failed to fetch reservations from DB API:", e);
   }
-];
+  return getStoredReservations();
+}
+
+/**
+ * Creates a new reservation in the database via API.
+ */
+export async function createReservationInDB(reservation: Partial<Reservation>): Promise<Reservation | null> {
+  try {
+    const res = await fetch("/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reservation),
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.error("Failed to create reservation in DB:", e);
+  }
+  return null;
+}
 
 /**
  * Gets reservations from localStorage on client-side, falling back to INITIAL_RESERVATIONS

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -22,6 +22,7 @@ export interface NavItem {
   href?: string;
   icon: any;
   subItems?: NavSubItem[];
+  superAdminOnly?: boolean;
 }
 
 export interface NavSection {
@@ -33,21 +34,32 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "Main",
     items: [
-      { label: "Dashboard",      href: "/dashboard",               icon: DashIcon },
-      { label: "Booking",        href: "/dashboard/booking",       icon: BookingIcon },
-      { label: "Vehicle Plates", href: "/dashboard/plates", icon: PlateIcon },
+      { label: "Dashboard", href: "/dashboard", icon: DashIcon },
+      { label: "New Booking", href: "/dashboard/booking", icon: BookingIcon },
+      { label: "Booking History", href: "/dashboard/bookings", icon: HistoryIcon },
+      {
+        label: "Vehicle Plates",
+        icon: PlateIcon,
+        subItems: [
+          { label: "All Plates", href: "/dashboard/plates" },
+          { label: "Reserved Plates", href: "/dashboard/plates/reserved" },
+          { label: "Inventory", href: "/dashboard/plates/inventory" },
+        ],
+      },
+      { label: "Plate Issuance", href: "/dashboard/pickup", icon: PickupIcon },
     ],
   },
   {
     title: "Analytics",
     items: [
-      { label: "Reports",   href: "/dashboard/reports", icon: ChartIcon },
-      { label: "Audit Log", href: "/dashboard/audit",   icon: LogIcon },
+      { label: "Reports", href: "/dashboard/reports", icon: ChartIcon },
+      { label: "Audit Log", href: "/dashboard/audit", icon: LogIcon },
     ],
   },
   {
     title: "System",
     items: [
+      { label: "Organizations", href: "/dashboard/organizations", icon: OrgIcon, superAdminOnly: true },
       { label: "Settings", href: "/dashboard/settings", icon: SettingsIcon },
       { label: "Help & Workflow", href: "/dashboard/help", icon: HelpIcon },
     ],
@@ -55,15 +67,63 @@ const NAV_SECTIONS: NavSection[] = [
 ];
 
 /* Brand palette */
-const GREEN  = "#81B71A";
+const GREEN = "#81B71A";
 const DKGREEN = "#6a9a15";   /* hover / active bg */
 
 function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = usePathname();
-  const router   = useRouter();
+  const router = useRouter();
 
   const isPlatesActive = pathname.startsWith("/dashboard/plates");
   const [platesExpanded, setPlatesExpanded] = useState(isPlatesActive);
+  const [userSession, setUserSession] = useState<{ name: string; role: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    const loadSession = () => {
+      try {
+        const stored = localStorage.getItem("dvla_session");
+        if (stored) {
+          setUserSession(JSON.parse(stored));
+        } else {
+          setUserSession({ name: "System Administrator", role: "SUPERADMIN", email: "admin@dvla.gov.gh" });
+        }
+      } catch (err) {
+        setUserSession({ name: "System Administrator", role: "SUPERADMIN", email: "admin@dvla.gov.gh" });
+      }
+    };
+
+    loadSession();
+    window.addEventListener("dvla_session_change", loadSession);
+    return () => window.removeEventListener("dvla_session_change", loadSession);
+  }, []);
+
+  const role = userSession?.role?.toUpperCase() || "SUPERADMIN";
+
+  const dataEntryAllowed = new Set([
+    "/dashboard/booking",
+    "/dashboard/bookings",
+    "/dashboard/plates",
+    "/dashboard/plates/reserved",
+    "/dashboard/pickup",
+    "/dashboard/help",
+  ]);
+
+  const isItemAllowed = (item: NavItem) => {
+    if (item.superAdminOnly && role !== "SUPERADMIN") return false;
+    if (role === "DATA_ENTRY") {
+      if (item.href && dataEntryAllowed.has(item.href)) return true;
+      if (item.subItems?.some((sub) => dataEntryAllowed.has(sub.href))) return true;
+      return false;
+    }
+    if (role === "SUPERVISOR" && item.href === "/dashboard/settings") return false;
+    return true;
+  };
+
+  // Filter navigation items by user role
+  const filteredSections = NAV_SECTIONS.map((sec) => {
+    const filteredItems = sec.items.filter(isItemAllowed);
+    return { ...sec, items: filteredItems };
+  }).filter((sec) => sec.items.length > 0);
 
   return (
     <div className="h-full flex flex-col relative"
@@ -89,7 +149,7 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
             <span className="w-1 h-1 rounded-full shrink-0" style={{ background: "#81B71A" }} />
             <span className="text-[9px] font-bold tracking-widest uppercase whitespace-nowrap"
               style={{ color: "#81B71A" }}>
-              Adenta Branch
+              DVLA HQ
             </span>
           </div>
         </div>
@@ -97,7 +157,7 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
 
       {/* ── Nav ── */}
       <nav className={`flex-1 py-4 px-2 space-y-5 ${collapsed ? "overflow-visible" : "overflow-y-auto"}`}>
-        {NAV_SECTIONS.map((section) => (
+        {filteredSections.map((section) => (
           <div key={section.title}>
             {!collapsed && (
               <p className="px-3 mb-1.5 text-[10px] font-bold tracking-widest uppercase"
@@ -148,7 +208,7 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
                           style={{ opacity: active ? 1 : 0.75 }}>
                           {item.label}
                         </span>
-                        
+
                         {!collapsed && (
                           <span className="shrink-0 transition-transform duration-200" style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}>
                             <ChevronDownIcon size={14} />
@@ -164,20 +224,20 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
                         {/* Collapsed tooltip / floating submenu popover */}
                         {collapsed && (
                           <div className="absolute left-full top-0 ml-3 py-1.5 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 flex flex-col z-50 min-w-[190px] border"
-                               style={{ background: "linear-gradient(135deg, #0d1a03 0%, #1a2e05 100%)", borderColor: "rgba(129,183,26,0.3)" }}>
+                            style={{ background: "linear-gradient(135deg, #0d1a03 0%, #1a2e05 100%)", borderColor: "rgba(129,183,26,0.3)" }}>
                             <div className="px-3 py-1.5 border-b text-[10px] font-bold uppercase tracking-wider"
-                                 style={{ color: "rgba(255,255,255,0.45)", borderColor: "rgba(255,255,255,0.1)" }}>
+                              style={{ color: "rgba(255,255,255,0.45)", borderColor: "rgba(255,255,255,0.1)" }}>
                               {item.label}
                             </div>
                             {item.subItems!.map((sub) => {
                               const subActive = pathname === sub.href;
                               return (
                                 <Link key={sub.href} href={sub.href}
-                                      className="px-3.5 py-2 text-xs font-medium transition-all hover:bg-white/10 text-left"
-                                      style={{
-                                        color: subActive ? "#81B71A" : "rgba(255,255,255,0.75)",
-                                        background: subActive ? "rgba(255,255,255,0.06)" : "transparent"
-                                      }}>
+                                  className="px-3.5 py-2 text-xs font-medium transition-all hover:bg-white/10 text-left"
+                                  style={{
+                                    color: subActive ? "#81B71A" : "rgba(255,255,255,0.75)",
+                                    background: subActive ? "rgba(255,255,255,0.06)" : "transparent"
+                                  }}>
                                   {sub.label}
                                 </Link>
                               );
@@ -185,7 +245,7 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
                           </div>
                         )}
                       </button>
-                      
+
                       {/* Submenu items list */}
                       {isExpanded && (
                         <div className="mt-1 ml-6 pl-3 border-l space-y-1" style={{ borderColor: "rgba(255,255,255,0.2)" }}>
@@ -193,17 +253,17 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
                             const subActive = pathname === sub.href;
                             return (
                               <Link key={sub.href} href={sub.href}
-                                    className="flex items-center py-2 px-3 text-xs rounded-md transition-all font-medium relative group"
-                                    style={{
-                                      color: subActive ? "white" : "rgba(255,255,255,0.65)",
-                                      background: subActive ? "rgba(255,255,255,0.15)" : "transparent",
-                                    }}>
+                                className="flex items-center py-2 px-3 text-xs rounded-md transition-all font-medium relative group"
+                                style={{
+                                  color: subActive ? "white" : "rgba(255,255,255,0.65)",
+                                  background: subActive ? "rgba(255,255,255,0.15)" : "transparent",
+                                }}>
                                 <span className="text-xs font-medium whitespace-nowrap overflow-hidden transition-all duration-300 inline-block">
                                   {sub.label}
                                 </span>
                                 {!subActive && (
                                   <span className="absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                                        style={{ background: "rgba(255,255,255,0.06)" }} />
+                                    style={{ background: "rgba(255,255,255,0.06)" }} />
                                 )}
                               </Link>
                             );
@@ -261,20 +321,26 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
       {/* ── User ── */}
       <div className="shrink-0 px-2 pb-4 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.2)" }}>
         <div className="flex items-center rounded-lg transition-all duration-300"
-          style={{ 
+          style={{
             background: "rgba(255,255,255,0.15)",
             padding: collapsed ? "10px" : "10px 12px",
             gap: collapsed ? "0px" : "12px"
           }}>
           <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0
-            text-sm font-bold border-2 border-white"
+            text-xs font-bold border-2 border-white"
             style={{ background: DKGREEN, color: "white" }}>
-            A
+            {userSession?.name ? userSession.name.charAt(0).toUpperCase() : "A"}
           </div>
           <div className={`flex-1 overflow-hidden transition-all duration-300 flex flex-col justify-center
             ${collapsed ? "max-w-0 opacity-0 pointer-events-none" : "max-w-40 opacity-100"}`}>
-            <p className="text-white text-xs font-semibold truncate leading-none">Administrator</p>
-            <p className="text-[10px] truncate mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>adenta@dvla.gov.gh</p>
+            <p className="text-white text-xs font-semibold truncate leading-none">{userSession?.name || "Administrator"}</p>
+            <span className="text-[9px] font-extrabold uppercase tracking-wider mt-1 px-1.5 py-0.5 rounded w-max"
+                  style={{ 
+                    background: role === "SUPERADMIN" ? "#ef4444" : role === "SUPERVISOR" ? "#f59e0b" : "#3b82f6", 
+                    color: "white" 
+                  }}>
+              {role === "SUPERADMIN" ? "SuperAdmin" : role === "SUPERVISOR" ? "Supervisor" : "Data Entry"}
+            </span>
           </div>
           {!collapsed && (
             <button onClick={() => router.push("/login")} title="Sign out"
@@ -395,6 +461,35 @@ function BookingIcon({ size = 20 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+  );
+}
+
+function PickupIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+      <path d="M16 11h6M19 8v6" />
+    </svg>
+  );
+}
+
+function HistoryIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function OrgIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="2" />
+      <path d="M9 22v-4h6v4" />
+      <path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01" />
     </svg>
   );
 }

@@ -3,71 +3,116 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getStoredReservations, checkPlateReservation, saveStoredReservations, Reservation } from "../../../components/reservationsData";
-import { VRS_INVOICES } from "../../../components/vrsData";
+import { DigitalPlate, PlateCategory } from "@/components/DigitalPlate";
 
 /* ─── Static reference data ─── */
 
 const BOOKING_TYPES = [
-  { id: "REGISTRATION",         label: "Registration",                              sub: "New plate issuance", icon: BookingNewIcon      },
-  { id: "REG_SPECIAL",          label: "Registration + Special Number",                            sub: "Custom plate request", icon: BookingStarIcon   },
-  { id: "REG_TRANSFER",         label: "Registration & Transfer",                   sub: "Ownership change",   icon: BookingTransferIcon },
-  { id: "REG_TRANSFER_SPECIAL", label: "Registration Transfer + Special Number",                        sub: "Transfer with custom", icon: BookingComboIcon  },
+  { id: "REGISTRATION", label: "Registration", sub: "New plate issuance", icon: BookingNewIcon },
+  { id: "REG_SPECIAL", label: "Registration + Special Number", sub: "Custom plate request", icon: BookingStarIcon },
+  { id: "REG_TRANSFER", label: "Registration & Transfer", sub: "Ownership change", icon: BookingTransferIcon },
+  { id: "REG_TRANSFER_SPECIAL", label: "Registration Transfer + Special Number", sub: "Transfer with custom", icon: BookingComboIcon },
 ];
 
 const CLASSIFICATIONS = [
-  { id: "PRIVATE",    label: "Private",    sub: "Personal vehicle",   icon: ClassPrivateIcon    },
-  { id: "COMMERCIAL", label: "Commercial", sub: "Trade / freight",    icon: ClassCommercialIcon },
-  { id: "EQUIPMENT",  label: "Equipment",  sub: "Machinery / plant",  icon: ClassEquipmentIcon  },
-  { id: "GOVERNMENT", label: "Government", sub: "State / ministry",   icon: ClassGovIcon        },
+  { id: "PRIVATE", label: "Private", sub: "Personal vehicle (White plate)", icon: ClassPrivateIcon },
+  { id: "COMMERCIAL", label: "Commercial", sub: "Taxis, buses, transport (Yellow plate)", icon: ClassCommercialIcon },
+  { id: "ELECTRIC", label: "Electric Vehicle (EV)", sub: "Green EV left-side block plate", icon: ClassGovIcon },
+  { id: "GOVERNMENT", label: "Government", sub: "Government ministries (GV split plate)", icon: ClassGovIcon },
+  { id: "TRAILER", label: "Trailer", sub: "Yellow T left-side block plate", icon: ClassCommercialIcon },
+  { id: "MOTORCYCLE", label: "Motorcycle", sub: "Light blue 2-row motorcycle plate", icon: ClassPrivateIcon },
+  { id: "TEMPORARY", label: "Temporary Sticker", sub: "Blue/Black TMP sticker plate", icon: ClassPrivateIcon },
+  { id: "AGRICULTURAL", label: "Agricultural", sub: "Farm equipment & tractors", icon: ClassEquipmentIcon },
 ];
 
 const BODY_TYPES = [
-  { id: "Saloon",                label: "Saloon",    icon: BodySaloonIcon    },
-  { id: "Hatchback",             label: "Hatchback", icon: BodyHatchIcon     },
-  { id: "SUV / Station Wagon",   label: "SUV / 4WD", icon: BodySUVIcon       },
-  { id: "Pickup / Truck",        label: "Pickup",    icon: BodyPickupIcon    },
-  { id: "Minibus / Van",         label: "Minibus",   icon: BodyMinibusIcon   },
-  { id: "Bus",                   label: "Bus",       icon: BodyBusIcon       },
-  { id: "Equipment / Machinery", label: "Equipment", icon: BodyEquipIcon     },
+  { id: "Saloon", label: "Saloon", icon: BodySaloonIcon },
+  { id: "Hatchback", label: "Hatchback", icon: BodyHatchIcon },
+  { id: "SUV / Station Wagon", label: "SUV / 4WD", icon: BodySUVIcon },
+  { id: "Pickup / Truck", label: "Pickup", icon: BodyPickupIcon },
+  { id: "Minibus / Van", label: "Minibus", icon: BodyMinibusIcon },
+  { id: "Bus", label: "Bus", icon: BodyBusIcon },
+  { id: "Equipment / Machinery", label: "Equipment", icon: BodyEquipIcon },
 ];
 
 const FUEL_TYPES = [
-  { id: "PETROL",   label: "Petrol",   icon: FuelPetrolIcon   },
-  { id: "DIESEL",   label: "Diesel",   icon: FuelDieselIcon   },
+  { id: "PETROL", label: "Petrol", icon: FuelPetrolIcon },
+  { id: "DIESEL", label: "Diesel", icon: FuelDieselIcon },
   { id: "ELECTRIC", label: "Electric", icon: FuelElectricIcon },
 ];
 
 interface VehiclePreset {
-  label: string; make: string; model: string; engineCC: string;
+  label: string; year: string; make: string; model: string; engineCC: string;
   cylinders: string; bodyType: string; netWeight: string;
   grossWeight: string; tyreW: string; tyreDia: string; fuelType: string;
 }
 
 const VEHICLE_PRESETS: VehiclePreset[] = [
-  { label: "Toyota Corolla",       make: "Toyota",        model: "Corolla",        engineCC: "1800",           cylinders: "4",   bodyType: "Saloon",               netWeight: "1190", grossWeight: "1560", tyreW: "195", tyreDia: "15", fuelType: "PETROL"   },
-  { label: "Toyota Camry",         make: "Toyota",        model: "Camry",          engineCC: "2500",           cylinders: "4",   bodyType: "Saloon",               netWeight: "1590", grossWeight: "2095", tyreW: "215", tyreDia: "17", fuelType: "PETROL"   },
-  { label: "Toyota Land Cruiser",  make: "Toyota",        model: "Land Cruiser V8",engineCC: "4500",           cylinders: "8",   bodyType: "SUV / Station Wagon",  netWeight: "2630", grossWeight: "3300", tyreW: "285", tyreDia: "18", fuelType: "DIESEL"   },
-  { label: "Toyota Hilux",         make: "Toyota",        model: "Hilux",          engineCC: "2800",           cylinders: "4",   bodyType: "Pickup / Truck",       netWeight: "1920", grossWeight: "3200", tyreW: "265", tyreDia: "17", fuelType: "DIESEL"   },
-  { label: "Toyota Fortuner",      make: "Toyota",        model: "Fortuner",       engineCC: "2700",           cylinders: "4",   bodyType: "SUV / Station Wagon",  netWeight: "1920", grossWeight: "2560", tyreW: "265", tyreDia: "17", fuelType: "DIESEL"   },
-  { label: "Hyundai Tucson",       make: "Hyundai",       model: "Tucson",         engineCC: "2000",           cylinders: "4",   bodyType: "SUV / Station Wagon",  netWeight: "1680", grossWeight: "2145", tyreW: "225", tyreDia: "17", fuelType: "PETROL"   },
-  { label: "Hyundai Santa Fe",     make: "Hyundai",       model: "Santa Fe",       engineCC: "2200",           cylinders: "4",   bodyType: "SUV / Station Wagon",  netWeight: "1830", grossWeight: "2510", tyreW: "235", tyreDia: "18", fuelType: "DIESEL"   },
-  { label: "Nissan Patrol",        make: "Nissan",        model: "Patrol",         engineCC: "4000",           cylinders: "6",   bodyType: "SUV / Station Wagon",  netWeight: "2280", grossWeight: "2890", tyreW: "265", tyreDia: "17", fuelType: "PETROL"   },
-  { label: "Nissan Navara",        make: "Nissan",        model: "Navara",         engineCC: "2500",           cylinders: "4",   bodyType: "Pickup / Truck",       netWeight: "1960", grossWeight: "2910", tyreW: "255", tyreDia: "17", fuelType: "DIESEL"   },
-  { label: "Kia Sportage",         make: "Kia",           model: "Sportage",       engineCC: "2000",           cylinders: "4",   bodyType: "SUV / Station Wagon",  netWeight: "1610", grossWeight: "2090", tyreW: "225", tyreDia: "17", fuelType: "PETROL"   },
-  { label: "Kia Sorento",          make: "Kia",           model: "Sorento",        engineCC: "2200",           cylinders: "4",   bodyType: "SUV / Station Wagon",  netWeight: "1850", grossWeight: "2560", tyreW: "235", tyreDia: "18", fuelType: "DIESEL"   },
-  { label: "Mercedes E-Class",     make: "Mercedes-Benz", model: "E-Class",        engineCC: "2000",           cylinders: "4",   bodyType: "Saloon",               netWeight: "1720", grossWeight: "2195", tyreW: "225", tyreDia: "17", fuelType: "PETROL"   },
-  { label: "Isuzu D-Max",          make: "Isuzu",         model: "D-Max",          engineCC: "3000",           cylinders: "4",   bodyType: "Pickup / Truck",       netWeight: "1985", grossWeight: "3370", tyreW: "265", tyreDia: "17", fuelType: "DIESEL"   },
-  { label: "VW Golf",              make: "Volkswagen",    model: "Golf",           engineCC: "1400",           cylinders: "4",   bodyType: "Hatchback",            netWeight: "1260", grossWeight: "1735", tyreW: "205", tyreDia: "16", fuelType: "PETROL"   },
-  { label: "Ford Ranger",          make: "Ford",          model: "Ranger",         engineCC: "2000",           cylinders: "4",   bodyType: "Pickup / Truck",       netWeight: "1950", grossWeight: "3150", tyreW: "265", tyreDia: "17", fuelType: "DIESEL"   },
-  { label: "Jetour Dashing",       make: "Jetour",        model: "Dashing",        engineCC: "1498",           cylinders: "4",   bodyType: "SUV / Station Wagon",  netWeight: "1535", grossWeight: "1888", tyreW: "235", tyreDia: "19", fuelType: "PETROL"   },
-  { label: "Jetour X70",           make: "Jetour",        model: "X70",            engineCC: "1498",           cylinders: "4",   bodyType: "SUV / Station Wagon",  netWeight: "1560", grossWeight: "1930", tyreW: "235", tyreDia: "18", fuelType: "PETROL"   },
-  { label: "Jetour T2 / Traveller",make: "Jetour",        model: "Traveller T2",   engineCC: "1998",           cylinders: "4",   bodyType: "SUV / Station Wagon",  netWeight: "1880", grossWeight: "2255", tyreW: "255", tyreDia: "20", fuelType: "PETROL"   },
-  { label: "Tesla Model Y",        make: "Tesla",         model: "Model Y",        engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon",  netWeight: "1910", grossWeight: "2405", tyreW: "255", tyreDia: "19", fuelType: "ELECTRIC" },
-  { label: "Tesla Model 3",        make: "Tesla",         model: "Model 3",        engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "Saloon",               netWeight: "1760", grossWeight: "2200", tyreW: "235", tyreDia: "18", fuelType: "ELECTRIC" },
-  { label: "BYD Atto 3",           make: "BYD",           model: "Atto 3",         engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon",  netWeight: "1750", grossWeight: "2160", tyreW: "215", tyreDia: "18", fuelType: "ELECTRIC" },
-  { label: "Hyundai Ioniq 5",      make: "Hyundai",       model: "Ioniq 5",        engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon",  netWeight: "2020", grossWeight: "2540", tyreW: "235", tyreDia: "19", fuelType: "ELECTRIC" },
-  { label: "Audi e-tron",          make: "Audi",          model: "e-tron",         engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon",  netWeight: "2490", grossWeight: "3130", tyreW: "255", tyreDia: "20", fuelType: "ELECTRIC" },
-  { label: "Honda Civic",          make: "Honda",         model: "Civic",          engineCC: "1500",           cylinders: "4",   bodyType: "Saloon",               netWeight: "1340", grossWeight: "1760", tyreW: "215", tyreDia: "17", fuelType: "PETROL"   },
+  // 2025 Models
+  { label: "Toyota Camry", year: "2025", make: "Toyota", model: "Camry", engineCC: "2500", cylinders: "4", bodyType: "Saloon", netWeight: "1590", grossWeight: "2095", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Toyota Corolla", year: "2025", make: "Toyota", model: "Corolla", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1350", grossWeight: "1790", tyreW: "215", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Honda CR-V", year: "2025", make: "Honda", model: "CR-V", engineCC: "1500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1630", grossWeight: "2150", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Honda Accord", year: "2025", make: "Honda", model: "Accord", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1480", grossWeight: "1920", tyreW: "225", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Ford Explorer", year: "2025", make: "Ford", model: "Explorer", engineCC: "2300", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1970", grossWeight: "2790", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Ford Mustang", year: "2025", make: "Ford", model: "Mustang", engineCC: "5000", cylinders: "8", bodyType: "Coupe", netWeight: "1720", grossWeight: "2150", tyreW: "255", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Tesla Model Y", year: "2025", make: "Tesla", model: "Model Y", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon", netWeight: "1910", grossWeight: "2405", tyreW: "255", tyreDia: "19", fuelType: "ELECTRIC" },
+  { label: "Hyundai Santa Fe", year: "2025", make: "Hyundai", model: "Santa Fe", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1830", grossWeight: "2510", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Kia Telluride", year: "2025", make: "Kia", model: "Telluride", engineCC: "3800", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "1980", grossWeight: "2640", tyreW: "245", tyreDia: "20", fuelType: "PETROL" },
+  { label: "BMW X5", year: "2025", make: "BMW", model: "X5", engineCC: "3000", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2100", grossWeight: "2850", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
+  { label: "BMW 3 Series", year: "2025", make: "BMW", model: "3 Series", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1620", grossWeight: "2100", tyreW: "225", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Mercedes GLE", year: "2025", make: "Mercedes-Benz", model: "GLE", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2150", grossWeight: "2930", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Lexus RX", year: "2025", make: "Lexus", model: "RX 350", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1950", grossWeight: "2600", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Nissan Rogue", year: "2025", make: "Nissan", model: "Rogue", engineCC: "1500", cylinders: "3", bodyType: "SUV / Station Wagon", netWeight: "1620", grossWeight: "2080", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Nissan Altima", year: "2025", make: "Nissan", model: "Altima", engineCC: "2500", cylinders: "4", bodyType: "Saloon", netWeight: "1510", grossWeight: "1950", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Volvo XC90", year: "2025", make: "Volvo", model: "XC90", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2120", grossWeight: "2980", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Porsche Macan", year: "2025", make: "Porsche", model: "Macan", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1850", grossWeight: "2510", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+
+  // 2024 Models
+  { label: "Toyota Land Cruiser", year: "2024", make: "Toyota", model: "Land Cruiser", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2200", grossWeight: "2950", tyreW: "265", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Toyota Tacoma", year: "2024", make: "Toyota", model: "Tacoma", engineCC: "2400", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1950", grossWeight: "2630", tyreW: "265", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Toyota Highlander", year: "2024", make: "Toyota", model: "Highlander", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1920", grossWeight: "2610", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Hyundai Tucson", year: "2024", make: "Hyundai", model: "Tucson", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1680", grossWeight: "2145", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Hyundai Sonata", year: "2024", make: "Hyundai", model: "Sonata", engineCC: "2500", cylinders: "4", bodyType: "Saloon", netWeight: "1480", grossWeight: "1940", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Kia Sportage", year: "2024", make: "Kia", model: "Sportage", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1610", grossWeight: "2090", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Kia K5", year: "2024", make: "Kia", model: "K5", engineCC: "1600", cylinders: "4", bodyType: "Saloon", netWeight: "1450", grossWeight: "1910", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Honda Civic", year: "2024", make: "Honda", model: "Civic", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1340", grossWeight: "1760", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Honda Pilot", year: "2024", make: "Honda", model: "Pilot", engineCC: "3500", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2020", grossWeight: "2680", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Subaru Outback", year: "2024", make: "Subaru", model: "Outback", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1650", grossWeight: "2220", tyreW: "225", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Mazda CX-50", year: "2024", make: "Mazda", model: "CX-50", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1680", grossWeight: "2200", tyreW: "225", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Jetour Dashing", year: "2024", make: "Jetour", model: "Dashing", engineCC: "1498", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1535", grossWeight: "1888", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Tesla Model 3", year: "2024", make: "Tesla", model: "Model 3", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "Saloon", netWeight: "1760", grossWeight: "2200", tyreW: "235", tyreDia: "18", fuelType: "ELECTRIC" },
+  { label: "Hyundai Ioniq 5", year: "2024", make: "Hyundai", model: "Ioniq 5", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon", netWeight: "2020", grossWeight: "2540", tyreW: "235", tyreDia: "19", fuelType: "ELECTRIC" },
+
+  // 2023 Models
+  { label: "Toyota Corolla", year: "2023", make: "Toyota", model: "Corolla", engineCC: "1800", cylinders: "4", bodyType: "Saloon", netWeight: "1190", grossWeight: "1560", tyreW: "195", tyreDia: "15", fuelType: "PETROL" },
+  { label: "Toyota Hilux", year: "2023", make: "Toyota", model: "Hilux", engineCC: "2800", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1920", grossWeight: "3200", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Toyota Fortuner", year: "2023", make: "Toyota", model: "Fortuner", engineCC: "2700", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1920", grossWeight: "2560", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Nissan Navara", year: "2023", make: "Nissan", model: "Navara", engineCC: "2500", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1960", grossWeight: "2910", tyreW: "255", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Nissan Pathfinder", year: "2023", make: "Nissan", model: "Pathfinder", engineCC: "3500", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2040", grossWeight: "2720", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Kia Sorento", year: "2023", make: "Kia", model: "Sorento", engineCC: "2200", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1850", grossWeight: "2560", tyreW: "235", tyreDia: "18", fuelType: "DIESEL" },
+  { label: "Mercedes E-Class", year: "2023", make: "Mercedes-Benz", model: "E-Class", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1720", grossWeight: "2195", tyreW: "245", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Mercedes C-Class", year: "2023", make: "Mercedes-Benz", model: "C-Class", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1650", grossWeight: "2150", tyreW: "225", tyreDia: "18", fuelType: "PETROL" },
+  { label: "VW Golf", year: "2023", make: "Volkswagen", model: "Golf", engineCC: "1400", cylinders: "4", bodyType: "Hatchback", netWeight: "1260", grossWeight: "1735", tyreW: "205", tyreDia: "16", fuelType: "PETROL" },
+  { label: "VW Tiguan", year: "2023", make: "Volkswagen", model: "Tiguan", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1620", grossWeight: "2150", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Ford Ranger", year: "2023", make: "Ford", model: "Ranger", engineCC: "2000", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1950", grossWeight: "3150", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Jetour X70", year: "2023", make: "Jetour", model: "X70", engineCC: "1498", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1560", grossWeight: "1930", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Jetour T2 / Traveller", year: "2023", make: "Jetour", model: "Traveller T2", engineCC: "1998", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1880", grossWeight: "2255", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
+
+  // 2022 & Older Models
+  { label: "Toyota Land Cruiser V8", year: "2022", make: "Toyota", model: "Land Cruiser V8", engineCC: "4500", cylinders: "8", bodyType: "SUV / Station Wagon", netWeight: "2630", grossWeight: "3300", tyreW: "285", tyreDia: "18", fuelType: "DIESEL" },
+  { label: "Toyota Prado", year: "2022", make: "Toyota", model: "Prado", engineCC: "2700", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2040", grossWeight: "2990", tyreW: "265", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Nissan Patrol", year: "2022", make: "Nissan", model: "Patrol", engineCC: "4000", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2280", grossWeight: "2890", tyreW: "265", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Isuzu D-Max", year: "2022", make: "Isuzu", model: "D-Max", engineCC: "3000", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1985", grossWeight: "3370", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Honda Accord", year: "2022", make: "Honda", model: "Accord", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1420", grossWeight: "1850", tyreW: "225", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Mitsubishi Pajero", year: "2021", make: "Mitsubishi", model: "Pajero", engineCC: "3200", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2350", grossWeight: "3030", tyreW: "265", tyreDia: "18", fuelType: "DIESEL" },
+  { label: "Mitsubishi L200", year: "2021", make: "Mitsubishi", model: "L200", engineCC: "2400", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1850", grossWeight: "2850", tyreW: "245", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Mazda CX-5", year: "2021", make: "Mazda", model: "CX-5", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1600", grossWeight: "2140", tyreW: "225", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Chevrolet Silverado", year: "2021", make: "Chevrolet", model: "Silverado", engineCC: "5300", cylinders: "8", bodyType: "Pickup / Truck", netWeight: "2250", grossWeight: "3175", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Chevrolet Tahoe", year: "2021", make: "Chevrolet", model: "Tahoe", engineCC: "5300", cylinders: "8", bodyType: "SUV / Station Wagon", netWeight: "2480", grossWeight: "3400", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Toyota RAV4", year: "2020", make: "Toyota", model: "RAV4", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1520", grossWeight: "2100", tyreW: "225", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Toyota Yaris", year: "2020", make: "Toyota", model: "Yaris", engineCC: "1500", cylinders: "4", bodyType: "Hatchback", netWeight: "1060", grossWeight: "1470", tyreW: "185", tyreDia: "15", fuelType: "PETROL" },
+  { label: "Hyundai Elantra", year: "2020", make: "Hyundai", model: "Elantra", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1310", grossWeight: "1750", tyreW: "205", tyreDia: "16", fuelType: "PETROL" },
+  { label: "Ford F-150", year: "2020", make: "Ford", model: "F-150", engineCC: "3500", cylinders: "6", bodyType: "Pickup / Truck", netWeight: "2220", grossWeight: "3130", tyreW: "275", tyreDia: "18", fuelType: "PETROL" },
 ];
 
 const TYRE_PRESETS = [
@@ -83,24 +128,18 @@ const TYRE_PRESETS = [
 
 const PLATE_REGION_MAP: [RegExp, string][] = [
   [/adenta|adentan|frafraha|oyibi|dodowa/i, "AD"],
-  [/greater accra|accra/i,                  "GR"],
-  [/ashanti|kumasi/i,                       "AS"],
-  [/western|takoradi/i,                     "WR"],
-  [/eastern|koforidua/i,                    "ER"],
-  [/northern|tamale/i,                      "NR"],
-  [/volta|ho\b/i,                           "VR"],
-  [/central|cape coast/i,                   "CR"],
-  [/brong|ahafo|sunyani/i,                  "BA"],
-  [/upper east|bolgatanga/i,                "UE"],
-  [/upper west|wa\b/i,                      "UW"],
+  [/greater accra|accra/i, "GR"],
+  [/ashanti|kumasi/i, "AS"],
+  [/western|takoradi/i, "WR"],
+  [/eastern|koforidua/i, "ER"],
+  [/northern|tamale/i, "NR"],
+  [/volta|ho\b/i, "VR"],
+  [/central|cape coast/i, "CR"],
+  [/brong|ahafo|sunyani/i, "BA"],
+  [/upper east|bolgatanga/i, "UE"],
+  [/upper west|wa\b/i, "UW"],
 ];
 
-function suggestPrefix(address: string): string | null {
-  for (const [rx, code] of PLATE_REGION_MAP) {
-    if (rx.test(address)) return code;
-  }
-  return null;
-}
 
 /* ── Design tokens ── */
 const INPUT =
@@ -140,15 +179,32 @@ function BookingDeskContent() {
 
   const searchParams = useSearchParams();
   const isPrefill = searchParams ? searchParams.get("prefill") === "1" : false;
+  const serviceParam = searchParams ? searchParams.get("service") : null;
+
+  /* ── Map service to booking type ── */
+  const getBookingTypeFromService = (service: string | null): string => {
+    if (!service) return "REGISTRATION";
+    if (service.includes("Special")) return "REG_SPECIAL";
+    if (service.includes("Transfer")) return "REG_TRANSFER";
+    if (service.includes("Customized")) return "REG_SPECIAL";
+    return "REGISTRATION";
+  };
+
+  const getClassificationFromService = (service: string | null): string => {
+    if (!service) return "PRIVATE";
+    if (service.includes("GV")) return "GOVERNMENT";
+    if (service.includes("CD")) return "GOVERNMENT"; // CD is diplomatic, treated similar to GV
+    return "PRIVATE";
+  };
 
   /* ── Selectors ── */
-  const [bookingType,    setBookingType]    = useState(() => {
+  const [bookingType, setBookingType] = useState(() => {
     if (isPrefill && searchParams) {
       const platePattern = searchParams.get("platePattern");
       const rangeStart = searchParams.get("rangeStart");
       if (platePattern || rangeStart) return "REG_SPECIAL";
     }
-    return "REGISTRATION";
+    return getBookingTypeFromService(serviceParam);
   });
 
   const [classification, setClassification] = useState(() => {
@@ -167,8 +223,10 @@ function BookingDeskContent() {
         }
       }
     }
-    return "PRIVATE";
+    return getClassificationFromService(serviceParam);
   });
+
+  const [selectedService] = useState(serviceParam || "");
 
   /* ── VRS Quick-Fill states ── */
   const [vrsInvoiceNo, setVrsInvoiceNo] = useState("");
@@ -177,29 +235,29 @@ function BookingDeskContent() {
   const [auditHighlightActive, setAuditHighlightActive] = useState(false);
 
   /* ── Owner ── */
-  const [regNo,        setRegNo]        = useState(() => {
+
+  const [regNo, setRegNo] = useState(() => {
     if (isPrefill && searchParams) {
       const platePattern = searchParams.get("platePattern");
       if (platePattern) return platePattern;
       const rangeStart = searchParams.get("rangeStart");
       if (rangeStart) {
-        const prefix = searchParams.get("prefix") || "AD";
-        const year = searchParams.get("year") || "26";
-        return `${prefix} ${rangeStart}-${year}`;
+        const prefix = searchParams.get("prefix") || "KX";
+        return `${prefix} ${rangeStart}-AD`;
       }
     }
     return "";
   });
 
-  const [ownerName,    setOwnerName]    = useState(() => {
+  const [ownerName, setOwnerName] = useState(() => {
     return isPrefill && searchParams ? (searchParams.get("holder") || "") : "";
   });
 
-  const [address,      setAddress]      = useState(() => {
+  const [address, setAddress] = useState(() => {
     return isPrefill ? "Adenta Municipal Area, Accra" : "";
   });
 
-  const [phone,        setPhone]        = useState(() => {
+  const [phone, setPhone] = useState(() => {
     return isPrefill ? "+233 24 123 4567" : "";
   });
 
@@ -209,16 +267,18 @@ function BookingDeskContent() {
   /* ── Vehicle specs ── */
   const [presetSearch, setPresetSearch] = useState("");
   const [activePreset, setActivePreset] = useState<string | null>(null);
-  const [make,         setMake]         = useState("");
-  const [yearModel,    setYearModel]    = useState("");
-  const [engineCC,     setEngineCC]     = useState("");
-  const [cylinders,    setCylinders]    = useState("4");
-  const [engineNo,     setEngineNo]     = useState("");
-  const [chassisNo,    setChassisNo]    = useState("");
-  const [bodyType,     setBodyType]     = useState("");
-  const [fuelType,     setFuelType]     = useState("PETROL");
-  const [netWeight,    setNetWeight]    = useState("");
-  const [grossWeight,  setGrossWeight]  = useState("");
+  const [selectedPresetYear, setSelectedPresetYear] = useState<string>("2025");
+  const [make, setMake] = useState("");
+  const [year, setYear] = useState("");
+  const [model, setModel] = useState("");
+  const [engineCC, setEngineCC] = useState("");
+  const [cylinders, setCylinders] = useState("4");
+  const [engineNo, setEngineNo] = useState("");
+  const [chassisNo, setChassisNo] = useState("");
+  const [bodyType, setBodyType] = useState("");
+  const [fuelType, setFuelType] = useState("PETROL");
+  const [netWeight, setNetWeight] = useState("");
+  const [grossWeight, setGrossWeight] = useState("");
 
   /* ── Tyres ── */
   const [tyreFW, setTyreFW] = useState("");
@@ -229,40 +289,50 @@ function BookingDeskContent() {
   const [tyreRD, setTyreRD] = useState("");
 
   /* ── Audit ── */
-  const [regDate,     setRegDate]     = useState("2026-05-19");
-  const [receiptNo,   setReceiptNo]   = useState("");
-  const [customsNo,   setCustomsNo]   = useState("");
+  const [regDate, setRegDate] = useState("2026-05-19");
+  const [receiptNo, setReceiptNo] = useState("");
+  const [customsNo, setCustomsNo] = useState("");
   const [customsDate, setCustomsDate] = useState("2026-05-19");
-  const [supervisor,  setSupervisor]  = useState("Eric");
+  const [supervisor, setSupervisor] = useState("Eric");
   const regOfficer = "A. Owusu";
 
   /* ── UI state ── */
-  const [isSuccess,    setIsSuccess]    = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
 
   const [reservations, setReservations] = useState<Reservation[]>([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    async function loadReservations() {
+      try {
+        const res = await fetch("/api/reservations");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setReservations(data);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load reservations from DB API:", e);
+      }
       setReservations(getStoredReservations());
-    }, 0);
-    return () => clearTimeout(timer);
+    }
+    loadReservations();
   }, []);
 
   const activeReservation = checkPlateReservation(regNo, reservations);
 
   const isTransfer = bookingType.startsWith("REG_TRANSFER");
-  const vinLen     = chassisNo.replace(/\s/g, "").length;
-  const vinValid   = vinLen === 17;
-  const prefixHint = suggestPrefix(address);
+  const vinLen = chassisNo.replace(/\s/g, "").length;
+  const vinValid = vinLen === 17;
 
-  const filteredPresets = VEHICLE_PRESETS.filter(p =>
-    p.label.toLowerCase().includes(presetSearch.toLowerCase())
-  );
+  const isSpecialOrCustomized = bookingType === "REG_SPECIAL" || bookingType === "REG_TRANSFER_SPECIAL";
+
 
   function applyPreset(p: VehiclePreset) {
     setActivePreset(p.label);
-    setMake(p.make); setYearModel(p.model); setEngineCC(p.engineCC);
+    setMake(p.make); setYear(p.year); setModel(p.model); setEngineCC(p.engineCC);
     setCylinders(p.cylinders); setBodyType(p.bodyType);
     setNetWeight(p.netWeight); setGrossWeight(p.grossWeight);
     setTyreFW(p.tyreW); setTyreFD(p.tyreDia);
@@ -272,9 +342,17 @@ function BookingDeskContent() {
   }
 
   function applyTyre(w: string, d: string, pos: "F" | "M" | "R" | "FR") {
-    if (pos === "F"  || pos === "FR") { setTyreFW(w); setTyreFD(d); }
-    if (pos === "M")                  { setTyreMW(w); setTyreMD(d); }
-    if (pos === "R"  || pos === "FR") { setTyreRW(w); setTyreRD(d); }
+    if (pos === "F" || pos === "FR") { setTyreFW(w); setTyreFD(d); }
+    if (pos === "M") { setTyreMW(w); setTyreMD(d); }
+    if (pos === "R" || pos === "FR") { setTyreRW(w); setTyreRD(d); }
+  }
+
+  function generateNewDVLAFormat() {
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const l1 = letters[Math.floor(Math.random() * letters.length)];
+    const l2 = letters[Math.floor(Math.random() * letters.length)];
+    const num = String(Math.floor(1000 + Math.random() * 9000)).padStart(4, "0");
+    return `${num}-AD${l1}${l2}`;
   }
 
   function handleAutofillSimulation() {
@@ -284,10 +362,11 @@ function BookingDeskContent() {
       setOwnerName("Ebenezer Kwabena Boateng");
       setAddress("House No. 12, Frafraha Junction, Adenta, Accra");
       setPhone("+233 24 489 0291");
-      setRegNo("AD 0824-26");
+      setRegNo(generateNewDVLAFormat());
       setEngineNo("SQRF4J20-291823");
       setChassisNo("JTEBU5JR8P2091837");
-      setYearModel("Traveller T2 2025");
+      setYear("2025");
+      setModel("Traveller T2");
       setReceiptNo("470260*****");
       setCustomsNo("470*****/**");
       setCustomsDate("2026-05-15");
@@ -306,7 +385,7 @@ function BookingDeskContent() {
     setOwnerName(""); setAddress(""); setPhone("");
     setOldOwnerName(""); setOldOwnerAddr("");
     setActivePreset(null);
-    setMake(""); setYearModel(""); setEngineCC(""); setEngineNo(""); setChassisNo("");
+    setMake(""); setYear(""); setModel(""); setEngineCC(""); setEngineNo(""); setChassisNo("");
     setBodyType(""); setNetWeight(""); setGrossWeight("");
     setTyreFW(""); setTyreFD(""); setTyreMW(""); setTyreMD(""); setTyreRW(""); setTyreRD("");
     setReceiptNo(""); setCustomsNo(""); setCustomsDate("2026-05-19"); setSupervisor("Eric");
@@ -317,55 +396,94 @@ function BookingDeskContent() {
     setAuditHighlightActive(false);
   }
 
-  function handleFetchVrs(invoiceNoToFetch: string) {
+  async function handleFetchVrs(invoiceNoToFetch: string) {
     if (!invoiceNoToFetch) return;
     setIsFetchingVrs(true);
     setVrsSuccessMessage("");
     setAuditHighlightActive(false);
 
-    setTimeout(() => {
-      const invoice = VRS_INVOICES.find(i => i.invoiceNo === invoiceNoToFetch.trim());
-      if (invoice) {
-        setBookingType(invoice.bookingType);
-        setClassification(invoice.classification);
-        setRegNo(invoice.regNo);
-        setOwnerName(invoice.ownerName);
-        setAddress(invoice.address);
-        setPhone(invoice.phone);
-        
-        setMake(invoice.make);
-        setYearModel(invoice.yearModel);
-        setEngineCC(invoice.engineCC);
-        setCylinders(invoice.cylinders);
-        setEngineNo(invoice.engineNo);
-        setChassisNo(invoice.chassisNo);
-        setBodyType(invoice.bodyType);
-        setFuelType(invoice.fuelType);
-        setNetWeight(invoice.netWeight);
-        setGrossWeight(invoice.grossWeight);
+    type VrsInvoice = {
+      invoiceNo: string;
+      bookingType: string;
+      classification: string;
+      regNo: string;
+      ownerName: string;
+      address: string;
+      phone: string;
+      make: string;
+      yearModel: string;
+      engineCC: string;
+      cylinders: string;
+      engineNo: string;
+      chassisNo: string;
+      bodyType: string;
+      fuelType: string;
+      netWeight: string;
+      grossWeight: string;
+      tyreFW: string;
+      tyreFD: string;
+      tyreMW: string;
+      tyreMD: string;
+      tyreRW: string;
+      tyreRD: string;
+    };
 
-        setTyreFW(invoice.tyreFW);
-        setTyreFD(invoice.tyreFD);
-        setTyreMW(invoice.tyreMW);
-        setTyreMD(invoice.tyreMD);
-        setTyreRW(invoice.tyreRW);
-        setTyreRD(invoice.tyreRD);
+    let invoice: VrsInvoice | null = null;
 
-        // Clear Step 4 Audit & Payment inputs so that the user is forced to fill them manually!
-        setReceiptNo("");
-        setCustomsNo("");
-        setCustomsDate("");
-
-        setVrsSuccessMessage(`🎉 VRS Invoice ${invoice.invoiceNo} successfully fetched! Steps 1, 2, and 3 have been auto-populated. Please complete Step 4 (Audit & Payment) manually below.`);
-        setAuditHighlightActive(true);
-      } else {
-        alert("Invoice not found in VRS. Please check the 14-digit invoice number (e.g. 40726012083437).");
+    try {
+      const res = await fetch(`/api/vrs?invoiceNo=${encodeURIComponent(invoiceNoToFetch.trim())}`);
+      if (res.ok) {
+        invoice = await res.json();
       }
-      setIsFetchingVrs(false);
-    }, 650);
+    } catch (err) {
+      console.error("VRS DB fetch failed:", err);
+    }
+
+
+
+    if (invoice) {
+      setBookingType(invoice.bookingType);
+      setClassification(invoice.classification);
+      setRegNo(invoice.regNo);
+      setOwnerName(invoice.ownerName);
+      setAddress(invoice.address);
+      setPhone(invoice.phone);
+
+      setMake(invoice.make);
+      const yearMatch = invoice.yearModel.match(/(\d{4})$/);
+      const extractedYear = yearMatch ? yearMatch[1] : "";
+      const extractedModel = yearMatch ? invoice.yearModel.replace(/\s*\d{4}$/, "") : invoice.yearModel;
+      setYear(extractedYear);
+      setModel(extractedModel);
+      setEngineCC(invoice.engineCC);
+      setCylinders(invoice.cylinders);
+      setEngineNo(invoice.engineNo);
+      setChassisNo(invoice.chassisNo);
+      setBodyType(invoice.bodyType);
+      setFuelType(invoice.fuelType);
+      setNetWeight(invoice.netWeight);
+      setGrossWeight(invoice.grossWeight);
+
+      setTyreFW(invoice.tyreFW);
+      setTyreFD(invoice.tyreFD);
+      setTyreMW(invoice.tyreMW);
+      setTyreMD(invoice.tyreMD);
+      setTyreRW(invoice.tyreRW);
+      setTyreRD(invoice.tyreRD);
+
+      setReceiptNo("");
+      setCustomsNo("");
+      setCustomsDate("");
+
+      setVrsSuccessMessage(`🎉 VRS Invoice ${invoice.invoiceNo} successfully fetched! Steps 1, 2, and 3 have been auto-populated. Please complete Step 4 (Audit & Payment) manually below.`);
+      setAuditHighlightActive(true);
+    } else {
+      alert("Invoice not found in VRS. Please check the 14-digit invoice number (e.g. 40726012083437).");
+    }
+    setIsFetchingVrs(false);
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const activeRes = checkPlateReservation(regNo, reservations);
     if (activeRes) {
@@ -381,6 +499,38 @@ function BookingDeskContent() {
       setReservations(updated);
       saveStoredReservations(updated);
     }
+
+    const fullPlate = regNo.trim();
+
+    try {
+      await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: bookingType,
+          status: "approved",
+          owner: ownerName || "Unknown Owner",
+          vehicle: `${make} ${model} (${year})`.trim() || "Vehicle",
+          plate: fullPlate || undefined,
+          date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+          classification: classification,
+        }),
+      });
+
+      // Log to audit trail
+      fetch("/api/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "PLATE_REGISTERED",
+          details: `VRS record filed for plate ${fullPlate || "N/A"} — Owner: ${ownerName || "Unknown"}, Vehicle: ${make} ${model} (${year}), Classification: ${classification}`,
+          performedBy: "admin",
+        }),
+      }).catch(() => { });
+    } catch (err) {
+      console.error("Error creating booking in DB:", err);
+    }
+
     setIsSuccess(true);
   }
 
@@ -404,12 +554,12 @@ function BookingDeskContent() {
             <div className="flex items-center gap-2 mb-2">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.55)" }} />
               <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 600 }}>
-                DVLA — Adenta Branch Digitization Desk
+                DVLA HQ Digitization Desk
               </p>
             </div>
-            <h2 className="text-white text-2xl font-extrabold tracking-tight">Filing &amp; Booking Desk</h2>
+            <h2 className="text-white text-2xl font-extrabold tracking-tight">VRS Record Booking</h2>
             <p style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.85rem", marginTop: "0.3rem" }}>
-              Use vehicle presets and quick-fill tools to log entries faster from the physical register.
+              Pull completed records from the VRS system using invoice numbers and file them into the digital logbook.
             </p>
           </div>
           <button type="button" onClick={handleAutofillSimulation} disabled={isSimulating}
@@ -446,7 +596,7 @@ function BookingDeskContent() {
             style={{ borderColor: "#d1dae8", background: "#f8faff" }}>
             <div className="text-center pb-3 border-b border-[#e8edf5]">
               <p className="font-bold text-xs uppercase text-[#1a2e05]">Driver &amp; Vehicle Licensing Authority (DVLA)</p>
-              <p className="text-[10px] font-semibold mt-0.5" style={{ color: "#81B71A" }}>Adenta Branch — Official Digital Filing Registry</p>
+              <p className="text-[10px] font-semibold mt-0.5" style={{ color: "#81B71A" }}>DVLA HQ — VRS Record Filing Confirmation</p>
             </div>
             <div className="grid grid-cols-2 gap-y-2 text-[#374167]">
               <span className="text-[#9aa3be]">SERVICE TYPE:</span>
@@ -471,7 +621,7 @@ function BookingDeskContent() {
                 </>
               )}
               <span className="text-[#9aa3be]">VEHICLE:</span>
-              <span className="font-bold">{make} {yearModel || "N/A"} ({fuelType})</span>
+              <span className="font-bold">{make} {model || "N/A"} {year && `(${year})`} ({fuelType})</span>
               <span className="text-[#9aa3be]">CHASSIS NO:</span>
               <span className="font-bold">{chassisNo || "N/A"}</span>
               <span className="text-[#9aa3be]">RECEIPT NO:</span>
@@ -486,7 +636,7 @@ function BookingDeskContent() {
               <span className="font-bold">{regDate}</span>
             </div>
             <div className="border-t border-[#e8edf5] pt-2.5 text-center text-[10px]" style={{ color: "#9aa3be" }}>
-              Adenta Branch · Book ID: 11851-A &nbsp;|&nbsp; Authorized by: {regOfficer}
+              DVLA HQ · Book ID: 11851-A &nbsp;|&nbsp; Authorized by: {regOfficer}
             </div>
           </div>
 
@@ -517,8 +667,8 @@ function BookingDeskContent() {
                 <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">VRS Auto-Population Success</h4>
                 <p className="text-[11px] font-semibold text-emerald-800 mt-0.5 leading-relaxed">{vrsSuccessMessage}</p>
               </div>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setVrsSuccessMessage("")}
                 className="text-emerald-500 hover:text-emerald-700 transition"
               >
@@ -529,141 +679,39 @@ function BookingDeskContent() {
             </div>
           )}
 
-          {/* VRS Live Integration Terminal Card */}
-          <div className="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl border border-slate-200 p-6 relative overflow-hidden shadow-md shadow-slate-100/50">
-            {/* Ambient background glow decoration */}
-            <div className="absolute -right-16 -top-16 w-36 h-36 rounded-full bg-[#81B71A]/5 blur-3xl pointer-events-none" />
-            <div className="absolute -left-16 -bottom-16 w-36 h-36 rounded-full bg-[#81B71A]/5 blur-3xl pointer-events-none" />
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 relative z-10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-lg shadow-slate-950/20">
-                  <svg className="w-5 h-5 text-[#81B71A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900 tracking-tight">VRS Integration Terminal</h3>
-                  <p className="text-[11px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">High-Speed Paid Invoice Filing Desk</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 self-start md:self-center">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span className="text-[9px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/50">
-                  VRS Live Database Connected
-                </span>
+          {/* VRS Integration Card */}
+          <div className="bg-white rounded-xl border border-[#e8edf5] p-6 space-y-4" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.045)" }}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#f0f3f8]">
+              <div>
+                <h3 className="font-bold" style={{ color: "#1a2e05" }}>VRS Record Import — Invoice Auto-Fill</h3>
+                <p className="text-xs mt-1" style={{ color: "#9aa3be" }}>Enter the 14-digit VRS invoice number to pull the completed vehicle record for local filing</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-5 relative z-10">
-              <div className="lg:col-span-2 space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center justify-between">
-                    <span>14-Digit VRS Invoice Number</span>
-                    <span className="font-mono text-[9px] text-slate-400">{vrsInvoiceNo.length}/14 Digits</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                      value={vrsInvoiceNo}
-                      onChange={e => {
-                        const val = e.target.value.replace(/\D/g, "").slice(0, 14);
-                        setVrsInvoiceNo(val);
-                      }}
-                      placeholder="e.g. 40726012083437"
-                      className="w-full pl-10 pr-24 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold font-mono tracking-widest text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-[#81B71A]/20 focus:border-[#81B71A] transition-all shadow-sm"
-                    />
-                    <button
-                      type="button"
-                      disabled={vrsInvoiceNo.length !== 14 || isFetchingVrs}
-                      onClick={() => handleFetchVrs(vrsInvoiceNo)}
-                      className="absolute right-2 top-1.5 bottom-1.5 px-3 rounded-lg text-[10px] font-black uppercase text-white transition-all disabled:opacity-35 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-sm shadow-[#81B71A]/20 animate-none hover:opacity-90 active:scale-[0.98]"
-                      style={{ background: "linear-gradient(135deg, #1a2e05, #81B71A)" }}
-                    >
-                      {isFetchingVrs ? (
-                        <>
-                          <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                          Syncing
-                        </>
-                      ) : "Fetch"}
-                    </button>
-                  </div>
-                  <p className="text-[9px] font-semibold text-slate-400">
-                    Entering a valid paid invoice connects directly to the Virtual Registration System to retrieve specs instantly.
-                  </p>
-                </div>
-              </div>
-
-              <div className="lg:col-span-3 space-y-2.5">
-                <div className="flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5 text-[#81B71A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">
-                    Prefilled Illustrative Presets
-                  </label>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                  {VRS_INVOICES.map(inv => {
-                    const isCorolla = inv.make.toLowerCase().includes("toyota");
-                    const isTucson = inv.make.toLowerCase().includes("hyundai");
-                    
-                    let iconBg = "bg-blue-50 text-blue-600";
-                    let emoji = "🚗";
-                    if (isTucson) {
-                      iconBg = "bg-amber-50 text-amber-600";
-                      emoji = "🚙";
-                    } else if (!isCorolla) {
-                      iconBg = "bg-emerald-50 text-emerald-600";
-                      emoji = "🛻";
-                    }
-
-                    return (
-                      <button
-                        key={inv.invoiceNo}
-                        type="button"
-                        onClick={() => {
-                          setVrsInvoiceNo(inv.invoiceNo);
-                          handleFetchVrs(inv.invoiceNo);
-                        }}
-                        disabled={isFetchingVrs}
-                        className="group flex flex-col justify-between p-3 bg-white border border-slate-200/80 hover:border-[#81B71A]/60 hover:shadow-md hover:shadow-slate-100 hover:-translate-y-0.5 rounded-xl text-left transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none disabled:translate-y-0 relative overflow-hidden"
-                      >
-                        <div className="absolute inset-0 bg-[#81B71A]/1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                        
-                        <div className="flex items-center gap-2">
-                          <span className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${iconBg}`}>
-                            {emoji}
-                          </span>
-                          <div className="min-w-0">
-                            <p className="text-[11px] font-black text-slate-800 truncate leading-snug group-hover:text-[#2d5009] transition-colors">{inv.ownerName}</p>
-                            <p className="text-[9px] font-extrabold text-slate-400 tracking-wider uppercase leading-none mt-0.5">{inv.make} {inv.bodyType.split(" ")[0]}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2 w-full">
-                          <code className="text-[10px] font-bold font-mono text-slate-500 tracking-tight group-hover:text-[#81B71A] transition-colors">{inv.invoiceNo}</code>
-                          <span className="text-[9px] font-black text-[#81B71A] opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-                            →
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+            <div className="max-w-md">
+              <label className="text-xs font-bold text-[#9aa3be] uppercase block mb-2">Invoice Number ({vrsInvoiceNo.length}/14)</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                  value={vrsInvoiceNo}
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 14);
+                    setVrsInvoiceNo(val);
+                  }}
+                  placeholder="e.g. 40726012083437"
+                  className="w-full px-3 py-2.5 border border-[#e2e8f0] rounded-lg text-sm font-mono tracking-widest text-[#1a2e05] placeholder-[#c3ccd8] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/20 focus:border-[#81B71A]"
+                />
+                <button
+                  type="button"
+                  disabled={vrsInvoiceNo.length !== 14 || isFetchingVrs}
+                  onClick={() => handleFetchVrs(vrsInvoiceNo)}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1.5 rounded text-xs font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                  style={{ background: "#81B71A" }}
+                >
+                  {isFetchingVrs ? "..." : "Fetch"}
+                </button>
               </div>
             </div>
           </div>
@@ -673,624 +721,616 @@ function BookingDeskContent() {
             {/* ── Left panel (2/3) ── */}
             <div className="xl:col-span-2 space-y-5">
 
-            {/* ══ Section 1: Booking Details ══ */}
-            <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-6"
-              style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
-              <SectionHead n={1} title="Booking Type &amp; Owner Details" icon={<OwnerIcon />} />
+              {/* Selected Service Banner */}
+              {selectedService && (
+                <div className="bg-[#81B71A]/10 border border-[#81B71A]/30 rounded-lg p-4">
+                  <p className="text-sm font-bold" style={{ color: "#3d6b08" }}>
+                    ✓ Service Selected: <span className="font-bold text-base">{selectedService}</span>
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "#6b7a99" }}>
+                    You can change or refine this selection below
+                  </p>
+                </div>
+              )}
 
-              {/* ── Booking Type — dropdown selector ── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                <Field label="Booking / Service Type" required>
-                  <select value={bookingType} onChange={(e) => setBookingType(e.target.value)} className={INPUT}>
-                    {BOOKING_TYPES.map(b => (
-                      <option key={b.id} value={b.id}>
-                        {b.label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
+              {/* ══ Section 1: Booking Details ══ */}
+              <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-6"
+                style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
+                <SectionHead n={1} title="Record Type &amp; Owner Details" icon={<OwnerIcon />} />
 
-                {/* ── Classification — dropdown selector ── */}
-                <Field label="Vehicle / Plate Classification" required>
-                  <select value={classification} onChange={(e) => setClassification(e.target.value)} className={INPUT}>
-                    {CLASSIFICATIONS.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
+                {/* ── Booking Type — dropdown selector ── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                  <Field label="Filing / Service Type" required>
+                    <select value={bookingType} onChange={(e) => setBookingType(e.target.value)} className={INPUT}>
+                      {BOOKING_TYPES.map(b => (
+                        <option key={b.id} value={b.id}>
+                          {b.label}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
 
-              {/* ── Registration No + Owner Name ── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Registration Number of Vehicle" required>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <PlateFieldIcon />
-                    </span>
-                    <input value={regNo} onChange={e => setRegNo(e.target.value)}
-                      placeholder="e.g. AD 0001-26"
-                      className={INPUT + " pl-8 font-mono tracking-widest pr-24"} />
-                    {prefixHint && (
-                      <button type="button"
-                        onClick={() => {
-                          const cur = regNo.replace(/^[A-Z]{2}\s*/, "");
-                          setRegNo(`${prefixHint} ${cur}`);
-                        }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-md text-[10px] font-bold transition"
-                        style={{ background: "rgba(129,183,26,0.12)", color: "#3d6b08" }}>
-                        Use {prefixHint}
-                      </button>
-                    )}
-                  </div>
-                  {activeReservation && (
-                    <div className="mt-3 p-3.5 rounded-xl border border-amber-200/80 bg-amber-50/60 text-amber-900 text-xs space-y-2 shadow-sm backdrop-blur-sm">
-                      <div className="flex items-start gap-2.5">
-                        <div className="p-1 rounded-lg bg-amber-100/80 text-amber-700 shrink-0">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                          </svg>
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <p className="font-extrabold text-amber-800 tracking-wide text-xs">🛡️ Reserved Allocation Detected</p>
-                          <p className="text-[11px] text-amber-850 leading-relaxed font-medium">
-                            This registration number belongs to a reserved block held by <strong className="text-amber-950 font-bold bg-amber-100/60 px-1.5 py-0.5 rounded">{activeReservation.holder}</strong> under authorization reference <code className="bg-amber-100/80 px-1.5 py-0.5 rounded text-[10px] font-bold font-mono text-amber-900">{activeReservation.authRef}</code>.
-                          </p>
-                          <p className="text-[10px] text-amber-700 leading-relaxed font-semibold">
-                            ⚠️ This is an informational alert. Booking is unlocked and will automatically register the vehicle, incrementing the claimed slot count for this block.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </Field>
-                <Field label={isTransfer ? "New Owner Name (Transferee)" : "Name of Owner"} required>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <PersonFieldIcon />
-                    </span>
-                    <input value={ownerName} onChange={e => setOwnerName(e.target.value)}
-                      required placeholder="Enter full legal name"
-                      className={INPUT + " pl-8"} />
-                  </div>
-                </Field>
-              </div>
+                  {/* ── Classification — dropdown selector ── */}
+                  <Field label="Vehicle / Plate Classification" required>
+                    <select value={classification} onChange={(e) => setClassification(e.target.value)} className={INPUT}>
+                      {CLASSIFICATIONS.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
 
-              {/* ── Address + Phone ── */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <Field label={isTransfer ? "New Owner Address" : "Address of Owner"} required>
+                {/* ── Registration No + Owner Name ── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Registration Number of Vehicle" required>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <LocationFieldIcon />
+                        <PlateFieldIcon />
                       </span>
-                      <input value={address} onChange={e => setAddress(e.target.value)}
-                        required placeholder="Street, City, Region"
+                      <input value={regNo} onChange={e => setRegNo(e.target.value.toUpperCase())}
+                        placeholder={isSpecialOrCustomized ? "KX 1111-AD or custom" : "KX 0001-AD"}
+                        className={INPUT + " pl-8 font-mono tracking-widest"} />
+                    </div>
+                    {activeReservation && (
+                      <div className="mt-3 p-3.5 rounded-xl border border-amber-200/80 bg-amber-50/60 text-amber-900 text-xs space-y-2 shadow-sm backdrop-blur-sm">
+                        <div className="flex items-start gap-2.5">
+                          <div className="p-1 rounded-lg bg-amber-100/80 text-amber-700 shrink-0">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <p className="font-extrabold text-amber-800 tracking-wide text-xs">🛡️ Reserved Allocation Detected</p>
+                            <p className="text-[11px] text-amber-850 leading-relaxed font-medium">
+                              This registration number belongs to a reserved block held by <strong className="text-amber-950 font-bold bg-amber-100/60 px-1.5 py-0.5 rounded">{activeReservation.holder}</strong> under authorization reference <code className="bg-amber-100/80 px-1.5 py-0.5 rounded text-[10px] font-bold font-mono text-amber-900">{activeReservation.authRef}</code>.
+                            </p>
+                            <p className="text-[10px] text-amber-700 leading-relaxed font-semibold">
+                              ⚠️ This is an informational alert. Filing will proceed and automatically increment the claimed slot count for this reservation block.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Field>
+                  <Field label={isTransfer ? "New Owner Name (Transferee)" : "Name of Owner"} required>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <PersonFieldIcon />
+                      </span>
+                      <input value={ownerName} onChange={e => setOwnerName(e.target.value)}
+                        required placeholder="Enter full legal name"
                         className={INPUT + " pl-8"} />
                     </div>
                   </Field>
                 </div>
-                <Field label={isTransfer ? "New Owner Phone" : "Phone Number"} required>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <PhoneFieldIcon />
-                    </span>
-                    <input value={phone} onChange={e => setPhone(e.target.value)}
-                      required placeholder="+233 24 123 4567"
-                      className={INPUT + " pl-8"} />
+
+                {/* ── Address + Phone ── */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2">
+                    <Field label={isTransfer ? "New Owner Address" : "Address of Owner"} required>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <LocationFieldIcon />
+                        </span>
+                        <input value={address} onChange={e => setAddress(e.target.value)}
+                          required placeholder="Street, City, Region"
+                          className={INPUT + " pl-8"} />
+                      </div>
+                    </Field>
                   </div>
-                </Field>
+                  <Field label={isTransfer ? "New Owner Phone" : "Phone Number"} required>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <PhoneFieldIcon />
+                      </span>
+                      <input value={phone} onChange={e => setPhone(e.target.value)}
+                        required placeholder="+233 24 123 4567"
+                        className={INPUT + " pl-8"} />
+                    </div>
+                  </Field>
+                </div>
+
+                {/* ── Transfer: Previous owner ── */}
+                {isTransfer && (
+                  <div className="rounded-xl border p-4 space-y-4"
+                    style={{ background: "rgba(59,130,246,0.03)", borderColor: "rgba(59,130,246,0.15)" }}>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+                        style={{ background: "rgba(59,130,246,0.12)", color: "#3b82f6" }}>
+                        <TransferIcon />
+                      </div>
+                      <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#1e40af" }}>
+                        Change of Ownership — Previous Owner
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Field label="Old Owner Name (Transferor)" required>
+                        <input value={oldOwnerName} onChange={e => setOldOwnerName(e.target.value)}
+                          required={isTransfer} placeholder="Previous owner's full name" className={INPUT} />
+                      </Field>
+                      <Field label="Old Owner Address" required>
+                        <input value={oldOwnerAddr} onChange={e => setOldOwnerAddr(e.target.value)}
+                          required={isTransfer} placeholder="Previous owner's address" className={INPUT} />
+                      </Field>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* ── Transfer: Previous owner ── */}
-              {isTransfer && (
-                <div className="rounded-xl border p-4 space-y-4"
-                  style={{ background: "rgba(59,130,246,0.03)", borderColor: "rgba(59,130,246,0.15)" }}>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-                      style={{ background: "rgba(59,130,246,0.12)", color: "#3b82f6" }}>
-                      <TransferIcon />
+              {/* ══ Section 2: Vehicle Description ══ */}
+              <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-6"
+                style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
+                <SectionHead n={2} title="Vehicle Description" icon={<VehicleIcon />} />
+
+                {/* ── Vehicle Presets (By Year Tabbed UI + Search) ── */}
+                <div className="rounded-xl border border-[#e8edf5] bg-white overflow-hidden" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
+                  <div className="px-5 py-4 border-b border-[#e8edf5] bg-[#f8faff] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-6 h-6 rounded-md flex items-center justify-center bg-[#81B71A]/10 text-[#3d6b08] font-bold">⚡</span>
+                      <div>
+                        <p className="text-xs font-bold text-[#1a2e05]">Vehicle Database Quick Fill</p>
+                        <p className="text-[10px] font-medium text-[#6b7a99]">Search or select a model year</p>
+                      </div>
                     </div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#1e40af" }}>
-                      Change of Ownership — Previous Owner
-                    </p>
+
+                    {/* Search Input */}
+                    <div className="relative w-full md:w-64 shrink-0">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#9aa3be" }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Search make or model..."
+                        value={presetSearch}
+                        onChange={e => setPresetSearch(e.target.value)}
+                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-[#e2e8f0] text-xs focus:outline-none focus:border-[#81B71A] focus:ring-1 focus:ring-[#81B71A]"
+                      />
+                      {presetSearch && (
+                        <button onClick={() => setPresetSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9aa3be] hover:text-[#1a2e05]">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field label="Old Owner Name (Transferor)" required>
-                      <input value={oldOwnerName} onChange={e => setOldOwnerName(e.target.value)}
-                        required={isTransfer} placeholder="Previous owner's full name" className={INPUT} />
-                    </Field>
-                    <Field label="Old Owner Address" required>
-                      <input value={oldOwnerAddr} onChange={e => setOldOwnerAddr(e.target.value)}
-                        required={isTransfer} placeholder="Previous owner's address" className={INPUT} />
-                    </Field>
+
+                  <div className="p-5 space-y-5">
+                    {/* Year Tabs - Hide if searching */}
+                    {!presetSearch && (
+                      <div className="flex flex-wrap gap-2 pb-4 border-b border-[#f0f3f8]">
+                        {Object.keys(
+                          VEHICLE_PRESETS.reduce((acc, p) => {
+                            if (!acc[p.year]) acc[p.year] = [];
+                            acc[p.year].push(p);
+                            return acc;
+                          }, {} as Record<string, typeof VEHICLE_PRESETS>)
+                        ).sort((a, b) => b.localeCompare(a)).map(year => (
+                          <button
+                            key={year}
+                            type="button"
+                            onClick={() => setSelectedPresetYear(year)}
+                            className={`px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${selectedPresetYear === year
+                                ? "bg-[#81B71A] text-white shadow-md shadow-[#81B71A]/20"
+                                : "bg-[#f8faff] text-[#6b7a99] border border-[#e2e8f0] hover:border-[#81B71A]/40"
+                              }`}
+                          >
+                            {year} Models
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Preset Grid with Scroll */}
+                    <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        {VEHICLE_PRESETS.filter(p => {
+                          if (presetSearch) {
+                            const s = presetSearch.toLowerCase();
+                            return p.make.toLowerCase().includes(s) || p.model.toLowerCase().includes(s) || p.year.includes(s);
+                          }
+                          return p.year === selectedPresetYear;
+                        }).map((p, index) => {
+                          const active = activePreset === p.label;
+                          return (
+                            <button
+                              key={`${p.label}-${index}`}
+                              type="button"
+                              onClick={() => applyPreset(p)}
+                              className="flex flex-col text-left px-4 py-3 rounded-xl border transition-all"
+                              style={{
+                                background: active ? "rgba(129,183,26,0.06)" : "white",
+                                borderColor: active ? "#81B71A" : "#e2e8f0",
+                                boxShadow: active ? "0 2px 10px rgba(129,183,26,0.12)" : "0 1px 3px rgba(0,0,0,0.02)",
+                              }}
+                            >
+                              <div className="flex justify-between items-center w-full mb-0.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active ? "#81B71A" : "#9aa3be" }}>
+                                  {p.make}
+                                </span>
+                                {presetSearch && (
+                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#f0f3f8] text-[#6b7a99]">
+                                    {p.year}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-sm font-bold truncate w-full" style={{ color: active ? "#1a2e05" : "#374167" }}>
+                                {p.model}
+                              </span>
+                            </button>
+                          );
+                        })}
+
+                        {presetSearch && VEHICLE_PRESETS.filter(p => {
+                          const s = presetSearch.toLowerCase();
+                          return p.make.toLowerCase().includes(s) || p.model.toLowerCase().includes(s) || p.year.includes(s);
+                        }).length === 0 && (
+                            <div className="col-span-full py-8 text-center text-sm font-medium text-[#6b7a99]">
+                              No vehicles found matching "{presetSearch}"
+                            </div>
+                          )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
 
-            {/* ══ Section 2: Vehicle Description ══ */}
-            <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-6"
-              style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
-              <SectionHead n={2} title="Vehicle Description" icon={<VehicleIcon />} />
+                {/* ── Make / Year / Model / Engine ── */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Field label="Make of Vehicle" required>
+                    <input value={make} onChange={e => { setMake(e.target.value); setActivePreset(null); }}
+                      required placeholder="e.g. Toyota" className={INPUT} />
+                  </Field>
+                  <Field label="Year" required>
+                    <input value={year} onChange={e => { setYear(e.target.value); setActivePreset(null); }}
+                      required placeholder="e.g. 2024" className={INPUT} />
+                  </Field>
+                  <Field label="Model" required>
+                    <input value={model} onChange={e => { setModel(e.target.value); setActivePreset(null); }}
+                      required placeholder="e.g. Land Cruiser" className={INPUT} />
+                  </Field>
+                  <Field label="Engine Capacity (CC)" required>
+                    <input value={engineCC} onChange={e => setEngineCC(e.target.value)}
+                      required placeholder="e.g. 4500" className={INPUT} />
+                  </Field>
+                </div>
 
-              {/* ── Quick-fill presets ── */}
-              <div className="rounded-xl border border-[#e8edf5] p-4 space-y-3 bg-[#f8faff]">
-                <div className="flex items-center justify-between gap-2">
+                {/* ── Cylinders / Engine No / Chassis ── */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <Field label="No. of Cylinders">
+                    <select value={cylinders} onChange={e => setCylinders(e.target.value)} className={INPUT}>
+                      {["N/A", "2", "4", "6", "8", "12"].map(n => <option key={n}>{n}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Engine Number">
+                    <input value={engineNo} onChange={e => setEngineNo(e.target.value)}
+                      placeholder="e.g. 1VD-FTV8912" className={INPUT} />
+                  </Field>
+                  <Field label={`Chassis / VIN${vinLen > 0 ? ` (${vinLen}/17)` : ""}`} required>
+                    <div className="relative">
+                      <input value={chassisNo} onChange={e => setChassisNo(e.target.value)}
+                        required placeholder="17-character VIN"
+                        className={INPUT + " pr-9"}
+                        maxLength={17}
+                        style={{ borderColor: vinLen > 0 ? (vinValid ? "#81B71A" : "#ef4444") : undefined }} />
+                      {vinLen > 0 && (
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                          {vinValid
+                            ? <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#81B71A" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                            : <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                          }
+                        </span>
+                      )}
+                    </div>
+                  </Field>
+                </div>
+
+                {/* ── Body Type ── */}
+                <div>
+                  <p className={LABEL + " mb-2.5"}>Type of Body</p>
+                  <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                    {BODY_TYPES.map(bt => {
+                      const active = bodyType === bt.id;
+                      const Icon = bt.icon;
+                      return (
+                        <button key={bt.id} type="button" onClick={() => setBodyType(bt.id)}
+                          className="flex flex-col items-center gap-1.5 py-3 px-1.5 rounded-xl border transition-all"
+                          style={{
+                            background: active ? "rgba(129,183,26,0.08)" : "#fafbfe",
+                            borderColor: active ? "#81B71A" : "#e8edf5",
+                            boxShadow: active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
+                            color: active ? "#2d5009" : "#6b7a99",
+                          }}>
+                          <Icon />
+                          <span className="text-[9px] font-bold text-center leading-tight"
+                            style={{ color: active ? "#1a2e05" : "#6b7a99" }}>
+                            {bt.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* ── Fuel Type ── */}
+                <div>
+                  <p className={LABEL + " mb-2.5"}>Fuel Type</p>
+                  <div className="flex flex-wrap gap-2.5">
+                    {FUEL_TYPES.map(f => {
+                      const active = fuelType === f.id;
+                      const Icon = f.icon;
+                      return (
+                        <button key={f.id} type="button" onClick={() => setFuelType(f.id)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-xs font-semibold transition-all"
+                          style={{
+                            background: active ? "rgba(129,183,26,0.08)" : "#fafbfe",
+                            borderColor: active ? "#81B71A" : "#e8edf5",
+                            color: active ? "#2d5009" : "#374167",
+                            boxShadow: active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
+                          }}>
+                          <span style={{ color: active ? "#81B71A" : "#9aa3be" }}><Icon /></span>
+                          {f.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* ── Net / Gross weight ── */}
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Net Weight (kg)" required>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
+                        <WeightIcon />
+                      </span>
+                      <input value={netWeight} onChange={e => setNetWeight(e.target.value)}
+                        required placeholder="e.g. 2630" className={INPUT + " pl-8"} />
+                    </div>
+                  </Field>
+                  <Field label="Gross Weight (kg)" required>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
+                        <WeightIcon />
+                      </span>
+                      <input value={grossWeight} onChange={e => setGrossWeight(e.target.value)}
+                        required placeholder="e.g. 3300" className={INPUT + " pl-8"} />
+                    </div>
+                  </Field>
+                </div>
+              </div>
+
+              {/* ══ Section 3: Tyre Specifications ══ */}
+              <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-5"
+                style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
+                <SectionHead n={3} title="Tyre Size Specifications" icon={<TyreIcon />} />
+
+                {/* Quick-fill tyre presets */}
+                <div className="rounded-xl border border-[#e8edf5] p-4 space-y-3 bg-[#f8faff]">
                   <div className="flex items-center gap-2">
                     <BoltIcon />
                     <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#6b7a99" }}>
-                      Quick Fill — {VEHICLE_PRESETS.length} Models
+                      Quick Fill — Standard Tyre Sizes
                     </p>
                   </div>
-                  {activePreset && (
-                    <button type="button" onClick={() => setActivePreset(null)}
-                      className="text-[10px] font-semibold flex items-center gap-1 hover:opacity-70 transition"
-                      style={{ color: "#9aa3be" }}>
-                      <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-                        <path d="M18 6L6 18M6 6l12 12" />
-                      </svg>
-                      Clear
-                    </button>
-                  )}
-                </div>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#9aa3be" }}>
-                    <SearchIcon size={13} />
-                  </span>
-                  <input type="text" value={presetSearch} onChange={e => setPresetSearch(e.target.value)}
-                    placeholder="Search model, make, or fuel type…"
-                    className="pl-8 pr-8 py-2 bg-white border border-[#e2e8f0] rounded-lg text-xs text-[#1a2e05] font-medium placeholder-[#c3ccd8] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/20 focus:border-[#81B71A]/50 transition w-full" />
-                  {presetSearch && (
-                    <button type="button" onClick={() => setPresetSearch("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-4 h-4 rounded-full transition hover:opacity-70"
-                      style={{ color: "#9aa3be" }}>
-                      <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-                        <path d="M18 6L6 18M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
-                  {filteredPresets.map(p => {
-                    const active = activePreset === p.label;
-                    return (
-                      <button key={p.label} type="button" onClick={() => applyPreset(p)}
-                        className="px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all whitespace-nowrap"
-                        style={{
-                          background:  active ? "rgba(129,183,26,0.1)" : "white",
-                          borderColor: active ? "#81B71A"              : "#e2e8f0",
-                          color:       active ? "#2d5009"              : "#374167",
-                          boxShadow:   active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
-                        }}>
-                        {p.label}
-                      </button>
-                    );
-                  })}
-                  {filteredPresets.length === 0 && (
-                    <p className="text-[10px] text-[#b0bbd6] italic px-1">No models match &quot;{presetSearch}&quot;</p>
-                  )}
-                </div>
-                {activePreset && (
-                  <div className="flex items-center gap-1.5 text-[10px] font-semibold" style={{ color: "#81B71A" }}>
-                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 6L9 17l-5-5" />
-                    </svg>
-                    Specs loaded from <strong>{activePreset}</strong> — review and adjust below.
+                  <div className="flex flex-wrap gap-2">
+                    {TYRE_PRESETS.map(t => {
+                      const active = tyreFW === t.w && tyreFD === t.d;
+                      return (
+                        <button key={t.label} type="button" onClick={() => applyTyre(t.w, t.d, "FR")}
+                          className="px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all"
+                          style={{
+                            background: active ? "rgba(129,183,26,0.1)" : "white",
+                            borderColor: active ? "#81B71A" : "#e2e8f0",
+                            color: active ? "#2d5009" : "#374167",
+                            boxShadow: active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
+                          }}>
+                          {t.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
-              </div>
-
-              {/* ── Make / Year / Engine ── */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <Field label="Make of Vehicle" required>
-                  <input value={make} onChange={e => { setMake(e.target.value); setActivePreset(null); }}
-                    required placeholder="e.g. Toyota" className={INPUT} />
-                </Field>
-                <Field label="Year and Model" required>
-                  <input value={yearModel} onChange={e => setYearModel(e.target.value)}
-                    required placeholder="e.g. 2024 Land Cruiser" className={INPUT} />
-                </Field>
-                <Field label="Engine Capacity (CC)" required>
-                  <input value={engineCC} onChange={e => setEngineCC(e.target.value)}
-                    required placeholder="e.g. 4500" className={INPUT} />
-                </Field>
-              </div>
-
-              {/* ── Cylinders / Engine No / Chassis ── */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <Field label="No. of Cylinders">
-                  <select value={cylinders} onChange={e => setCylinders(e.target.value)} className={INPUT}>
-                    {["N/A", "2", "4", "6", "8", "12"].map(n => <option key={n}>{n}</option>)}
-                  </select>
-                </Field>
-                <Field label="Engine Number">
-                  <input value={engineNo} onChange={e => setEngineNo(e.target.value)}
-                    placeholder="e.g. 1VD-FTV8912" className={INPUT} />
-                </Field>
-                <Field label={`Chassis / VIN${vinLen > 0 ? ` (${vinLen}/17)` : ""}`} required>
-                  <div className="relative">
-                    <input value={chassisNo} onChange={e => setChassisNo(e.target.value)}
-                      required placeholder="17-character VIN"
-                      className={INPUT + " pr-9"}
-                      maxLength={17}
-                      style={{ borderColor: vinLen > 0 ? (vinValid ? "#81B71A" : "#ef4444") : undefined }} />
-                    {vinLen > 0 && (
-                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                        {vinValid
-                          ? <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#81B71A" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                          : <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                        }
-                      </span>
-                    )}
-                  </div>
-                </Field>
-              </div>
-
-              {/* ── Body Type ── */}
-              <div>
-                <p className={LABEL + " mb-2.5"}>Type of Body</p>
-                <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-                  {BODY_TYPES.map(bt => {
-                    const active = bodyType === bt.id;
-                    const Icon = bt.icon;
-                    return (
-                      <button key={bt.id} type="button" onClick={() => setBodyType(bt.id)}
-                        className="flex flex-col items-center gap-1.5 py-3 px-1.5 rounded-xl border transition-all"
-                        style={{
-                          background:  active ? "rgba(129,183,26,0.08)" : "#fafbfe",
-                          borderColor: active ? "#81B71A"               : "#e8edf5",
-                          boxShadow:   active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
-                          color:       active ? "#2d5009"               : "#6b7a99",
-                        }}>
-                        <Icon />
-                        <span className="text-[9px] font-bold text-center leading-tight"
-                          style={{ color: active ? "#1a2e05" : "#6b7a99" }}>
-                          {bt.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* ── Fuel Type ── */}
-              <div>
-                <p className={LABEL + " mb-2.5"}>Fuel Type</p>
-                <div className="flex flex-wrap gap-2.5">
-                  {FUEL_TYPES.map(f => {
-                    const active = fuelType === f.id;
-                    const Icon = f.icon;
-                    return (
-                      <button key={f.id} type="button" onClick={() => setFuelType(f.id)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-xs font-semibold transition-all"
-                        style={{
-                          background:  active ? "rgba(129,183,26,0.08)" : "#fafbfe",
-                          borderColor: active ? "#81B71A"               : "#e8edf5",
-                          color:       active ? "#2d5009"               : "#374167",
-                          boxShadow:   active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
-                        }}>
-                        <span style={{ color: active ? "#81B71A" : "#9aa3be" }}><Icon /></span>
-                        {f.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* ── Net / Gross weight ── */}
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Net Weight (kg)" required>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                      <WeightIcon />
-                    </span>
-                    <input value={netWeight} onChange={e => setNetWeight(e.target.value)}
-                      required placeholder="e.g. 2630" className={INPUT + " pl-8"} />
-                  </div>
-                </Field>
-                <Field label="Gross Weight (kg)" required>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                      <WeightIcon />
-                    </span>
-                    <input value={grossWeight} onChange={e => setGrossWeight(e.target.value)}
-                      required placeholder="e.g. 3300" className={INPUT + " pl-8"} />
-                  </div>
-                </Field>
-              </div>
-            </div>
-
-            {/* ══ Section 3: Tyre Specifications ══ */}
-            <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-5"
-              style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
-              <SectionHead n={3} title="Tyre Size Specifications" icon={<TyreIcon />} />
-
-              {/* Quick-fill tyre presets */}
-              <div className="rounded-xl border border-[#e8edf5] p-4 space-y-3 bg-[#f8faff]">
-                <div className="flex items-center gap-2">
-                  <BoltIcon />
-                  <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#6b7a99" }}>
-                    Quick Fill — Standard Tyre Sizes
+                  <p className="text-[10px]" style={{ color: "#b0bbd6" }}>
+                    Selecting a size fills Front &amp; Rear automatically. Override individually below.
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {TYRE_PRESETS.map(t => {
-                    const active = tyreFW === t.w && tyreFD === t.d;
-                    return (
-                      <button key={t.label} type="button" onClick={() => applyTyre(t.w, t.d, "FR")}
-                        className="px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all"
-                        style={{
-                          background:  active ? "rgba(129,183,26,0.1)" : "white",
-                          borderColor: active ? "#81B71A"              : "#e2e8f0",
-                          color:       active ? "#2d5009"              : "#374167",
-                          boxShadow:   active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
-                        }}>
-                        {t.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-[10px]" style={{ color: "#b0bbd6" }}>
-                  Selecting a size fills Front &amp; Rear automatically. Override individually below.
-                </p>
-              </div>
 
-              {/* Tyre inputs */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {([
-                  { label: "Front Tyre",        icon: <TyreFrontIcon />, w: tyreFW, setW: setTyreFW, d: tyreFD, setD: setTyreFD },
-                  { label: "Middle Tyre (opt.)", icon: <TyreMidIcon />,   w: tyreMW, setW: setTyreMW, d: tyreMD, setD: setTyreMD },
-                  { label: "Rear Tyre",         icon: <TyreRearIcon />,  w: tyreRW, setW: setTyreRW, d: tyreRD, setD: setTyreRD },
-                ] as const).map(tyre => (
-                  <div key={tyre.label} className="rounded-xl border border-[#e8edf5] p-4 space-y-3"
-                    style={{ background: "#fafbfe" }}>
-                    <div className="flex items-center gap-2">
-                      <span style={{ color: "#81B71A" }}>{tyre.icon}</span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#6b7a99" }}>
-                        {tyre.label}
-                      </span>
+                {/* Tyre inputs */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {([
+                    { label: "Front Tyre", icon: <TyreFrontIcon />, w: tyreFW, setW: setTyreFW, d: tyreFD, setD: setTyreFD },
+                    { label: "Middle Tyre (opt.)", icon: <TyreMidIcon />, w: tyreMW, setW: setTyreMW, d: tyreMD, setD: setTyreMD },
+                    { label: "Rear Tyre", icon: <TyreRearIcon />, w: tyreRW, setW: setTyreRW, d: tyreRD, setD: setTyreRD },
+                  ] as const).map(tyre => (
+                    <div key={tyre.label} className="rounded-xl border border-[#e8edf5] p-4 space-y-3"
+                      style={{ background: "#fafbfe" }}>
+                      <div className="flex items-center gap-2">
+                        <span style={{ color: "#81B71A" }}>{tyre.icon}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#6b7a99" }}>
+                          {tyre.label}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <p className="text-[9px] font-bold uppercase text-[#b0bbd6] mb-1">Width (mm)</p>
+                          <input value={tyre.w} onChange={e => (tyre.setW as (v: string) => void)(e.target.value)}
+                            placeholder="e.g. 225"
+                            className="px-2.5 py-2 bg-white border border-[#e2e8f0] rounded-lg text-xs font-semibold text-[#1a2e05] placeholder-[#c3ccd8] focus:outline-none focus:ring-1 focus:ring-[#81B71A]/30 w-full" />
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-bold uppercase text-[#b0bbd6] mb-1">Rim Dia</p>
+                          <input value={tyre.d} onChange={e => (tyre.setD as (v: string) => void)(e.target.value)}
+                            placeholder="e.g. 17"
+                            className="px-2.5 py-2 bg-white border border-[#e2e8f0] rounded-lg text-xs font-semibold text-[#1a2e05] placeholder-[#c3ccd8] focus:outline-none focus:ring-1 focus:ring-[#81B71A]/30 w-full" />
+                        </div>
+                      </div>
+                      {tyre.w && tyre.d && (
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold font-mono"
+                          style={{ color: "#81B71A" }}>
+                          <svg width={9} height={9} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                          {tyre.w}/65 R{tyre.d}
+                        </div>
+                      )}
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <p className="text-[9px] font-bold uppercase text-[#b0bbd6] mb-1">Width (mm)</p>
-                        <input value={tyre.w} onChange={e => (tyre.setW as (v: string) => void)(e.target.value)}
-                          placeholder="e.g. 225"
-                          className="px-2.5 py-2 bg-white border border-[#e2e8f0] rounded-lg text-xs font-semibold text-[#1a2e05] placeholder-[#c3ccd8] focus:outline-none focus:ring-1 focus:ring-[#81B71A]/30 w-full" />
-                      </div>
-                      <div>
-                        <p className="text-[9px] font-bold uppercase text-[#b0bbd6] mb-1">Rim Dia</p>
-                        <input value={tyre.d} onChange={e => (tyre.setD as (v: string) => void)(e.target.value)}
-                          placeholder="e.g. 17"
-                          className="px-2.5 py-2 bg-white border border-[#e2e8f0] rounded-lg text-xs font-semibold text-[#1a2e05] placeholder-[#c3ccd8] focus:outline-none focus:ring-1 focus:ring-[#81B71A]/30 w-full" />
-                      </div>
-                    </div>
-                    {tyre.w && tyre.d && (
-                      <div className="flex items-center gap-1.5 text-[10px] font-bold font-mono"
-                        style={{ color: "#81B71A" }}>
-                        <svg width={9} height={9} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                        {tyre.w}/65 R{tyre.d}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* ── Right panel (1/3) ── */}
-          <div className="space-y-4 xl:sticky xl:top-20">
+            {/* ── Right panel (1/3) ── */}
+            <div className="space-y-4 xl:sticky xl:top-20">
 
-            {/* ══ Section 4: Audit & Payment ══ */}
-            <div 
-              className={`rounded-2xl border p-5 space-y-4 transition-all duration-500 ${
-                auditHighlightActive 
-                  ? "bg-emerald-50/20 border-emerald-400 ring-4 ring-emerald-500/15 shadow-xl shadow-emerald-500/10 animate-[pulse_2s_infinite]" 
-                  : "bg-white border-[#e8edf5]"
-              }`}
-              style={{ boxShadow: auditHighlightActive ? undefined : "0 2px 16px rgba(0,0,0,0.045)" }}
-            >
-              <SectionHead n={4} title="Audit &amp; Payment" icon={<AuditIcon />} />
+              {/* ══ Section 4: Audit & Payment ══ */}
+              <div
+                className={`rounded-2xl border p-5 space-y-4 transition-all duration-500 ${auditHighlightActive
+                    ? "bg-emerald-50/20 border-emerald-400 ring-4 ring-emerald-500/15 shadow-xl shadow-emerald-500/10 animate-[pulse_2s_infinite]"
+                    : "bg-white border-[#e8edf5]"
+                  }`}
+                style={{ boxShadow: auditHighlightActive ? undefined : "0 2px 16px rgba(0,0,0,0.045)" }}
+              >
+                <SectionHead n={4} title="Audit &amp; Payment Verification" icon={<AuditIcon />} />
 
-              <Field label="Receipt Number" required>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                    <ReceiptFieldIcon />
-                  </span>
-                  <input value={receiptNo} onChange={e => { setReceiptNo(e.target.value); setAuditHighlightActive(false); }}
-                    required placeholder="470260*****" className={INPUT + " pl-8"} />
-                </div>
-              </Field>
-
-              <Field label="Registration Date">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                    <CalendarFieldIcon />
-                  </span>
-                  <input type="date" value={regDate} onChange={e => { setRegDate(e.target.value); setAuditHighlightActive(false); }}
-                    className={INPUT + " pl-8"} />
-                </div>
-              </Field>
-
-              <div className="h-px bg-[#f0f3f8]" />
-
-              <Field label="Customs Number" required>
-                <input value={customsNo} onChange={e => { setCustomsNo(e.target.value); setAuditHighlightActive(false); }}
-                  required placeholder="470260*****/**" className={INPUT} />
-              </Field>
-
-              <Field label="Customs Date" required>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                    <CalendarFieldIcon />
-                  </span>
-                  <input type="date" value={customsDate} onChange={e => { setCustomsDate(e.target.value); setAuditHighlightActive(false); }}
-                    required className={INPUT + " pl-8"} />
-                </div>
-              </Field>
-
-              <div className="h-px bg-[#f0f3f8]" />
-
-              <Field label="Supervising Officer">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                    <PersonFieldIcon />
-                  </span>
-                  <select value={supervisor} onChange={e => { setSupervisor(e.target.value); setAuditHighlightActive(false); }}
-                    className={INPUT + " pl-8"}>
-                    <option value="Eric">Eric</option>
-                    <option value="Saviour">Saviour</option>
-                    <option value="Godson">Godson</option>
-                  </select>
-                </div>
-              </Field>
-
-              <button type="submit"
-                className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all flex items-center justify-center gap-2 hover:opacity-95"
-                style={{ background: "linear-gradient(115deg, #2d5009, #81B71A)", boxShadow: "0 4px 18px rgba(129,183,26,0.35)" }}>
-                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-                File Digital Logbook Entry
-              </button>
-            </div>
-
-            {/* ── Live register preview ── */}
-            <div className="rounded-2xl border overflow-hidden"
-              style={{ background: "#0a150a", borderColor: "rgba(129,183,26,0.15)" }}>
-
-              {/* Preview header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b"
-                style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.03)" }}>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full" style={{ background: "#81B71A" }} />
-                  <span className="text-[9px] font-bold tracking-widest uppercase"
-                    style={{ color: "rgba(255,255,255,0.45)" }}>Live Preview — Sheet 11851</span>
-                </div>
-                <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider"
-                  style={{ background: "rgba(129,183,26,0.15)", color: "#81B71A", border: "1px solid rgba(129,183,26,0.2)" }}>
-                  {CLASSIFICATIONS.find(c => c.id === classification)?.label}
-                </span>
-              </div>
-
-              {/* Plate visual */}
-              <div className="px-4 pt-4 pb-1">
-                <div
-                  className="relative w-full max-w-[320px] aspect-[4.2/1] mx-auto rounded-xl border-4 border-slate-900 p-1 shadow-2xl overflow-hidden select-none flex items-center"
-                  style={{
-                    background:
-                      CLASSIFICATIONS.find(c => c.id === classification)?.id === "COMMERCIAL"
-                        ? "linear-gradient(180deg, #ffe066 0%, #fcc419 60%, #fab005 100%)"
-                        : CLASSIFICATIONS.find(c => c.id === classification)?.id === "GOVERNMENT"
-                        ? "linear-gradient(180deg, #2f9e44 0%, #2b8a3e 60%, #1e702e 100%)"
-                        : "linear-gradient(180deg, #f8f9fa 0%, #e9ecef 60%, #dee2e6 100%)",
-                    boxShadow: "0 15px 30px rgba(0,0,0,0.18), inset 0 3px 6px rgba(255,255,255,0.8), inset 0 -3px 6px rgba(0,0,0,0.2)",
-                  }}
-                >
-                  {/* Embossed inner rim */}
-                  <div className="absolute inset-0.5 rounded-lg border border-slate-950/20 pointer-events-none" />
-
-                  {/* Reflective light shine */}
-                  <div className="absolute inset-0 pointer-events-none bg-linear-to-tr from-transparent via-white/20 to-white/40 z-10" />
-
-                  {/* Ghana flag / left strip */}
-                  <div
-                    className="w-[12%] h-full shrink-0 flex flex-col items-center justify-between py-1 bg-[#0c3b87] rounded-l-[5px] relative overflow-hidden z-20"
-                    style={{ boxShadow: "1px 0 3px rgba(0,0,0,0.15)" }}
-                  >
-                    <div className="w-[85%] aspect-3/2 flex flex-col rounded-sm overflow-hidden border border-white/10 shrink-0">
-                      <div className="flex-1 bg-red-600" />
-                      <div className="flex-1 bg-yellow-400 flex items-center justify-center relative">
-                        <span className="absolute text-[5px] text-black leading-none -top-0.5">★</span>
-                      </div>
-                      <div className="flex-1 bg-green-600" />
-                    </div>
-                    <span className="text-[10px] font-black text-white leading-none tracking-tighter">GH</span>
-                  </div>
-
-                  {/* Plate text */}
-                  <div className="flex-1 flex items-center justify-center px-3 relative h-full z-20">
-                    <div
-                      className="absolute right-3 top-1.5 w-5 h-5 rounded-full bg-linear-to-tr from-yellow-300 via-amber-400 to-yellow-500 opacity-60 flex items-center justify-center"
-                      style={{ boxShadow: "0 0 5px rgba(245,158,11,0.6)", border: "0.5px solid rgba(255,255,255,0.2)" }}
-                    >
-                      <span className="text-[5px] font-black text-amber-950 select-none tracking-tighter">DVLA</span>
-                    </div>
-
-                    <span
-                      className="font-mono text-[18px] md:text-[20px] font-black tracking-wide whitespace-nowrap uppercase"
-                      style={{
-                        fontFamily: "'Courier New', Courier, monospace",
-                        letterSpacing: "3px",
-                        color:
-                          CLASSIFICATIONS.find(c => c.id === classification)?.id === "GOVERNMENT"
-                            ? "#ffffff"
-                            : CLASSIFICATIONS.find(c => c.id === classification)?.id === "EQUIPMENT"
-                            ? "#1b8a3e"
-                            : "#1e293b",
-                        textShadow:
-                          CLASSIFICATIONS.find(c => c.id === classification)?.id === "GOVERNMENT"
-                            ? "2px 2px 2px rgba(0,0,0,0.5), -1px -1px 0px rgba(0,0,0,0.3)"
-                            : "1.5px 1.5px 1px rgba(255,255,255,0.8), -1.5px -1.5px 1px rgba(0,0,0,0.5)",
-                      }}
-                    >
-                      {regNo || "—"}
+                <Field label="Receipt Number" required>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
+                      <ReceiptFieldIcon />
                     </span>
+                    <input value={receiptNo} onChange={e => { setReceiptNo(e.target.value); setAuditHighlightActive(false); }}
+                      required placeholder="470260*****" className={INPUT + " pl-8"} />
                   </div>
-                </div>
+                </Field>
+
+                <Field label="Registration Date">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
+                      <CalendarFieldIcon />
+                    </span>
+                    <input type="date" value={regDate} onChange={e => { setRegDate(e.target.value); setAuditHighlightActive(false); }}
+                      className={INPUT + " pl-8"} />
+                  </div>
+                </Field>
+
+                <div className="h-px bg-[#f0f3f8]" />
+
+                <Field label="Customs Number" required>
+                  <input value={customsNo} onChange={e => { setCustomsNo(e.target.value); setAuditHighlightActive(false); }}
+                    required placeholder="470260*****/**" className={INPUT} />
+                </Field>
+
+                <Field label="Customs Date" required>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
+                      <CalendarFieldIcon />
+                    </span>
+                    <input type="date" value={customsDate} onChange={e => { setCustomsDate(e.target.value); setAuditHighlightActive(false); }}
+                      required className={INPUT + " pl-8"} />
+                  </div>
+                </Field>
+
+                <div className="h-px bg-[#f0f3f8]" />
+
+                <Field label="Supervising Officer">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
+                      <PersonFieldIcon />
+                    </span>
+                    <select value={supervisor} onChange={e => { setSupervisor(e.target.value); setAuditHighlightActive(false); }}
+                      className={INPUT + " pl-8"}>
+                      <option value="Eric">Eric</option>
+                      <option value="Saviour">Saviour</option>
+                      <option value="Godson">Godson</option>
+                    </select>
+                  </div>
+                </Field>
+
+                <button type="submit"
+                  className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all flex items-center justify-center gap-2 hover:opacity-95"
+                  style={{ background: "linear-gradient(115deg, #2d5009, #81B71A)", boxShadow: "0 4px 18px rgba(129,183,26,0.35)" }}>
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                  File VRS Record to Logbook
+                </button>
               </div>
 
-              <div className="p-4 space-y-3 font-mono text-[10px]" style={{ color: "#c5d9a8" }}>
-                <Row label="TRANSACTION" value={BOOKING_TYPES.find(b => b.id === bookingType)?.label.split(" ")[0] ?? "—"} />
-                <Row label="PLATE NO"    value={regNo || "PENDING"} highlight />
+              {/* ── Live register preview ── */}
+              <div className="rounded-2xl border overflow-hidden"
+                style={{ background: "#0a150a", borderColor: "rgba(129,183,26,0.15)" }}>
 
-                {isTransfer && (
-                  <div className="rounded-lg p-2.5 space-y-1 border"
-                    style={{ background: "rgba(59,130,246,0.07)", borderColor: "rgba(59,130,246,0.18)" }}>
-                    <span className="text-[8px] font-black uppercase block" style={{ color: "#93c5fd" }}>TRANSFER FROM</span>
-                    <p className="text-white font-bold truncate">{oldOwnerName || "—"}</p>
+                {/* Preview header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b"
+                  style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.03)" }}>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full" style={{ background: "#81B71A" }} />
+                    <span className="text-[9px] font-bold tracking-widest uppercase"
+                      style={{ color: "rgba(255,255,255,0.45)" }}>Live Preview — Sheet 11851</span>
                   </div>
-                )}
-
-                <Row label={isTransfer ? "NEW OWNER" : "OWNER"} value={ownerName || "Awaiting…"} />
-                {address && <Row label="ADDRESS" value={address} />}
-                {phone    && <Row label="TEL"     value={phone}   highlight />}
-
-                <div className="border-t pt-3 space-y-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                  <Row label="MAKE"    value={make     || "—"} />
-                  <Row label="MODEL"   value={yearModel || "—"} />
-                  <Row label="CHASSIS" value={chassisNo || "—"} />
-                  <Row label="ENGINE"  value={engineNo ? `${engineNo} (${engineCC}cc)` : "—"} />
-                  {fuelType && <Row label="FUEL" value={fuelType} />}
-                  {bodyType && <Row label="BODY" value={bodyType} />}
+                  <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider"
+                    style={{ background: "rgba(129,183,26,0.15)", color: "#81B71A", border: "1px solid rgba(129,183,26,0.2)" }}>
+                    {CLASSIFICATIONS.find(c => c.id === classification)?.label}
+                  </span>
                 </div>
 
-                {(tyreFW || tyreRW) && (
-                  <div className="border-t pt-3 grid grid-cols-3 gap-2"
-                    style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                    <MiniRow label="FRONT" value={tyreFW && tyreFD ? `${tyreFW}/${tyreFD}` : "—"} />
-                    <MiniRow label="MID"   value={tyreMW && tyreMD ? `${tyreMW}/${tyreMD}` : "—"} />
-                    <MiniRow label="REAR"  value={tyreRW && tyreRD ? `${tyreRW}/${tyreRD}` : "—"} />
-                  </div>
-                )}
+                {/* Plate visual */}
+                <div className="px-4 pt-4 pb-2 flex flex-col items-center justify-center">
+                  <DigitalPlate 
+                    plateNumber={regNo || "PENDING"} 
+                    category={classification as PlateCategory}
+                    region="GREATER ACCRA"
+                    slogan="GREATER ACCRA"
+                    vin={chassisNo || "PENDING"}
+                  />
+                </div>
 
-                {receiptNo && (
+                <div className="p-4 space-y-3 font-mono text-[10px]" style={{ color: "#c5d9a8" }}>
+                  <Row label="TRANSACTION" value={BOOKING_TYPES.find(b => b.id === bookingType)?.label.split(" ")[0] ?? "—"} />
+                  <Row label="PLATE NO" value={regNo || "PENDING"} highlight />
+
+                  {isTransfer && (
+                    <div className="rounded-lg p-2.5 space-y-1 border"
+                      style={{ background: "rgba(59,130,246,0.07)", borderColor: "rgba(59,130,246,0.18)" }}>
+                      <span className="text-[8px] font-black uppercase block" style={{ color: "#93c5fd" }}>TRANSFER FROM</span>
+                      <p className="text-white font-bold truncate">{oldOwnerName || "—"}</p>
+                    </div>
+                  )}
+
+                  <Row label={isTransfer ? "NEW OWNER" : "OWNER"} value={ownerName || "Awaiting…"} />
+                  {address && <Row label="ADDRESS" value={address} />}
+                  {phone && <Row label="TEL" value={phone} highlight />}
+
                   <div className="border-t pt-3 space-y-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                    <Row label="RECEIPT"      value={receiptNo} />
-                    <Row label="CUSTOMS NO"   value={customsNo || "—"} />
-                    <Row label="CUSTOMS DATE" value={customsDate || "—"} />
-                    <Row label="SUPERVISOR"   value={supervisor} highlight />
+                    <Row label="MAKE" value={make || "—"} />
+                    <Row label="YEAR" value={year || "—"} />
+                    <Row label="MODEL" value={model || "—"} />
+                    <Row label="CHASSIS" value={chassisNo || "—"} />
+                    <Row label="ENGINE" value={engineNo ? `${engineNo} (${engineCC}cc)` : "—"} />
+                    {fuelType && <Row label="FUEL" value={fuelType} />}
+                    {bodyType && <Row label="BODY" value={bodyType} />}
                   </div>
-                )}
+
+                  {(tyreFW || tyreRW) && (
+                    <div className="border-t pt-3 grid grid-cols-3 gap-2"
+                      style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                      <MiniRow label="FRONT" value={tyreFW && tyreFD ? `${tyreFW}/${tyreFD}` : "—"} />
+                      <MiniRow label="MID" value={tyreMW && tyreMD ? `${tyreMW}/${tyreMD}` : "—"} />
+                      <MiniRow label="REAR" value={tyreRW && tyreRD ? `${tyreRW}/${tyreRD}` : "—"} />
+                    </div>
+                  )}
+
+                  {receiptNo && (
+                    <div className="border-t pt-3 space-y-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                      <Row label="RECEIPT" value={receiptNo} />
+                      <Row label="CUSTOMS NO" value={customsNo || "—"} />
+                      <Row label="CUSTOMS DATE" value={customsDate || "—"} />
+                      <Row label="SUPERVISOR" value={supervisor} highlight />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </form>
-      </div>
-    )}
+          </form>
+        </div>
+      )}
 
 
     </div>
@@ -1317,13 +1357,6 @@ function MiniRow({ label, value }: { label: string; value: string }) {
 
 /* ════════════════ ICON LIBRARY ════════════════ */
 
-function SearchIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
 function BoltIcon() {
   return (
     <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#81B71A" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
