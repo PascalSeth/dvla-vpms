@@ -29,10 +29,36 @@ export type BookingMinAggregateOutputType = {
   type: string | null
   status: $Enums.BookingStatus | null
   owner: string | null
+  ownerAddress: string | null
+  ownerPhone: string | null
   vehicle: string | null
   plate: string | null
   date: string | null
   classification: string | null
+  make: string | null
+  model: string | null
+  year: string | null
+  bodyType: string | null
+  fuelType: string | null
+  chassisNo: string | null
+  engineNo: string | null
+  engineCC: string | null
+  cylinders: string | null
+  netWeight: string | null
+  grossWeight: string | null
+  tyreFW: string | null
+  tyreFD: string | null
+  tyreMW: string | null
+  tyreMD: string | null
+  tyreRW: string | null
+  tyreRD: string | null
+  vehicleModelId: string | null
+  receiptNo: string | null
+  receiptDate: string | null
+  customsNo: string | null
+  customsDate: string | null
+  supervisor: string | null
+  supervisorId: string | null
   previousOwnerName: string | null
   previousOwnerPhone: string | null
   previousOwnerAddress: string | null
@@ -53,10 +79,36 @@ export type BookingMaxAggregateOutputType = {
   type: string | null
   status: $Enums.BookingStatus | null
   owner: string | null
+  ownerAddress: string | null
+  ownerPhone: string | null
   vehicle: string | null
   plate: string | null
   date: string | null
   classification: string | null
+  make: string | null
+  model: string | null
+  year: string | null
+  bodyType: string | null
+  fuelType: string | null
+  chassisNo: string | null
+  engineNo: string | null
+  engineCC: string | null
+  cylinders: string | null
+  netWeight: string | null
+  grossWeight: string | null
+  tyreFW: string | null
+  tyreFD: string | null
+  tyreMW: string | null
+  tyreMD: string | null
+  tyreRW: string | null
+  tyreRD: string | null
+  vehicleModelId: string | null
+  receiptNo: string | null
+  receiptDate: string | null
+  customsNo: string | null
+  customsDate: string | null
+  supervisor: string | null
+  supervisorId: string | null
   previousOwnerName: string | null
   previousOwnerPhone: string | null
   previousOwnerAddress: string | null
@@ -77,10 +129,36 @@ export type BookingCountAggregateOutputType = {
   type: number
   status: number
   owner: number
+  ownerAddress: number
+  ownerPhone: number
   vehicle: number
   plate: number
   date: number
   classification: number
+  make: number
+  model: number
+  year: number
+  bodyType: number
+  fuelType: number
+  chassisNo: number
+  engineNo: number
+  engineCC: number
+  cylinders: number
+  netWeight: number
+  grossWeight: number
+  tyreFW: number
+  tyreFD: number
+  tyreMW: number
+  tyreMD: number
+  tyreRW: number
+  tyreRD: number
+  vehicleModelId: number
+  receiptNo: number
+  receiptDate: number
+  customsNo: number
+  customsDate: number
+  supervisor: number
+  supervisorId: number
   previousOwnerName: number
   previousOwnerPhone: number
   previousOwnerAddress: number
@@ -103,10 +181,36 @@ export type BookingMinAggregateInputType = {
   type?: true
   status?: true
   owner?: true
+  ownerAddress?: true
+  ownerPhone?: true
   vehicle?: true
   plate?: true
   date?: true
   classification?: true
+  make?: true
+  model?: true
+  year?: true
+  bodyType?: true
+  fuelType?: true
+  chassisNo?: true
+  engineNo?: true
+  engineCC?: true
+  cylinders?: true
+  netWeight?: true
+  grossWeight?: true
+  tyreFW?: true
+  tyreFD?: true
+  tyreMW?: true
+  tyreMD?: true
+  tyreRW?: true
+  tyreRD?: true
+  vehicleModelId?: true
+  receiptNo?: true
+  receiptDate?: true
+  customsNo?: true
+  customsDate?: true
+  supervisor?: true
+  supervisorId?: true
   previousOwnerName?: true
   previousOwnerPhone?: true
   previousOwnerAddress?: true
@@ -127,10 +231,36 @@ export type BookingMaxAggregateInputType = {
   type?: true
   status?: true
   owner?: true
+  ownerAddress?: true
+  ownerPhone?: true
   vehicle?: true
   plate?: true
   date?: true
   classification?: true
+  make?: true
+  model?: true
+  year?: true
+  bodyType?: true
+  fuelType?: true
+  chassisNo?: true
+  engineNo?: true
+  engineCC?: true
+  cylinders?: true
+  netWeight?: true
+  grossWeight?: true
+  tyreFW?: true
+  tyreFD?: true
+  tyreMW?: true
+  tyreMD?: true
+  tyreRW?: true
+  tyreRD?: true
+  vehicleModelId?: true
+  receiptNo?: true
+  receiptDate?: true
+  customsNo?: true
+  customsDate?: true
+  supervisor?: true
+  supervisorId?: true
   previousOwnerName?: true
   previousOwnerPhone?: true
   previousOwnerAddress?: true
@@ -151,10 +281,36 @@ export type BookingCountAggregateInputType = {
   type?: true
   status?: true
   owner?: true
+  ownerAddress?: true
+  ownerPhone?: true
   vehicle?: true
   plate?: true
   date?: true
   classification?: true
+  make?: true
+  model?: true
+  year?: true
+  bodyType?: true
+  fuelType?: true
+  chassisNo?: true
+  engineNo?: true
+  engineCC?: true
+  cylinders?: true
+  netWeight?: true
+  grossWeight?: true
+  tyreFW?: true
+  tyreFD?: true
+  tyreMW?: true
+  tyreMD?: true
+  tyreRW?: true
+  tyreRD?: true
+  vehicleModelId?: true
+  receiptNo?: true
+  receiptDate?: true
+  customsNo?: true
+  customsDate?: true
+  supervisor?: true
+  supervisorId?: true
   previousOwnerName?: true
   previousOwnerPhone?: true
   previousOwnerAddress?: true
@@ -248,10 +404,36 @@ export type BookingGroupByOutputType = {
   type: string
   status: $Enums.BookingStatus
   owner: string
+  ownerAddress: string | null
+  ownerPhone: string | null
   vehicle: string
   plate: string | null
   date: string
   classification: string
+  make: string | null
+  model: string | null
+  year: string | null
+  bodyType: string | null
+  fuelType: string | null
+  chassisNo: string | null
+  engineNo: string | null
+  engineCC: string | null
+  cylinders: string | null
+  netWeight: string | null
+  grossWeight: string | null
+  tyreFW: string | null
+  tyreFD: string | null
+  tyreMW: string | null
+  tyreMD: string | null
+  tyreRW: string | null
+  tyreRD: string | null
+  vehicleModelId: string | null
+  receiptNo: string | null
+  receiptDate: string | null
+  customsNo: string | null
+  customsDate: string | null
+  supervisor: string | null
+  supervisorId: string | null
   previousOwnerName: string | null
   previousOwnerPhone: string | null
   previousOwnerAddress: string | null
@@ -293,10 +475,36 @@ export type BookingWhereInput = {
   type?: Prisma.StringFilter<"Booking"> | string
   status?: Prisma.EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
   owner?: Prisma.StringFilter<"Booking"> | string
+  ownerAddress?: Prisma.StringNullableFilter<"Booking"> | string | null
+  ownerPhone?: Prisma.StringNullableFilter<"Booking"> | string | null
   vehicle?: Prisma.StringFilter<"Booking"> | string
   plate?: Prisma.StringNullableFilter<"Booking"> | string | null
   date?: Prisma.StringFilter<"Booking"> | string
   classification?: Prisma.StringFilter<"Booking"> | string
+  make?: Prisma.StringNullableFilter<"Booking"> | string | null
+  model?: Prisma.StringNullableFilter<"Booking"> | string | null
+  year?: Prisma.StringNullableFilter<"Booking"> | string | null
+  bodyType?: Prisma.StringNullableFilter<"Booking"> | string | null
+  fuelType?: Prisma.StringNullableFilter<"Booking"> | string | null
+  chassisNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  engineNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  engineCC?: Prisma.StringNullableFilter<"Booking"> | string | null
+  cylinders?: Prisma.StringNullableFilter<"Booking"> | string | null
+  netWeight?: Prisma.StringNullableFilter<"Booking"> | string | null
+  grossWeight?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreFW?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreFD?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreMW?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreMD?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreRW?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreRD?: Prisma.StringNullableFilter<"Booking"> | string | null
+  vehicleModelId?: Prisma.StringNullableFilter<"Booking"> | string | null
+  receiptNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  receiptDate?: Prisma.StringNullableFilter<"Booking"> | string | null
+  customsNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  customsDate?: Prisma.StringNullableFilter<"Booking"> | string | null
+  supervisor?: Prisma.StringNullableFilter<"Booking"> | string | null
+  supervisorId?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerName?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerPhone?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerAddress?: Prisma.StringNullableFilter<"Booking"> | string | null
@@ -310,6 +518,8 @@ export type BookingWhereInput = {
   reviewNote?: Prisma.StringNullableFilter<"Booking"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Booking"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Booking"> | Date | string
+  vehicleModel?: Prisma.XOR<Prisma.VehicleModelNullableScalarRelationFilter, Prisma.VehicleModelWhereInput> | null
+  supervisorRel?: Prisma.XOR<Prisma.SupervisorNullableScalarRelationFilter, Prisma.SupervisorWhereInput> | null
   branch?: Prisma.XOR<Prisma.BranchNullableScalarRelationFilter, Prisma.BranchWhereInput> | null
   vrsInvoice?: Prisma.XOR<Prisma.VrsInvoiceNullableScalarRelationFilter, Prisma.VrsInvoiceWhereInput> | null
   reservation?: Prisma.XOR<Prisma.ReservationNullableScalarRelationFilter, Prisma.ReservationWhereInput> | null
@@ -323,10 +533,36 @@ export type BookingOrderByWithRelationInput = {
   type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   owner?: Prisma.SortOrder
+  ownerAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  ownerPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   vehicle?: Prisma.SortOrder
   plate?: Prisma.SortOrderInput | Prisma.SortOrder
   date?: Prisma.SortOrder
   classification?: Prisma.SortOrder
+  make?: Prisma.SortOrderInput | Prisma.SortOrder
+  model?: Prisma.SortOrderInput | Prisma.SortOrder
+  year?: Prisma.SortOrderInput | Prisma.SortOrder
+  bodyType?: Prisma.SortOrderInput | Prisma.SortOrder
+  fuelType?: Prisma.SortOrderInput | Prisma.SortOrder
+  chassisNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  engineNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  engineCC?: Prisma.SortOrderInput | Prisma.SortOrder
+  cylinders?: Prisma.SortOrderInput | Prisma.SortOrder
+  netWeight?: Prisma.SortOrderInput | Prisma.SortOrder
+  grossWeight?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreFW?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreFD?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreMW?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreMD?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreRW?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreRD?: Prisma.SortOrderInput | Prisma.SortOrder
+  vehicleModelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  customsNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  customsDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  supervisor?: Prisma.SortOrderInput | Prisma.SortOrder
+  supervisorId?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerName?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerAddress?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -340,6 +576,8 @@ export type BookingOrderByWithRelationInput = {
   reviewNote?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  vehicleModel?: Prisma.VehicleModelOrderByWithRelationInput
+  supervisorRel?: Prisma.SupervisorOrderByWithRelationInput
   branch?: Prisma.BranchOrderByWithRelationInput
   vrsInvoice?: Prisma.VrsInvoiceOrderByWithRelationInput
   reservation?: Prisma.ReservationOrderByWithRelationInput
@@ -356,10 +594,36 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   type?: Prisma.StringFilter<"Booking"> | string
   status?: Prisma.EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
   owner?: Prisma.StringFilter<"Booking"> | string
+  ownerAddress?: Prisma.StringNullableFilter<"Booking"> | string | null
+  ownerPhone?: Prisma.StringNullableFilter<"Booking"> | string | null
   vehicle?: Prisma.StringFilter<"Booking"> | string
   plate?: Prisma.StringNullableFilter<"Booking"> | string | null
   date?: Prisma.StringFilter<"Booking"> | string
   classification?: Prisma.StringFilter<"Booking"> | string
+  make?: Prisma.StringNullableFilter<"Booking"> | string | null
+  model?: Prisma.StringNullableFilter<"Booking"> | string | null
+  year?: Prisma.StringNullableFilter<"Booking"> | string | null
+  bodyType?: Prisma.StringNullableFilter<"Booking"> | string | null
+  fuelType?: Prisma.StringNullableFilter<"Booking"> | string | null
+  chassisNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  engineNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  engineCC?: Prisma.StringNullableFilter<"Booking"> | string | null
+  cylinders?: Prisma.StringNullableFilter<"Booking"> | string | null
+  netWeight?: Prisma.StringNullableFilter<"Booking"> | string | null
+  grossWeight?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreFW?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreFD?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreMW?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreMD?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreRW?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreRD?: Prisma.StringNullableFilter<"Booking"> | string | null
+  vehicleModelId?: Prisma.StringNullableFilter<"Booking"> | string | null
+  receiptNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  receiptDate?: Prisma.StringNullableFilter<"Booking"> | string | null
+  customsNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  customsDate?: Prisma.StringNullableFilter<"Booking"> | string | null
+  supervisor?: Prisma.StringNullableFilter<"Booking"> | string | null
+  supervisorId?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerName?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerPhone?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerAddress?: Prisma.StringNullableFilter<"Booking"> | string | null
@@ -373,6 +637,8 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   reviewNote?: Prisma.StringNullableFilter<"Booking"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Booking"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Booking"> | Date | string
+  vehicleModel?: Prisma.XOR<Prisma.VehicleModelNullableScalarRelationFilter, Prisma.VehicleModelWhereInput> | null
+  supervisorRel?: Prisma.XOR<Prisma.SupervisorNullableScalarRelationFilter, Prisma.SupervisorWhereInput> | null
   branch?: Prisma.XOR<Prisma.BranchNullableScalarRelationFilter, Prisma.BranchWhereInput> | null
   vrsInvoice?: Prisma.XOR<Prisma.VrsInvoiceNullableScalarRelationFilter, Prisma.VrsInvoiceWhereInput> | null
   reservation?: Prisma.XOR<Prisma.ReservationNullableScalarRelationFilter, Prisma.ReservationWhereInput> | null
@@ -386,10 +652,36 @@ export type BookingOrderByWithAggregationInput = {
   type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   owner?: Prisma.SortOrder
+  ownerAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  ownerPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   vehicle?: Prisma.SortOrder
   plate?: Prisma.SortOrderInput | Prisma.SortOrder
   date?: Prisma.SortOrder
   classification?: Prisma.SortOrder
+  make?: Prisma.SortOrderInput | Prisma.SortOrder
+  model?: Prisma.SortOrderInput | Prisma.SortOrder
+  year?: Prisma.SortOrderInput | Prisma.SortOrder
+  bodyType?: Prisma.SortOrderInput | Prisma.SortOrder
+  fuelType?: Prisma.SortOrderInput | Prisma.SortOrder
+  chassisNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  engineNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  engineCC?: Prisma.SortOrderInput | Prisma.SortOrder
+  cylinders?: Prisma.SortOrderInput | Prisma.SortOrder
+  netWeight?: Prisma.SortOrderInput | Prisma.SortOrder
+  grossWeight?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreFW?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreFD?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreMW?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreMD?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreRW?: Prisma.SortOrderInput | Prisma.SortOrder
+  tyreRD?: Prisma.SortOrderInput | Prisma.SortOrder
+  vehicleModelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  customsNo?: Prisma.SortOrderInput | Prisma.SortOrder
+  customsDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  supervisor?: Prisma.SortOrderInput | Prisma.SortOrder
+  supervisorId?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerName?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerAddress?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -416,10 +708,36 @@ export type BookingScalarWhereWithAggregatesInput = {
   type?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   status?: Prisma.EnumBookingStatusWithAggregatesFilter<"Booking"> | $Enums.BookingStatus
   owner?: Prisma.StringWithAggregatesFilter<"Booking"> | string
+  ownerAddress?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  ownerPhone?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   vehicle?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   plate?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   date?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   classification?: Prisma.StringWithAggregatesFilter<"Booking"> | string
+  make?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  model?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  year?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  bodyType?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  fuelType?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  chassisNo?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  engineNo?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  engineCC?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  cylinders?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  netWeight?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  grossWeight?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  tyreFW?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  tyreFD?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  tyreMW?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  tyreMD?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  tyreRW?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  tyreRD?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  vehicleModelId?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  receiptNo?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  receiptDate?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  customsNo?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  customsDate?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  supervisor?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  supervisorId?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   previousOwnerName?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   previousOwnerPhone?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   previousOwnerAddress?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
@@ -440,10 +758,34 @@ export type BookingCreateInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -452,6 +794,8 @@ export type BookingCreateInput = {
   reviewNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  vehicleModel?: Prisma.VehicleModelCreateNestedOneWithoutBookingsInput
+  supervisorRel?: Prisma.SupervisorCreateNestedOneWithoutBookingsInput
   branch?: Prisma.BranchCreateNestedOneWithoutBookingsInput
   vrsInvoice?: Prisma.VrsInvoiceCreateNestedOneWithoutBookingsInput
   reservation?: Prisma.ReservationCreateNestedOneWithoutBookingsInput
@@ -465,10 +809,36 @@ export type BookingUncheckedCreateInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -490,10 +860,34 @@ export type BookingUpdateInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -502,6 +896,8 @@ export type BookingUpdateInput = {
   reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vehicleModel?: Prisma.VehicleModelUpdateOneWithoutBookingsNestedInput
+  supervisorRel?: Prisma.SupervisorUpdateOneWithoutBookingsNestedInput
   branch?: Prisma.BranchUpdateOneWithoutBookingsNestedInput
   vrsInvoice?: Prisma.VrsInvoiceUpdateOneWithoutBookingsNestedInput
   reservation?: Prisma.ReservationUpdateOneWithoutBookingsNestedInput
@@ -515,10 +911,36 @@ export type BookingUncheckedUpdateInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -540,10 +962,36 @@ export type BookingCreateManyInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -564,10 +1012,34 @@ export type BookingUpdateManyMutationInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -583,10 +1055,36 @@ export type BookingUncheckedUpdateManyInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -617,10 +1115,36 @@ export type BookingCountOrderByAggregateInput = {
   type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   owner?: Prisma.SortOrder
+  ownerAddress?: Prisma.SortOrder
+  ownerPhone?: Prisma.SortOrder
   vehicle?: Prisma.SortOrder
   plate?: Prisma.SortOrder
   date?: Prisma.SortOrder
   classification?: Prisma.SortOrder
+  make?: Prisma.SortOrder
+  model?: Prisma.SortOrder
+  year?: Prisma.SortOrder
+  bodyType?: Prisma.SortOrder
+  fuelType?: Prisma.SortOrder
+  chassisNo?: Prisma.SortOrder
+  engineNo?: Prisma.SortOrder
+  engineCC?: Prisma.SortOrder
+  cylinders?: Prisma.SortOrder
+  netWeight?: Prisma.SortOrder
+  grossWeight?: Prisma.SortOrder
+  tyreFW?: Prisma.SortOrder
+  tyreFD?: Prisma.SortOrder
+  tyreMW?: Prisma.SortOrder
+  tyreMD?: Prisma.SortOrder
+  tyreRW?: Prisma.SortOrder
+  tyreRD?: Prisma.SortOrder
+  vehicleModelId?: Prisma.SortOrder
+  receiptNo?: Prisma.SortOrder
+  receiptDate?: Prisma.SortOrder
+  customsNo?: Prisma.SortOrder
+  customsDate?: Prisma.SortOrder
+  supervisor?: Prisma.SortOrder
+  supervisorId?: Prisma.SortOrder
   previousOwnerName?: Prisma.SortOrder
   previousOwnerPhone?: Prisma.SortOrder
   previousOwnerAddress?: Prisma.SortOrder
@@ -641,10 +1165,36 @@ export type BookingMaxOrderByAggregateInput = {
   type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   owner?: Prisma.SortOrder
+  ownerAddress?: Prisma.SortOrder
+  ownerPhone?: Prisma.SortOrder
   vehicle?: Prisma.SortOrder
   plate?: Prisma.SortOrder
   date?: Prisma.SortOrder
   classification?: Prisma.SortOrder
+  make?: Prisma.SortOrder
+  model?: Prisma.SortOrder
+  year?: Prisma.SortOrder
+  bodyType?: Prisma.SortOrder
+  fuelType?: Prisma.SortOrder
+  chassisNo?: Prisma.SortOrder
+  engineNo?: Prisma.SortOrder
+  engineCC?: Prisma.SortOrder
+  cylinders?: Prisma.SortOrder
+  netWeight?: Prisma.SortOrder
+  grossWeight?: Prisma.SortOrder
+  tyreFW?: Prisma.SortOrder
+  tyreFD?: Prisma.SortOrder
+  tyreMW?: Prisma.SortOrder
+  tyreMD?: Prisma.SortOrder
+  tyreRW?: Prisma.SortOrder
+  tyreRD?: Prisma.SortOrder
+  vehicleModelId?: Prisma.SortOrder
+  receiptNo?: Prisma.SortOrder
+  receiptDate?: Prisma.SortOrder
+  customsNo?: Prisma.SortOrder
+  customsDate?: Prisma.SortOrder
+  supervisor?: Prisma.SortOrder
+  supervisorId?: Prisma.SortOrder
   previousOwnerName?: Prisma.SortOrder
   previousOwnerPhone?: Prisma.SortOrder
   previousOwnerAddress?: Prisma.SortOrder
@@ -665,10 +1215,36 @@ export type BookingMinOrderByAggregateInput = {
   type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   owner?: Prisma.SortOrder
+  ownerAddress?: Prisma.SortOrder
+  ownerPhone?: Prisma.SortOrder
   vehicle?: Prisma.SortOrder
   plate?: Prisma.SortOrder
   date?: Prisma.SortOrder
   classification?: Prisma.SortOrder
+  make?: Prisma.SortOrder
+  model?: Prisma.SortOrder
+  year?: Prisma.SortOrder
+  bodyType?: Prisma.SortOrder
+  fuelType?: Prisma.SortOrder
+  chassisNo?: Prisma.SortOrder
+  engineNo?: Prisma.SortOrder
+  engineCC?: Prisma.SortOrder
+  cylinders?: Prisma.SortOrder
+  netWeight?: Prisma.SortOrder
+  grossWeight?: Prisma.SortOrder
+  tyreFW?: Prisma.SortOrder
+  tyreFD?: Prisma.SortOrder
+  tyreMW?: Prisma.SortOrder
+  tyreMD?: Prisma.SortOrder
+  tyreRW?: Prisma.SortOrder
+  tyreRD?: Prisma.SortOrder
+  vehicleModelId?: Prisma.SortOrder
+  receiptNo?: Prisma.SortOrder
+  receiptDate?: Prisma.SortOrder
+  customsNo?: Prisma.SortOrder
+  customsDate?: Prisma.SortOrder
+  supervisor?: Prisma.SortOrder
+  supervisorId?: Prisma.SortOrder
   previousOwnerName?: Prisma.SortOrder
   previousOwnerPhone?: Prisma.SortOrder
   previousOwnerAddress?: Prisma.SortOrder
@@ -919,15 +1495,123 @@ export type BookingUpdateOneWithoutPickupsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BookingUpdateToOneWithWhereWithoutPickupsInput, Prisma.BookingUpdateWithoutPickupsInput>, Prisma.BookingUncheckedUpdateWithoutPickupsInput>
 }
 
+export type BookingCreateNestedManyWithoutVehicleModelInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutVehicleModelInput, Prisma.BookingUncheckedCreateWithoutVehicleModelInput> | Prisma.BookingCreateWithoutVehicleModelInput[] | Prisma.BookingUncheckedCreateWithoutVehicleModelInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutVehicleModelInput | Prisma.BookingCreateOrConnectWithoutVehicleModelInput[]
+  createMany?: Prisma.BookingCreateManyVehicleModelInputEnvelope
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+}
+
+export type BookingUncheckedCreateNestedManyWithoutVehicleModelInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutVehicleModelInput, Prisma.BookingUncheckedCreateWithoutVehicleModelInput> | Prisma.BookingCreateWithoutVehicleModelInput[] | Prisma.BookingUncheckedCreateWithoutVehicleModelInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutVehicleModelInput | Prisma.BookingCreateOrConnectWithoutVehicleModelInput[]
+  createMany?: Prisma.BookingCreateManyVehicleModelInputEnvelope
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+}
+
+export type BookingUpdateManyWithoutVehicleModelNestedInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutVehicleModelInput, Prisma.BookingUncheckedCreateWithoutVehicleModelInput> | Prisma.BookingCreateWithoutVehicleModelInput[] | Prisma.BookingUncheckedCreateWithoutVehicleModelInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutVehicleModelInput | Prisma.BookingCreateOrConnectWithoutVehicleModelInput[]
+  upsert?: Prisma.BookingUpsertWithWhereUniqueWithoutVehicleModelInput | Prisma.BookingUpsertWithWhereUniqueWithoutVehicleModelInput[]
+  createMany?: Prisma.BookingCreateManyVehicleModelInputEnvelope
+  set?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  disconnect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  delete?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  update?: Prisma.BookingUpdateWithWhereUniqueWithoutVehicleModelInput | Prisma.BookingUpdateWithWhereUniqueWithoutVehicleModelInput[]
+  updateMany?: Prisma.BookingUpdateManyWithWhereWithoutVehicleModelInput | Prisma.BookingUpdateManyWithWhereWithoutVehicleModelInput[]
+  deleteMany?: Prisma.BookingScalarWhereInput | Prisma.BookingScalarWhereInput[]
+}
+
+export type BookingUncheckedUpdateManyWithoutVehicleModelNestedInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutVehicleModelInput, Prisma.BookingUncheckedCreateWithoutVehicleModelInput> | Prisma.BookingCreateWithoutVehicleModelInput[] | Prisma.BookingUncheckedCreateWithoutVehicleModelInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutVehicleModelInput | Prisma.BookingCreateOrConnectWithoutVehicleModelInput[]
+  upsert?: Prisma.BookingUpsertWithWhereUniqueWithoutVehicleModelInput | Prisma.BookingUpsertWithWhereUniqueWithoutVehicleModelInput[]
+  createMany?: Prisma.BookingCreateManyVehicleModelInputEnvelope
+  set?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  disconnect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  delete?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  update?: Prisma.BookingUpdateWithWhereUniqueWithoutVehicleModelInput | Prisma.BookingUpdateWithWhereUniqueWithoutVehicleModelInput[]
+  updateMany?: Prisma.BookingUpdateManyWithWhereWithoutVehicleModelInput | Prisma.BookingUpdateManyWithWhereWithoutVehicleModelInput[]
+  deleteMany?: Prisma.BookingScalarWhereInput | Prisma.BookingScalarWhereInput[]
+}
+
+export type BookingCreateNestedManyWithoutSupervisorRelInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutSupervisorRelInput, Prisma.BookingUncheckedCreateWithoutSupervisorRelInput> | Prisma.BookingCreateWithoutSupervisorRelInput[] | Prisma.BookingUncheckedCreateWithoutSupervisorRelInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutSupervisorRelInput | Prisma.BookingCreateOrConnectWithoutSupervisorRelInput[]
+  createMany?: Prisma.BookingCreateManySupervisorRelInputEnvelope
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+}
+
+export type BookingUncheckedCreateNestedManyWithoutSupervisorRelInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutSupervisorRelInput, Prisma.BookingUncheckedCreateWithoutSupervisorRelInput> | Prisma.BookingCreateWithoutSupervisorRelInput[] | Prisma.BookingUncheckedCreateWithoutSupervisorRelInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutSupervisorRelInput | Prisma.BookingCreateOrConnectWithoutSupervisorRelInput[]
+  createMany?: Prisma.BookingCreateManySupervisorRelInputEnvelope
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+}
+
+export type BookingUpdateManyWithoutSupervisorRelNestedInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutSupervisorRelInput, Prisma.BookingUncheckedCreateWithoutSupervisorRelInput> | Prisma.BookingCreateWithoutSupervisorRelInput[] | Prisma.BookingUncheckedCreateWithoutSupervisorRelInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutSupervisorRelInput | Prisma.BookingCreateOrConnectWithoutSupervisorRelInput[]
+  upsert?: Prisma.BookingUpsertWithWhereUniqueWithoutSupervisorRelInput | Prisma.BookingUpsertWithWhereUniqueWithoutSupervisorRelInput[]
+  createMany?: Prisma.BookingCreateManySupervisorRelInputEnvelope
+  set?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  disconnect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  delete?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  update?: Prisma.BookingUpdateWithWhereUniqueWithoutSupervisorRelInput | Prisma.BookingUpdateWithWhereUniqueWithoutSupervisorRelInput[]
+  updateMany?: Prisma.BookingUpdateManyWithWhereWithoutSupervisorRelInput | Prisma.BookingUpdateManyWithWhereWithoutSupervisorRelInput[]
+  deleteMany?: Prisma.BookingScalarWhereInput | Prisma.BookingScalarWhereInput[]
+}
+
+export type BookingUncheckedUpdateManyWithoutSupervisorRelNestedInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutSupervisorRelInput, Prisma.BookingUncheckedCreateWithoutSupervisorRelInput> | Prisma.BookingCreateWithoutSupervisorRelInput[] | Prisma.BookingUncheckedCreateWithoutSupervisorRelInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutSupervisorRelInput | Prisma.BookingCreateOrConnectWithoutSupervisorRelInput[]
+  upsert?: Prisma.BookingUpsertWithWhereUniqueWithoutSupervisorRelInput | Prisma.BookingUpsertWithWhereUniqueWithoutSupervisorRelInput[]
+  createMany?: Prisma.BookingCreateManySupervisorRelInputEnvelope
+  set?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  disconnect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  delete?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  update?: Prisma.BookingUpdateWithWhereUniqueWithoutSupervisorRelInput | Prisma.BookingUpdateWithWhereUniqueWithoutSupervisorRelInput[]
+  updateMany?: Prisma.BookingUpdateManyWithWhereWithoutSupervisorRelInput | Prisma.BookingUpdateManyWithWhereWithoutSupervisorRelInput[]
+  deleteMany?: Prisma.BookingScalarWhereInput | Prisma.BookingScalarWhereInput[]
+}
+
 export type BookingCreateWithoutBranchInput = {
   id?: string
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -936,6 +1620,8 @@ export type BookingCreateWithoutBranchInput = {
   reviewNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  vehicleModel?: Prisma.VehicleModelCreateNestedOneWithoutBookingsInput
+  supervisorRel?: Prisma.SupervisorCreateNestedOneWithoutBookingsInput
   vrsInvoice?: Prisma.VrsInvoiceCreateNestedOneWithoutBookingsInput
   reservation?: Prisma.ReservationCreateNestedOneWithoutBookingsInput
   createdBy?: Prisma.UserCreateNestedOneWithoutCreatedBookingsInput
@@ -948,10 +1634,36 @@ export type BookingUncheckedCreateWithoutBranchInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1001,10 +1713,36 @@ export type BookingScalarWhereInput = {
   type?: Prisma.StringFilter<"Booking"> | string
   status?: Prisma.EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
   owner?: Prisma.StringFilter<"Booking"> | string
+  ownerAddress?: Prisma.StringNullableFilter<"Booking"> | string | null
+  ownerPhone?: Prisma.StringNullableFilter<"Booking"> | string | null
   vehicle?: Prisma.StringFilter<"Booking"> | string
   plate?: Prisma.StringNullableFilter<"Booking"> | string | null
   date?: Prisma.StringFilter<"Booking"> | string
   classification?: Prisma.StringFilter<"Booking"> | string
+  make?: Prisma.StringNullableFilter<"Booking"> | string | null
+  model?: Prisma.StringNullableFilter<"Booking"> | string | null
+  year?: Prisma.StringNullableFilter<"Booking"> | string | null
+  bodyType?: Prisma.StringNullableFilter<"Booking"> | string | null
+  fuelType?: Prisma.StringNullableFilter<"Booking"> | string | null
+  chassisNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  engineNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  engineCC?: Prisma.StringNullableFilter<"Booking"> | string | null
+  cylinders?: Prisma.StringNullableFilter<"Booking"> | string | null
+  netWeight?: Prisma.StringNullableFilter<"Booking"> | string | null
+  grossWeight?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreFW?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreFD?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreMW?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreMD?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreRW?: Prisma.StringNullableFilter<"Booking"> | string | null
+  tyreRD?: Prisma.StringNullableFilter<"Booking"> | string | null
+  vehicleModelId?: Prisma.StringNullableFilter<"Booking"> | string | null
+  receiptNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  receiptDate?: Prisma.StringNullableFilter<"Booking"> | string | null
+  customsNo?: Prisma.StringNullableFilter<"Booking"> | string | null
+  customsDate?: Prisma.StringNullableFilter<"Booking"> | string | null
+  supervisor?: Prisma.StringNullableFilter<"Booking"> | string | null
+  supervisorId?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerName?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerPhone?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerAddress?: Prisma.StringNullableFilter<"Booking"> | string | null
@@ -1025,10 +1763,34 @@ export type BookingCreateWithoutCreatedByInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1037,6 +1799,8 @@ export type BookingCreateWithoutCreatedByInput = {
   reviewNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  vehicleModel?: Prisma.VehicleModelCreateNestedOneWithoutBookingsInput
+  supervisorRel?: Prisma.SupervisorCreateNestedOneWithoutBookingsInput
   branch?: Prisma.BranchCreateNestedOneWithoutBookingsInput
   vrsInvoice?: Prisma.VrsInvoiceCreateNestedOneWithoutBookingsInput
   reservation?: Prisma.ReservationCreateNestedOneWithoutBookingsInput
@@ -1049,10 +1813,36 @@ export type BookingUncheckedCreateWithoutCreatedByInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1083,10 +1873,34 @@ export type BookingCreateWithoutReviewedByInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1095,6 +1909,8 @@ export type BookingCreateWithoutReviewedByInput = {
   reviewNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  vehicleModel?: Prisma.VehicleModelCreateNestedOneWithoutBookingsInput
+  supervisorRel?: Prisma.SupervisorCreateNestedOneWithoutBookingsInput
   branch?: Prisma.BranchCreateNestedOneWithoutBookingsInput
   vrsInvoice?: Prisma.VrsInvoiceCreateNestedOneWithoutBookingsInput
   reservation?: Prisma.ReservationCreateNestedOneWithoutBookingsInput
@@ -1107,10 +1923,36 @@ export type BookingUncheckedCreateWithoutReviewedByInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1173,10 +2015,34 @@ export type BookingCreateWithoutReservationInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1185,6 +2051,8 @@ export type BookingCreateWithoutReservationInput = {
   reviewNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  vehicleModel?: Prisma.VehicleModelCreateNestedOneWithoutBookingsInput
+  supervisorRel?: Prisma.SupervisorCreateNestedOneWithoutBookingsInput
   branch?: Prisma.BranchCreateNestedOneWithoutBookingsInput
   vrsInvoice?: Prisma.VrsInvoiceCreateNestedOneWithoutBookingsInput
   createdBy?: Prisma.UserCreateNestedOneWithoutCreatedBookingsInput
@@ -1197,10 +2065,36 @@ export type BookingUncheckedCreateWithoutReservationInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1247,10 +2141,34 @@ export type BookingCreateWithoutVrsInvoiceInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1259,6 +2177,8 @@ export type BookingCreateWithoutVrsInvoiceInput = {
   reviewNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  vehicleModel?: Prisma.VehicleModelCreateNestedOneWithoutBookingsInput
+  supervisorRel?: Prisma.SupervisorCreateNestedOneWithoutBookingsInput
   branch?: Prisma.BranchCreateNestedOneWithoutBookingsInput
   reservation?: Prisma.ReservationCreateNestedOneWithoutBookingsInput
   createdBy?: Prisma.UserCreateNestedOneWithoutCreatedBookingsInput
@@ -1271,10 +2191,36 @@ export type BookingUncheckedCreateWithoutVrsInvoiceInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1321,10 +2267,34 @@ export type BookingCreateWithoutPickupsInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1333,6 +2303,8 @@ export type BookingCreateWithoutPickupsInput = {
   reviewNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  vehicleModel?: Prisma.VehicleModelCreateNestedOneWithoutBookingsInput
+  supervisorRel?: Prisma.SupervisorCreateNestedOneWithoutBookingsInput
   branch?: Prisma.BranchCreateNestedOneWithoutBookingsInput
   vrsInvoice?: Prisma.VrsInvoiceCreateNestedOneWithoutBookingsInput
   reservation?: Prisma.ReservationCreateNestedOneWithoutBookingsInput
@@ -1345,10 +2317,36 @@ export type BookingUncheckedCreateWithoutPickupsInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1385,10 +2383,34 @@ export type BookingUpdateWithoutPickupsInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1397,6 +2419,8 @@ export type BookingUpdateWithoutPickupsInput = {
   reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vehicleModel?: Prisma.VehicleModelUpdateOneWithoutBookingsNestedInput
+  supervisorRel?: Prisma.SupervisorUpdateOneWithoutBookingsNestedInput
   branch?: Prisma.BranchUpdateOneWithoutBookingsNestedInput
   vrsInvoice?: Prisma.VrsInvoiceUpdateOneWithoutBookingsNestedInput
   reservation?: Prisma.ReservationUpdateOneWithoutBookingsNestedInput
@@ -1409,10 +2433,36 @@ export type BookingUncheckedUpdateWithoutPickupsInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1428,15 +2478,293 @@ export type BookingUncheckedUpdateWithoutPickupsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type BookingCreateWithoutVehicleModelInput = {
+  id?: string
+  type: string
+  status?: $Enums.BookingStatus
+  owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
+  vehicle: string
+  plate?: string | null
+  date: string
+  classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  previousOwnerName?: string | null
+  previousOwnerPhone?: string | null
+  previousOwnerAddress?: string | null
+  previousOwnerCustom?: string | null
+  reviewedAt?: Date | string | null
+  reviewNote?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  supervisorRel?: Prisma.SupervisorCreateNestedOneWithoutBookingsInput
+  branch?: Prisma.BranchCreateNestedOneWithoutBookingsInput
+  vrsInvoice?: Prisma.VrsInvoiceCreateNestedOneWithoutBookingsInput
+  reservation?: Prisma.ReservationCreateNestedOneWithoutBookingsInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutCreatedBookingsInput
+  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedBookingsInput
+  pickups?: Prisma.PickupRegistrationCreateNestedManyWithoutBookingInput
+}
+
+export type BookingUncheckedCreateWithoutVehicleModelInput = {
+  id?: string
+  type: string
+  status?: $Enums.BookingStatus
+  owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
+  vehicle: string
+  plate?: string | null
+  date: string
+  classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
+  previousOwnerName?: string | null
+  previousOwnerPhone?: string | null
+  previousOwnerAddress?: string | null
+  previousOwnerCustom?: string | null
+  branchId?: string | null
+  vrsInvoiceId?: string | null
+  reservationId?: string | null
+  createdById?: string | null
+  reviewedById?: string | null
+  reviewedAt?: Date | string | null
+  reviewNote?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  pickups?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBookingInput
+}
+
+export type BookingCreateOrConnectWithoutVehicleModelInput = {
+  where: Prisma.BookingWhereUniqueInput
+  create: Prisma.XOR<Prisma.BookingCreateWithoutVehicleModelInput, Prisma.BookingUncheckedCreateWithoutVehicleModelInput>
+}
+
+export type BookingCreateManyVehicleModelInputEnvelope = {
+  data: Prisma.BookingCreateManyVehicleModelInput | Prisma.BookingCreateManyVehicleModelInput[]
+  skipDuplicates?: boolean
+}
+
+export type BookingUpsertWithWhereUniqueWithoutVehicleModelInput = {
+  where: Prisma.BookingWhereUniqueInput
+  update: Prisma.XOR<Prisma.BookingUpdateWithoutVehicleModelInput, Prisma.BookingUncheckedUpdateWithoutVehicleModelInput>
+  create: Prisma.XOR<Prisma.BookingCreateWithoutVehicleModelInput, Prisma.BookingUncheckedCreateWithoutVehicleModelInput>
+}
+
+export type BookingUpdateWithWhereUniqueWithoutVehicleModelInput = {
+  where: Prisma.BookingWhereUniqueInput
+  data: Prisma.XOR<Prisma.BookingUpdateWithoutVehicleModelInput, Prisma.BookingUncheckedUpdateWithoutVehicleModelInput>
+}
+
+export type BookingUpdateManyWithWhereWithoutVehicleModelInput = {
+  where: Prisma.BookingScalarWhereInput
+  data: Prisma.XOR<Prisma.BookingUpdateManyMutationInput, Prisma.BookingUncheckedUpdateManyWithoutVehicleModelInput>
+}
+
+export type BookingCreateWithoutSupervisorRelInput = {
+  id?: string
+  type: string
+  status?: $Enums.BookingStatus
+  owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
+  vehicle: string
+  plate?: string | null
+  date: string
+  classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  previousOwnerName?: string | null
+  previousOwnerPhone?: string | null
+  previousOwnerAddress?: string | null
+  previousOwnerCustom?: string | null
+  reviewedAt?: Date | string | null
+  reviewNote?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  vehicleModel?: Prisma.VehicleModelCreateNestedOneWithoutBookingsInput
+  branch?: Prisma.BranchCreateNestedOneWithoutBookingsInput
+  vrsInvoice?: Prisma.VrsInvoiceCreateNestedOneWithoutBookingsInput
+  reservation?: Prisma.ReservationCreateNestedOneWithoutBookingsInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutCreatedBookingsInput
+  reviewedBy?: Prisma.UserCreateNestedOneWithoutReviewedBookingsInput
+  pickups?: Prisma.PickupRegistrationCreateNestedManyWithoutBookingInput
+}
+
+export type BookingUncheckedCreateWithoutSupervisorRelInput = {
+  id?: string
+  type: string
+  status?: $Enums.BookingStatus
+  owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
+  vehicle: string
+  plate?: string | null
+  date: string
+  classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  previousOwnerName?: string | null
+  previousOwnerPhone?: string | null
+  previousOwnerAddress?: string | null
+  previousOwnerCustom?: string | null
+  branchId?: string | null
+  vrsInvoiceId?: string | null
+  reservationId?: string | null
+  createdById?: string | null
+  reviewedById?: string | null
+  reviewedAt?: Date | string | null
+  reviewNote?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  pickups?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBookingInput
+}
+
+export type BookingCreateOrConnectWithoutSupervisorRelInput = {
+  where: Prisma.BookingWhereUniqueInput
+  create: Prisma.XOR<Prisma.BookingCreateWithoutSupervisorRelInput, Prisma.BookingUncheckedCreateWithoutSupervisorRelInput>
+}
+
+export type BookingCreateManySupervisorRelInputEnvelope = {
+  data: Prisma.BookingCreateManySupervisorRelInput | Prisma.BookingCreateManySupervisorRelInput[]
+  skipDuplicates?: boolean
+}
+
+export type BookingUpsertWithWhereUniqueWithoutSupervisorRelInput = {
+  where: Prisma.BookingWhereUniqueInput
+  update: Prisma.XOR<Prisma.BookingUpdateWithoutSupervisorRelInput, Prisma.BookingUncheckedUpdateWithoutSupervisorRelInput>
+  create: Prisma.XOR<Prisma.BookingCreateWithoutSupervisorRelInput, Prisma.BookingUncheckedCreateWithoutSupervisorRelInput>
+}
+
+export type BookingUpdateWithWhereUniqueWithoutSupervisorRelInput = {
+  where: Prisma.BookingWhereUniqueInput
+  data: Prisma.XOR<Prisma.BookingUpdateWithoutSupervisorRelInput, Prisma.BookingUncheckedUpdateWithoutSupervisorRelInput>
+}
+
+export type BookingUpdateManyWithWhereWithoutSupervisorRelInput = {
+  where: Prisma.BookingScalarWhereInput
+  data: Prisma.XOR<Prisma.BookingUpdateManyMutationInput, Prisma.BookingUncheckedUpdateManyWithoutSupervisorRelInput>
+}
+
 export type BookingCreateManyBranchInput = {
   id?: string
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1456,10 +2784,34 @@ export type BookingUpdateWithoutBranchInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1468,6 +2820,8 @@ export type BookingUpdateWithoutBranchInput = {
   reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vehicleModel?: Prisma.VehicleModelUpdateOneWithoutBookingsNestedInput
+  supervisorRel?: Prisma.SupervisorUpdateOneWithoutBookingsNestedInput
   vrsInvoice?: Prisma.VrsInvoiceUpdateOneWithoutBookingsNestedInput
   reservation?: Prisma.ReservationUpdateOneWithoutBookingsNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutCreatedBookingsNestedInput
@@ -1480,10 +2834,36 @@ export type BookingUncheckedUpdateWithoutBranchInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1504,10 +2884,36 @@ export type BookingUncheckedUpdateManyWithoutBranchInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1527,10 +2933,36 @@ export type BookingCreateManyCreatedByInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1550,10 +2982,36 @@ export type BookingCreateManyReviewedByInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1573,10 +3031,34 @@ export type BookingUpdateWithoutCreatedByInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1585,6 +3067,8 @@ export type BookingUpdateWithoutCreatedByInput = {
   reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vehicleModel?: Prisma.VehicleModelUpdateOneWithoutBookingsNestedInput
+  supervisorRel?: Prisma.SupervisorUpdateOneWithoutBookingsNestedInput
   branch?: Prisma.BranchUpdateOneWithoutBookingsNestedInput
   vrsInvoice?: Prisma.VrsInvoiceUpdateOneWithoutBookingsNestedInput
   reservation?: Prisma.ReservationUpdateOneWithoutBookingsNestedInput
@@ -1597,10 +3081,36 @@ export type BookingUncheckedUpdateWithoutCreatedByInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1621,10 +3131,36 @@ export type BookingUncheckedUpdateManyWithoutCreatedByInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1644,10 +3180,34 @@ export type BookingUpdateWithoutReviewedByInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1656,6 +3216,8 @@ export type BookingUpdateWithoutReviewedByInput = {
   reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vehicleModel?: Prisma.VehicleModelUpdateOneWithoutBookingsNestedInput
+  supervisorRel?: Prisma.SupervisorUpdateOneWithoutBookingsNestedInput
   branch?: Prisma.BranchUpdateOneWithoutBookingsNestedInput
   vrsInvoice?: Prisma.VrsInvoiceUpdateOneWithoutBookingsNestedInput
   reservation?: Prisma.ReservationUpdateOneWithoutBookingsNestedInput
@@ -1668,10 +3230,36 @@ export type BookingUncheckedUpdateWithoutReviewedByInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1692,10 +3280,36 @@ export type BookingUncheckedUpdateManyWithoutReviewedByInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1715,10 +3329,36 @@ export type BookingCreateManyReservationInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1738,10 +3378,34 @@ export type BookingUpdateWithoutReservationInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1750,6 +3414,8 @@ export type BookingUpdateWithoutReservationInput = {
   reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vehicleModel?: Prisma.VehicleModelUpdateOneWithoutBookingsNestedInput
+  supervisorRel?: Prisma.SupervisorUpdateOneWithoutBookingsNestedInput
   branch?: Prisma.BranchUpdateOneWithoutBookingsNestedInput
   vrsInvoice?: Prisma.VrsInvoiceUpdateOneWithoutBookingsNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutCreatedBookingsNestedInput
@@ -1762,10 +3428,36 @@ export type BookingUncheckedUpdateWithoutReservationInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1786,10 +3478,36 @@ export type BookingUncheckedUpdateManyWithoutReservationInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1809,10 +3527,36 @@ export type BookingCreateManyVrsInvoiceInput = {
   type: string
   status?: $Enums.BookingStatus
   owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
   vehicle: string
   plate?: string | null
   date: string
   classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1832,10 +3576,34 @@ export type BookingUpdateWithoutVrsInvoiceInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1844,6 +3612,8 @@ export type BookingUpdateWithoutVrsInvoiceInput = {
   reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vehicleModel?: Prisma.VehicleModelUpdateOneWithoutBookingsNestedInput
+  supervisorRel?: Prisma.SupervisorUpdateOneWithoutBookingsNestedInput
   branch?: Prisma.BranchUpdateOneWithoutBookingsNestedInput
   reservation?: Prisma.ReservationUpdateOneWithoutBookingsNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutCreatedBookingsNestedInput
@@ -1856,10 +3626,36 @@ export type BookingUncheckedUpdateWithoutVrsInvoiceInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1880,15 +3676,437 @@ export type BookingUncheckedUpdateManyWithoutVrsInvoiceInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
   plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.StringFieldUpdateOperationsInput | string
   classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerCustom?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reservationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BookingCreateManyVehicleModelInput = {
+  id?: string
+  type: string
+  status?: $Enums.BookingStatus
+  owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
+  vehicle: string
+  plate?: string | null
+  date: string
+  classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  supervisorId?: string | null
+  previousOwnerName?: string | null
+  previousOwnerPhone?: string | null
+  previousOwnerAddress?: string | null
+  previousOwnerCustom?: string | null
+  branchId?: string | null
+  vrsInvoiceId?: string | null
+  reservationId?: string | null
+  createdById?: string | null
+  reviewedById?: string | null
+  reviewedAt?: Date | string | null
+  reviewNote?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BookingUpdateWithoutVehicleModelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicle?: Prisma.StringFieldUpdateOperationsInput | string
+  plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.StringFieldUpdateOperationsInput | string
+  classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerCustom?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  supervisorRel?: Prisma.SupervisorUpdateOneWithoutBookingsNestedInput
+  branch?: Prisma.BranchUpdateOneWithoutBookingsNestedInput
+  vrsInvoice?: Prisma.VrsInvoiceUpdateOneWithoutBookingsNestedInput
+  reservation?: Prisma.ReservationUpdateOneWithoutBookingsNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutCreatedBookingsNestedInput
+  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedBookingsNestedInput
+  pickups?: Prisma.PickupRegistrationUpdateManyWithoutBookingNestedInput
+}
+
+export type BookingUncheckedUpdateWithoutVehicleModelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicle?: Prisma.StringFieldUpdateOperationsInput | string
+  plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.StringFieldUpdateOperationsInput | string
+  classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerCustom?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vrsInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reservationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  pickups?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBookingNestedInput
+}
+
+export type BookingUncheckedUpdateManyWithoutVehicleModelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicle?: Prisma.StringFieldUpdateOperationsInput | string
+  plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.StringFieldUpdateOperationsInput | string
+  classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerCustom?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vrsInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reservationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BookingCreateManySupervisorRelInput = {
+  id?: string
+  type: string
+  status?: $Enums.BookingStatus
+  owner: string
+  ownerAddress?: string | null
+  ownerPhone?: string | null
+  vehicle: string
+  plate?: string | null
+  date: string
+  classification: string
+  make?: string | null
+  model?: string | null
+  year?: string | null
+  bodyType?: string | null
+  fuelType?: string | null
+  chassisNo?: string | null
+  engineNo?: string | null
+  engineCC?: string | null
+  cylinders?: string | null
+  netWeight?: string | null
+  grossWeight?: string | null
+  tyreFW?: string | null
+  tyreFD?: string | null
+  tyreMW?: string | null
+  tyreMD?: string | null
+  tyreRW?: string | null
+  tyreRD?: string | null
+  vehicleModelId?: string | null
+  receiptNo?: string | null
+  receiptDate?: string | null
+  customsNo?: string | null
+  customsDate?: string | null
+  supervisor?: string | null
+  previousOwnerName?: string | null
+  previousOwnerPhone?: string | null
+  previousOwnerAddress?: string | null
+  previousOwnerCustom?: string | null
+  branchId?: string | null
+  vrsInvoiceId?: string | null
+  reservationId?: string | null
+  createdById?: string | null
+  reviewedById?: string | null
+  reviewedAt?: Date | string | null
+  reviewNote?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BookingUpdateWithoutSupervisorRelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicle?: Prisma.StringFieldUpdateOperationsInput | string
+  plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.StringFieldUpdateOperationsInput | string
+  classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerCustom?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vehicleModel?: Prisma.VehicleModelUpdateOneWithoutBookingsNestedInput
+  branch?: Prisma.BranchUpdateOneWithoutBookingsNestedInput
+  vrsInvoice?: Prisma.VrsInvoiceUpdateOneWithoutBookingsNestedInput
+  reservation?: Prisma.ReservationUpdateOneWithoutBookingsNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutCreatedBookingsNestedInput
+  reviewedBy?: Prisma.UserUpdateOneWithoutReviewedBookingsNestedInput
+  pickups?: Prisma.PickupRegistrationUpdateManyWithoutBookingNestedInput
+}
+
+export type BookingUncheckedUpdateWithoutSupervisorRelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicle?: Prisma.StringFieldUpdateOperationsInput | string
+  plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.StringFieldUpdateOperationsInput | string
+  classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerCustom?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vrsInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reservationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  pickups?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBookingNestedInput
+}
+
+export type BookingUncheckedUpdateManyWithoutSupervisorRelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  owner?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicle?: Prisma.StringFieldUpdateOperationsInput | string
+  plate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.StringFieldUpdateOperationsInput | string
+  classification?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fuelType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  chassisNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineCC?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cylinders?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  netWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grossWeight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreFD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreMD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRW?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tyreRD?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleModelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  previousOwnerCustom?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vrsInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1934,10 +4152,36 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   type?: boolean
   status?: boolean
   owner?: boolean
+  ownerAddress?: boolean
+  ownerPhone?: boolean
   vehicle?: boolean
   plate?: boolean
   date?: boolean
   classification?: boolean
+  make?: boolean
+  model?: boolean
+  year?: boolean
+  bodyType?: boolean
+  fuelType?: boolean
+  chassisNo?: boolean
+  engineNo?: boolean
+  engineCC?: boolean
+  cylinders?: boolean
+  netWeight?: boolean
+  grossWeight?: boolean
+  tyreFW?: boolean
+  tyreFD?: boolean
+  tyreMW?: boolean
+  tyreMD?: boolean
+  tyreRW?: boolean
+  tyreRD?: boolean
+  vehicleModelId?: boolean
+  receiptNo?: boolean
+  receiptDate?: boolean
+  customsNo?: boolean
+  customsDate?: boolean
+  supervisor?: boolean
+  supervisorId?: boolean
   previousOwnerName?: boolean
   previousOwnerPhone?: boolean
   previousOwnerAddress?: boolean
@@ -1951,6 +4195,8 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   reviewNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  vehicleModel?: boolean | Prisma.Booking$vehicleModelArgs<ExtArgs>
+  supervisorRel?: boolean | Prisma.Booking$supervisorRelArgs<ExtArgs>
   branch?: boolean | Prisma.Booking$branchArgs<ExtArgs>
   vrsInvoice?: boolean | Prisma.Booking$vrsInvoiceArgs<ExtArgs>
   reservation?: boolean | Prisma.Booking$reservationArgs<ExtArgs>
@@ -1965,10 +4211,36 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   type?: boolean
   status?: boolean
   owner?: boolean
+  ownerAddress?: boolean
+  ownerPhone?: boolean
   vehicle?: boolean
   plate?: boolean
   date?: boolean
   classification?: boolean
+  make?: boolean
+  model?: boolean
+  year?: boolean
+  bodyType?: boolean
+  fuelType?: boolean
+  chassisNo?: boolean
+  engineNo?: boolean
+  engineCC?: boolean
+  cylinders?: boolean
+  netWeight?: boolean
+  grossWeight?: boolean
+  tyreFW?: boolean
+  tyreFD?: boolean
+  tyreMW?: boolean
+  tyreMD?: boolean
+  tyreRW?: boolean
+  tyreRD?: boolean
+  vehicleModelId?: boolean
+  receiptNo?: boolean
+  receiptDate?: boolean
+  customsNo?: boolean
+  customsDate?: boolean
+  supervisor?: boolean
+  supervisorId?: boolean
   previousOwnerName?: boolean
   previousOwnerPhone?: boolean
   previousOwnerAddress?: boolean
@@ -1982,6 +4254,8 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   reviewNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  vehicleModel?: boolean | Prisma.Booking$vehicleModelArgs<ExtArgs>
+  supervisorRel?: boolean | Prisma.Booking$supervisorRelArgs<ExtArgs>
   branch?: boolean | Prisma.Booking$branchArgs<ExtArgs>
   vrsInvoice?: boolean | Prisma.Booking$vrsInvoiceArgs<ExtArgs>
   reservation?: boolean | Prisma.Booking$reservationArgs<ExtArgs>
@@ -1994,10 +4268,36 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   type?: boolean
   status?: boolean
   owner?: boolean
+  ownerAddress?: boolean
+  ownerPhone?: boolean
   vehicle?: boolean
   plate?: boolean
   date?: boolean
   classification?: boolean
+  make?: boolean
+  model?: boolean
+  year?: boolean
+  bodyType?: boolean
+  fuelType?: boolean
+  chassisNo?: boolean
+  engineNo?: boolean
+  engineCC?: boolean
+  cylinders?: boolean
+  netWeight?: boolean
+  grossWeight?: boolean
+  tyreFW?: boolean
+  tyreFD?: boolean
+  tyreMW?: boolean
+  tyreMD?: boolean
+  tyreRW?: boolean
+  tyreRD?: boolean
+  vehicleModelId?: boolean
+  receiptNo?: boolean
+  receiptDate?: boolean
+  customsNo?: boolean
+  customsDate?: boolean
+  supervisor?: boolean
+  supervisorId?: boolean
   previousOwnerName?: boolean
   previousOwnerPhone?: boolean
   previousOwnerAddress?: boolean
@@ -2011,6 +4311,8 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   reviewNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  vehicleModel?: boolean | Prisma.Booking$vehicleModelArgs<ExtArgs>
+  supervisorRel?: boolean | Prisma.Booking$supervisorRelArgs<ExtArgs>
   branch?: boolean | Prisma.Booking$branchArgs<ExtArgs>
   vrsInvoice?: boolean | Prisma.Booking$vrsInvoiceArgs<ExtArgs>
   reservation?: boolean | Prisma.Booking$reservationArgs<ExtArgs>
@@ -2023,10 +4325,36 @@ export type BookingSelectScalar = {
   type?: boolean
   status?: boolean
   owner?: boolean
+  ownerAddress?: boolean
+  ownerPhone?: boolean
   vehicle?: boolean
   plate?: boolean
   date?: boolean
   classification?: boolean
+  make?: boolean
+  model?: boolean
+  year?: boolean
+  bodyType?: boolean
+  fuelType?: boolean
+  chassisNo?: boolean
+  engineNo?: boolean
+  engineCC?: boolean
+  cylinders?: boolean
+  netWeight?: boolean
+  grossWeight?: boolean
+  tyreFW?: boolean
+  tyreFD?: boolean
+  tyreMW?: boolean
+  tyreMD?: boolean
+  tyreRW?: boolean
+  tyreRD?: boolean
+  vehicleModelId?: boolean
+  receiptNo?: boolean
+  receiptDate?: boolean
+  customsNo?: boolean
+  customsDate?: boolean
+  supervisor?: boolean
+  supervisorId?: boolean
   previousOwnerName?: boolean
   previousOwnerPhone?: boolean
   previousOwnerAddress?: boolean
@@ -2042,8 +4370,10 @@ export type BookingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "status" | "owner" | "vehicle" | "plate" | "date" | "classification" | "previousOwnerName" | "previousOwnerPhone" | "previousOwnerAddress" | "previousOwnerCustom" | "branchId" | "vrsInvoiceId" | "reservationId" | "createdById" | "reviewedById" | "reviewedAt" | "reviewNote" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
+export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "status" | "owner" | "ownerAddress" | "ownerPhone" | "vehicle" | "plate" | "date" | "classification" | "make" | "model" | "year" | "bodyType" | "fuelType" | "chassisNo" | "engineNo" | "engineCC" | "cylinders" | "netWeight" | "grossWeight" | "tyreFW" | "tyreFD" | "tyreMW" | "tyreMD" | "tyreRW" | "tyreRD" | "vehicleModelId" | "receiptNo" | "receiptDate" | "customsNo" | "customsDate" | "supervisor" | "supervisorId" | "previousOwnerName" | "previousOwnerPhone" | "previousOwnerAddress" | "previousOwnerCustom" | "branchId" | "vrsInvoiceId" | "reservationId" | "createdById" | "reviewedById" | "reviewedAt" | "reviewNote" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
 export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  vehicleModel?: boolean | Prisma.Booking$vehicleModelArgs<ExtArgs>
+  supervisorRel?: boolean | Prisma.Booking$supervisorRelArgs<ExtArgs>
   branch?: boolean | Prisma.Booking$branchArgs<ExtArgs>
   vrsInvoice?: boolean | Prisma.Booking$vrsInvoiceArgs<ExtArgs>
   reservation?: boolean | Prisma.Booking$reservationArgs<ExtArgs>
@@ -2053,6 +4383,8 @@ export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   _count?: boolean | Prisma.BookingCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BookingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  vehicleModel?: boolean | Prisma.Booking$vehicleModelArgs<ExtArgs>
+  supervisorRel?: boolean | Prisma.Booking$supervisorRelArgs<ExtArgs>
   branch?: boolean | Prisma.Booking$branchArgs<ExtArgs>
   vrsInvoice?: boolean | Prisma.Booking$vrsInvoiceArgs<ExtArgs>
   reservation?: boolean | Prisma.Booking$reservationArgs<ExtArgs>
@@ -2060,6 +4392,8 @@ export type BookingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   reviewedBy?: boolean | Prisma.Booking$reviewedByArgs<ExtArgs>
 }
 export type BookingIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  vehicleModel?: boolean | Prisma.Booking$vehicleModelArgs<ExtArgs>
+  supervisorRel?: boolean | Prisma.Booking$supervisorRelArgs<ExtArgs>
   branch?: boolean | Prisma.Booking$branchArgs<ExtArgs>
   vrsInvoice?: boolean | Prisma.Booking$vrsInvoiceArgs<ExtArgs>
   reservation?: boolean | Prisma.Booking$reservationArgs<ExtArgs>
@@ -2070,6 +4404,8 @@ export type BookingIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Booking"
   objects: {
+    vehicleModel: Prisma.$VehicleModelPayload<ExtArgs> | null
+    supervisorRel: Prisma.$SupervisorPayload<ExtArgs> | null
     branch: Prisma.$BranchPayload<ExtArgs> | null
     vrsInvoice: Prisma.$VrsInvoicePayload<ExtArgs> | null
     reservation: Prisma.$ReservationPayload<ExtArgs> | null
@@ -2082,10 +4418,36 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     type: string
     status: $Enums.BookingStatus
     owner: string
+    ownerAddress: string | null
+    ownerPhone: string | null
     vehicle: string
     plate: string | null
     date: string
     classification: string
+    make: string | null
+    model: string | null
+    year: string | null
+    bodyType: string | null
+    fuelType: string | null
+    chassisNo: string | null
+    engineNo: string | null
+    engineCC: string | null
+    cylinders: string | null
+    netWeight: string | null
+    grossWeight: string | null
+    tyreFW: string | null
+    tyreFD: string | null
+    tyreMW: string | null
+    tyreMD: string | null
+    tyreRW: string | null
+    tyreRD: string | null
+    vehicleModelId: string | null
+    receiptNo: string | null
+    receiptDate: string | null
+    customsNo: string | null
+    customsDate: string | null
+    supervisor: string | null
+    supervisorId: string | null
     previousOwnerName: string | null
     previousOwnerPhone: string | null
     previousOwnerAddress: string | null
@@ -2493,6 +4855,8 @@ readonly fields: BookingFieldRefs;
  */
 export interface Prisma__BookingClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  vehicleModel<T extends Prisma.Booking$vehicleModelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$vehicleModelArgs<ExtArgs>>): Prisma.Prisma__VehicleModelClient<runtime.Types.Result.GetResult<Prisma.$VehicleModelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  supervisorRel<T extends Prisma.Booking$supervisorRelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$supervisorRelArgs<ExtArgs>>): Prisma.Prisma__SupervisorClient<runtime.Types.Result.GetResult<Prisma.$SupervisorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   branch<T extends Prisma.Booking$branchArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$branchArgs<ExtArgs>>): Prisma.Prisma__BranchClient<runtime.Types.Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   vrsInvoice<T extends Prisma.Booking$vrsInvoiceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$vrsInvoiceArgs<ExtArgs>>): Prisma.Prisma__VrsInvoiceClient<runtime.Types.Result.GetResult<Prisma.$VrsInvoicePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reservation<T extends Prisma.Booking$reservationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$reservationArgs<ExtArgs>>): Prisma.Prisma__ReservationClient<runtime.Types.Result.GetResult<Prisma.$ReservationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2532,10 +4896,36 @@ export interface BookingFieldRefs {
   readonly type: Prisma.FieldRef<"Booking", 'String'>
   readonly status: Prisma.FieldRef<"Booking", 'BookingStatus'>
   readonly owner: Prisma.FieldRef<"Booking", 'String'>
+  readonly ownerAddress: Prisma.FieldRef<"Booking", 'String'>
+  readonly ownerPhone: Prisma.FieldRef<"Booking", 'String'>
   readonly vehicle: Prisma.FieldRef<"Booking", 'String'>
   readonly plate: Prisma.FieldRef<"Booking", 'String'>
   readonly date: Prisma.FieldRef<"Booking", 'String'>
   readonly classification: Prisma.FieldRef<"Booking", 'String'>
+  readonly make: Prisma.FieldRef<"Booking", 'String'>
+  readonly model: Prisma.FieldRef<"Booking", 'String'>
+  readonly year: Prisma.FieldRef<"Booking", 'String'>
+  readonly bodyType: Prisma.FieldRef<"Booking", 'String'>
+  readonly fuelType: Prisma.FieldRef<"Booking", 'String'>
+  readonly chassisNo: Prisma.FieldRef<"Booking", 'String'>
+  readonly engineNo: Prisma.FieldRef<"Booking", 'String'>
+  readonly engineCC: Prisma.FieldRef<"Booking", 'String'>
+  readonly cylinders: Prisma.FieldRef<"Booking", 'String'>
+  readonly netWeight: Prisma.FieldRef<"Booking", 'String'>
+  readonly grossWeight: Prisma.FieldRef<"Booking", 'String'>
+  readonly tyreFW: Prisma.FieldRef<"Booking", 'String'>
+  readonly tyreFD: Prisma.FieldRef<"Booking", 'String'>
+  readonly tyreMW: Prisma.FieldRef<"Booking", 'String'>
+  readonly tyreMD: Prisma.FieldRef<"Booking", 'String'>
+  readonly tyreRW: Prisma.FieldRef<"Booking", 'String'>
+  readonly tyreRD: Prisma.FieldRef<"Booking", 'String'>
+  readonly vehicleModelId: Prisma.FieldRef<"Booking", 'String'>
+  readonly receiptNo: Prisma.FieldRef<"Booking", 'String'>
+  readonly receiptDate: Prisma.FieldRef<"Booking", 'String'>
+  readonly customsNo: Prisma.FieldRef<"Booking", 'String'>
+  readonly customsDate: Prisma.FieldRef<"Booking", 'String'>
+  readonly supervisor: Prisma.FieldRef<"Booking", 'String'>
+  readonly supervisorId: Prisma.FieldRef<"Booking", 'String'>
   readonly previousOwnerName: Prisma.FieldRef<"Booking", 'String'>
   readonly previousOwnerPhone: Prisma.FieldRef<"Booking", 'String'>
   readonly previousOwnerAddress: Prisma.FieldRef<"Booking", 'String'>
@@ -2947,6 +5337,44 @@ export type BookingDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Limit how many Bookings to delete.
    */
   limit?: number
+}
+
+/**
+ * Booking.vehicleModel
+ */
+export type Booking$vehicleModelArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VehicleModel
+   */
+  select?: Prisma.VehicleModelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VehicleModel
+   */
+  omit?: Prisma.VehicleModelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
+  where?: Prisma.VehicleModelWhereInput
+}
+
+/**
+ * Booking.supervisorRel
+ */
+export type Booking$supervisorRelArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Supervisor
+   */
+  select?: Prisma.SupervisorSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Supervisor
+   */
+  omit?: Prisma.SupervisorOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupervisorInclude<ExtArgs> | null
+  where?: Prisma.SupervisorWhereInput
 }
 
 /**

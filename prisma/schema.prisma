@@ -79,6 +79,7 @@ model Branch {
   pickupRegistrations PickupRegistration[]
   auditLogs           AuditLog[]
   serviceTypes        ServiceType[]
+  supervisors         Supervisor[]
 
   @@index([regionId])
 }
@@ -220,10 +221,44 @@ model Booking {
   type           String
   status         BookingStatus @default(PENDING)
   owner          String
+  ownerAddress   String?
+  ownerPhone     String?
   vehicle        String
   plate          String?
   date           String
   classification String
+
+  // ── Vehicle Technical Specifications & Identifiers ──
+  make           String?
+  model          String?
+  year           String?
+  bodyType       String?
+  fuelType       String?
+  chassisNo      String?
+  engineNo       String?
+  engineCC       String?
+  cylinders      String?
+  netWeight      String?
+  grossWeight    String?
+  tyreFW         String?
+  tyreFD         String?
+  tyreMW         String?
+  tyreMD         String?
+  tyreRW         String?
+  tyreRD         String?
+
+  // ── Relation to VehicleModel Catalog ──
+  vehicleModelId String?
+  vehicleModel   VehicleModel? @relation(fields: [vehicleModelId], references: [id], onDelete: SetNull)
+
+  // ── Official Revenue Receipt & Certification Details ──
+  receiptNo            String?
+  receiptDate          String?
+  customsNo            String?
+  customsDate          String?
+  supervisor           String?
+  supervisorId         String?
+  supervisorRel        Supervisor?   @relation(fields: [supervisorId], references: [id], onDelete: SetNull)
 
   // ── Previous Title Owner Details (for transfers / change of ownership) ──
   previousOwnerName    String?
@@ -260,6 +295,11 @@ model Booking {
   @@index([reviewedById])
   @@index([status])
   @@index([plate])
+  @@index([chassisNo])
+  @@index([engineNo])
+  @@index([vehicleModelId])
+  @@index([supervisorId])
+  @@index([receiptNo])
   @@index([createdAt])
 }
 
@@ -345,7 +385,7 @@ model ServiceType {
   requiresPreviousOwner   Boolean  @default(false) // If true, new bookings with this service require previous title owner details
   prevOwnerRequireName    Boolean  @default(true)  // Require previous owner full legal name
   prevOwnerRequirePhone   Boolean  @default(false) // Require previous owner phone number
-  prevOwnerRequireAddress Boolean  @default(true)  // Require previous owner address
+  prevOwnerRequireAddress Boolean  @default(false)  // Require previous owner address
   prevOwnerRequireCustom  Boolean  @default(false) // Require custom transfer documentation reference
   prevOwnerCustomLabel    String?  // Label for custom document field, e.g. "Deed of Transfer #"
   
@@ -388,10 +428,79 @@ model VehicleModel {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
+  bookings            Booking[]
+
   @@unique([make, model])
   @@index([make])
   @@index([model])
   @@index([category])
   @@index([usageCount])
 }
+
+// ─────────────────────────────────────────────────────────
+// VEHICLE BODY TYPE — database-driven body type classifications
+// ─────────────────────────────────────────────────────────
+
+model VehicleBodyType {
+  id          String   @id @default(cuid())
+  code        String   @unique // "SALOON", "HATCHBACK", "SUV", "PICKUP", "MINIBUS", "BUS", "COUPE", "EQUIPMENT"
+  name        String   // "Saloon", "Hatchback", "SUV / Station Wagon", "Pickup / Truck"
+  description String?
+  isActive    Boolean  @default(true) // Admin toggle active / inactive
+  order       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+// ─────────────────────────────────────────────────────────
+// PLATE CATEGORY — database-driven plate classifications
+// ─────────────────────────────────────────────────────────
+
+model PlateCategory {
+  id          String   @id @default(cuid())
+  code        String   @unique // "PRIVATE", "COMMERCIAL", "MOTORCYCLE", "GOVERNMENT"
+  name        String   // "Private (White Plate)", "Commercial (Yellow Plate)", "Motorcycle (Light Blue Plate)", "Government (GV Split Plate)"
+  badge       String   // "⚪ Private", "🟡 Commercial", "🔵 Motorcycle", "🏛️ GV Split"
+  description String?
+  plateColor  String?  @default("#ffffff")
+  textColor   String?  @default("#0f172a")
+  isActive    Boolean  @default(true) // Admin toggle active / inactive
+  order       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+// ─────────────────────────────────────────────────────────
+// SUPERVISOR — certified inspection & certification officers
+// ─────────────────────────────────────────────────────────
+
+model Supervisor {
+  id          String    @id @default(cuid())
+  name        String    @unique // e.g. "OFFICER MENSAH", "SAVIOUR ADOM"
+  badgeNumber String?   // Auto-generated e.g. "SUP-0492"
+  station     String?   // e.g. "DVLA ADENTA"
+  isActive    Boolean   @default(true) // Admin toggle active / inactive
+
+  branchId    String?
+  branch      Branch?   @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  bookings    Booking[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([name])
+  @@index([badgeNumber])
+  @@index([isActive])
+  @@index([branchId])
+}
+
 

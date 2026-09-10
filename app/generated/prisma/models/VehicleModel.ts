@@ -320,6 +320,7 @@ export type VehicleModelWhereInput = {
   usageCount?: Prisma.IntFilter<"VehicleModel"> | number
   createdAt?: Prisma.DateTimeFilter<"VehicleModel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"VehicleModel"> | Date | string
+  bookings?: Prisma.BookingListRelationFilter
 }
 
 export type VehicleModelOrderByWithRelationInput = {
@@ -341,6 +342,7 @@ export type VehicleModelOrderByWithRelationInput = {
   usageCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  bookings?: Prisma.BookingOrderByRelationAggregateInput
 }
 
 export type VehicleModelWhereUniqueInput = Prisma.AtLeast<{
@@ -366,6 +368,7 @@ export type VehicleModelWhereUniqueInput = Prisma.AtLeast<{
   usageCount?: Prisma.IntFilter<"VehicleModel"> | number
   createdAt?: Prisma.DateTimeFilter<"VehicleModel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"VehicleModel"> | Date | string
+  bookings?: Prisma.BookingListRelationFilter
 }, "id" | "make_model">
 
 export type VehicleModelOrderByWithAggregationInput = {
@@ -437,6 +440,7 @@ export type VehicleModelCreateInput = {
   usageCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  bookings?: Prisma.BookingCreateNestedManyWithoutVehicleModelInput
 }
 
 export type VehicleModelUncheckedCreateInput = {
@@ -458,6 +462,7 @@ export type VehicleModelUncheckedCreateInput = {
   usageCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutVehicleModelInput
 }
 
 export type VehicleModelUpdateInput = {
@@ -479,6 +484,7 @@ export type VehicleModelUpdateInput = {
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUpdateManyWithoutVehicleModelNestedInput
 }
 
 export type VehicleModelUncheckedUpdateInput = {
@@ -500,6 +506,7 @@ export type VehicleModelUncheckedUpdateInput = {
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutVehicleModelNestedInput
 }
 
 export type VehicleModelCreateManyInput = {
@@ -563,6 +570,11 @@ export type VehicleModelUncheckedUpdateManyInput = {
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type VehicleModelNullableScalarRelationFilter = {
+  is?: Prisma.VehicleModelWhereInput | null
+  isNot?: Prisma.VehicleModelWhereInput | null
 }
 
 export type VehicleModelMakeModelCompoundUniqueInput = {
@@ -641,6 +653,151 @@ export type VehicleModelSumOrderByAggregateInput = {
   usageCount?: Prisma.SortOrder
 }
 
+export type VehicleModelCreateNestedOneWithoutBookingsInput = {
+  create?: Prisma.XOR<Prisma.VehicleModelCreateWithoutBookingsInput, Prisma.VehicleModelUncheckedCreateWithoutBookingsInput>
+  connectOrCreate?: Prisma.VehicleModelCreateOrConnectWithoutBookingsInput
+  connect?: Prisma.VehicleModelWhereUniqueInput
+}
+
+export type VehicleModelUpdateOneWithoutBookingsNestedInput = {
+  create?: Prisma.XOR<Prisma.VehicleModelCreateWithoutBookingsInput, Prisma.VehicleModelUncheckedCreateWithoutBookingsInput>
+  connectOrCreate?: Prisma.VehicleModelCreateOrConnectWithoutBookingsInput
+  upsert?: Prisma.VehicleModelUpsertWithoutBookingsInput
+  disconnect?: Prisma.VehicleModelWhereInput | boolean
+  delete?: Prisma.VehicleModelWhereInput | boolean
+  connect?: Prisma.VehicleModelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VehicleModelUpdateToOneWithWhereWithoutBookingsInput, Prisma.VehicleModelUpdateWithoutBookingsInput>, Prisma.VehicleModelUncheckedUpdateWithoutBookingsInput>
+}
+
+export type VehicleModelCreateWithoutBookingsInput = {
+  id?: string
+  make: string
+  model: string
+  year?: string | null
+  bodyType?: string
+  engineCC?: string
+  cylinders?: string
+  fuelType?: string
+  netWeight?: string
+  grossWeight?: string
+  tyreW?: string
+  tyreDia?: string
+  defaultEnginePrefix?: string | null
+  category?: string | null
+  isCustom?: boolean
+  usageCount?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type VehicleModelUncheckedCreateWithoutBookingsInput = {
+  id?: string
+  make: string
+  model: string
+  year?: string | null
+  bodyType?: string
+  engineCC?: string
+  cylinders?: string
+  fuelType?: string
+  netWeight?: string
+  grossWeight?: string
+  tyreW?: string
+  tyreDia?: string
+  defaultEnginePrefix?: string | null
+  category?: string | null
+  isCustom?: boolean
+  usageCount?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type VehicleModelCreateOrConnectWithoutBookingsInput = {
+  where: Prisma.VehicleModelWhereUniqueInput
+  create: Prisma.XOR<Prisma.VehicleModelCreateWithoutBookingsInput, Prisma.VehicleModelUncheckedCreateWithoutBookingsInput>
+}
+
+export type VehicleModelUpsertWithoutBookingsInput = {
+  update: Prisma.XOR<Prisma.VehicleModelUpdateWithoutBookingsInput, Prisma.VehicleModelUncheckedUpdateWithoutBookingsInput>
+  create: Prisma.XOR<Prisma.VehicleModelCreateWithoutBookingsInput, Prisma.VehicleModelUncheckedCreateWithoutBookingsInput>
+  where?: Prisma.VehicleModelWhereInput
+}
+
+export type VehicleModelUpdateToOneWithWhereWithoutBookingsInput = {
+  where?: Prisma.VehicleModelWhereInput
+  data: Prisma.XOR<Prisma.VehicleModelUpdateWithoutBookingsInput, Prisma.VehicleModelUncheckedUpdateWithoutBookingsInput>
+}
+
+export type VehicleModelUpdateWithoutBookingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.StringFieldUpdateOperationsInput | string
+  model?: Prisma.StringFieldUpdateOperationsInput | string
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.StringFieldUpdateOperationsInput | string
+  engineCC?: Prisma.StringFieldUpdateOperationsInput | string
+  cylinders?: Prisma.StringFieldUpdateOperationsInput | string
+  fuelType?: Prisma.StringFieldUpdateOperationsInput | string
+  netWeight?: Prisma.StringFieldUpdateOperationsInput | string
+  grossWeight?: Prisma.StringFieldUpdateOperationsInput | string
+  tyreW?: Prisma.StringFieldUpdateOperationsInput | string
+  tyreDia?: Prisma.StringFieldUpdateOperationsInput | string
+  defaultEnginePrefix?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usageCount?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type VehicleModelUncheckedUpdateWithoutBookingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  make?: Prisma.StringFieldUpdateOperationsInput | string
+  model?: Prisma.StringFieldUpdateOperationsInput | string
+  year?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bodyType?: Prisma.StringFieldUpdateOperationsInput | string
+  engineCC?: Prisma.StringFieldUpdateOperationsInput | string
+  cylinders?: Prisma.StringFieldUpdateOperationsInput | string
+  fuelType?: Prisma.StringFieldUpdateOperationsInput | string
+  netWeight?: Prisma.StringFieldUpdateOperationsInput | string
+  grossWeight?: Prisma.StringFieldUpdateOperationsInput | string
+  tyreW?: Prisma.StringFieldUpdateOperationsInput | string
+  tyreDia?: Prisma.StringFieldUpdateOperationsInput | string
+  defaultEnginePrefix?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usageCount?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type VehicleModelCountOutputType
+ */
+
+export type VehicleModelCountOutputType = {
+  bookings: number
+}
+
+export type VehicleModelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  bookings?: boolean | VehicleModelCountOutputTypeCountBookingsArgs
+}
+
+/**
+ * VehicleModelCountOutputType without action
+ */
+export type VehicleModelCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VehicleModelCountOutputType
+   */
+  select?: Prisma.VehicleModelCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * VehicleModelCountOutputType without action
+ */
+export type VehicleModelCountOutputTypeCountBookingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BookingWhereInput
+}
 
 
 export type VehicleModelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -662,6 +819,8 @@ export type VehicleModelSelect<ExtArgs extends runtime.Types.Extensions.Internal
   usageCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  bookings?: boolean | Prisma.VehicleModel$bookingsArgs<ExtArgs>
+  _count?: boolean | Prisma.VehicleModelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["vehicleModel"]>
 
 export type VehicleModelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -728,10 +887,18 @@ export type VehicleModelSelectScalar = {
 }
 
 export type VehicleModelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "make" | "model" | "year" | "bodyType" | "engineCC" | "cylinders" | "fuelType" | "netWeight" | "grossWeight" | "tyreW" | "tyreDia" | "defaultEnginePrefix" | "category" | "isCustom" | "usageCount" | "createdAt" | "updatedAt", ExtArgs["result"]["vehicleModel"]>
+export type VehicleModelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  bookings?: boolean | Prisma.VehicleModel$bookingsArgs<ExtArgs>
+  _count?: boolean | Prisma.VehicleModelCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type VehicleModelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type VehicleModelIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $VehicleModelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "VehicleModel"
-  objects: {}
+  objects: {
+    bookings: Prisma.$BookingPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     make: string
@@ -1145,6 +1312,7 @@ readonly fields: VehicleModelFieldRefs;
  */
 export interface Prisma__VehicleModelClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  bookings<T extends Prisma.VehicleModel$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VehicleModel$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1209,6 +1377,10 @@ export type VehicleModelFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
+  /**
    * Filter, which VehicleModel to fetch.
    */
   where: Prisma.VehicleModelWhereUniqueInput
@@ -1227,6 +1399,10 @@ export type VehicleModelFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Exte
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
+  /**
    * Filter, which VehicleModel to fetch.
    */
   where: Prisma.VehicleModelWhereUniqueInput
@@ -1244,6 +1420,10 @@ export type VehicleModelFindFirstArgs<ExtArgs extends runtime.Types.Extensions.I
    * Omit specific fields from the VehicleModel
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
   /**
    * Filter, which VehicleModel to fetch.
    */
@@ -1293,6 +1473,10 @@ export type VehicleModelFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Exten
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
+  /**
    * Filter, which VehicleModel to fetch.
    */
   where?: Prisma.VehicleModelWhereInput
@@ -1340,6 +1524,10 @@ export type VehicleModelFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Omit specific fields from the VehicleModel
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
   /**
    * Filter, which VehicleModels to fetch.
    */
@@ -1389,6 +1577,10 @@ export type VehicleModelCreateArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
+  /**
    * The data needed to create a VehicleModel.
    */
   data: Prisma.XOR<Prisma.VehicleModelCreateInput, Prisma.VehicleModelUncheckedCreateInput>
@@ -1436,6 +1628,10 @@ export type VehicleModelUpdateArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Omit specific fields from the VehicleModel
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
   /**
    * The data needed to update a VehicleModel.
    */
@@ -1503,6 +1699,10 @@ export type VehicleModelUpsertArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
+  /**
    * The filter to search for the VehicleModel to update in case it exists.
    */
   where: Prisma.VehicleModelWhereUniqueInput
@@ -1529,6 +1729,10 @@ export type VehicleModelDeleteArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
+  /**
    * Filter which VehicleModel to delete.
    */
   where: Prisma.VehicleModelWhereUniqueInput
@@ -1549,6 +1753,30 @@ export type VehicleModelDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
+ * VehicleModel.bookings
+ */
+export type VehicleModel$bookingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Booking
+   */
+  select?: Prisma.BookingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Booking
+   */
+  omit?: Prisma.BookingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInclude<ExtArgs> | null
+  where?: Prisma.BookingWhereInput
+  orderBy?: Prisma.BookingOrderByWithRelationInput | Prisma.BookingOrderByWithRelationInput[]
+  cursor?: Prisma.BookingWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BookingScalarFieldEnum | Prisma.BookingScalarFieldEnum[]
+}
+
+/**
  * VehicleModel without action
  */
 export type VehicleModelDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1560,4 +1788,8 @@ export type VehicleModelDefaultArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Omit specific fields from the VehicleModel
    */
   omit?: Prisma.VehicleModelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VehicleModelInclude<ExtArgs> | null
 }

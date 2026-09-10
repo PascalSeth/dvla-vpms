@@ -9,6 +9,7 @@ export type PlateCategory =
   | "Trailer"
   | "Electric"
   | "Temporary"
+  | "Diplomatic"
   | string;
 
 export interface DigitalPlateProps {
@@ -153,13 +154,14 @@ export function DigitalPlate({
     );
   }
 
-  // 3. Standard Plates (Private, Commercial, Government, Electric, Trailer)
+  // 3. Standard Plates (Private, Commercial, Government, Electric, Trailer, Agricultural, Diplomatic)
   let isSplitPlate = false;
   let leftColor = "";
   let leftText = "";
+  let leftTextColor = "#000000";
   let rightText = plateNumber;
   let bgGradient = "linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%)";
-  const textColor = "#0f172a";
+  let textColor = "#0f172a";
   let showRedGreenTriangles = false;
 
   if (normCat === "GOVERNMENT") {
@@ -172,12 +174,27 @@ export function DigitalPlate({
     isSplitPlate = true;
     leftColor = "#2b8a3e"; // Green
     leftText = "EV";
+    leftTextColor = "#ffffff";
     rightText = plateNumber.replace('EV ', '').replace('EV-', '').replace('EV', '');
   } else if (normCat === "TRAILER") {
     isSplitPlate = true;
     leftColor = "#fcc419"; // Yellow
     leftText = "T";
     rightText = plateNumber.replace('T ', '').replace('T-', '').replace('T', '');
+  } else if (normCat === "AGRICULTURAL") {
+    isSplitPlate = true;
+    leftColor = "#15803d"; // Forest Green
+    leftText = "AG";
+    leftTextColor = "#ffffff";
+    rightText = plateNumber.replace('AG ', '').replace('AG-', '').replace('AG', '');
+  } else if (normCat === "DIPLOMATIC") {
+    isSplitPlate = true;
+    leftColor = "#ffffff"; // White block
+    leftText = "CD";
+    leftTextColor = "#b91c1c"; // Red CD text
+    rightText = plateNumber.replace('CD ', '').replace('CD-', '').replace('CD', '');
+    bgGradient = "linear-gradient(180deg, #991b1b 0%, #7f1d1d 100%)";
+    textColor = "#ffffff";
   } else if (normCat === "COMMERCIAL") {
     bgGradient = "linear-gradient(180deg, #ffe066 0%, #fcc419 100%)";
   }
@@ -196,7 +213,7 @@ export function DigitalPlate({
         <GhanaFlagIcon />
       </div>
 
-      {/* Split background block for Government / EV / Trailer */}
+      {/* Split background block for Government / EV / Trailer / Agri / Diplomatic */}
       {isSplitPlate && (
         <div className="absolute left-0 top-0 bottom-0 w-[20%] z-10 flex items-center justify-center border-r-[1.5px] border-slate-400" style={{ backgroundColor: leftColor }}>
           {showRedGreenTriangles && (
@@ -205,11 +222,12 @@ export function DigitalPlate({
               <div className="absolute bottom-0 left-0 w-0 h-0 border-b-[28px] border-b-green-700 border-r-[28px] border-r-transparent pointer-events-none" />
             </>
           )}
-          <span className="font-sans font-black text-black z-20 leading-none" 
+          <span className="font-sans font-black z-20 leading-none" 
                 style={{ 
+                  color: leftTextColor,
                   fontSize: 'clamp(20px, 7vw, 30px)', 
                   fontFamily: "'Arial Black', 'Impact', sans-serif",
-                  textShadow: '1px 1px 0px rgba(255,255,255,0.8)' 
+                  textShadow: leftTextColor === '#ffffff' ? '1px 1px 0px rgba(0,0,0,0.6)' : '1px 1px 0px rgba(255,255,255,0.8)' 
                 }}>
             {leftText}
           </span>
@@ -220,7 +238,8 @@ export function DigitalPlate({
 
       {/* Top Text: REPUBLIC OF GHANA */}
       <div className={`absolute top-1.5 left-0 right-0 text-center z-30 pointer-events-none ${isSplitPlate ? 'pl-[20%]' : ''}`}>
-        <span className="text-[8.5px] font-serif font-black text-slate-800 tracking-wider uppercase">
+        <span className="text-[8.5px] font-serif font-black tracking-wider uppercase"
+              style={{ color: textColor === "#ffffff" ? "#fecaca" : "#1e293b" }}>
           {country}
         </span>
       </div>
@@ -232,7 +251,7 @@ export function DigitalPlate({
                 color: textColor, 
                 fontSize: isSplitPlate ? 'clamp(15px, 5.2vw, 25px)' : 'clamp(18px, 6.2vw, 30px)',
                 fontFamily: "'Arial Black', 'Impact', 'Arial', sans-serif",
-                textShadow: '1px 1.5px 0px rgba(255,255,255,0.9), -0.5px -0.5px 0px rgba(0,0,0,0.25)' 
+                textShadow: textColor === '#ffffff' ? '1px 1.5px 0px rgba(0,0,0,0.7)' : '1px 1.5px 0px rgba(255,255,255,0.9), -0.5px -0.5px 0px rgba(0,0,0,0.25)' 
               }}>
           {rightText}
         </span>
@@ -240,7 +259,8 @@ export function DigitalPlate({
 
       {/* Bottom Text: Region (e.g. GREATER ACCRA) or Slogan */}
       <div className={`absolute bottom-1.5 left-0 right-0 text-center z-30 pointer-events-none ${isSplitPlate ? 'pl-[20%]' : ''}`}>
-        <span className="text-[8px] font-serif font-black text-slate-800 tracking-widest uppercase">
+        <span className="text-[8px] font-serif font-black tracking-widest uppercase"
+              style={{ color: textColor === "#ffffff" ? "#fecaca" : "#1e293b" }}>
           {slogan || region}
         </span>
       </div>

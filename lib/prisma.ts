@@ -2,7 +2,7 @@ import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-const SCHEMA_VERSION = "2026_09_10_user_onboarding_v2";
+const SCHEMA_VERSION = "2026_09_10_supervisor_autobadge_v4";
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
   pool?: Pool;

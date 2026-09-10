@@ -230,6 +230,7 @@ export type BranchWhereInput = {
   pickupRegistrations?: Prisma.PickupRegistrationListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
   serviceTypes?: Prisma.ServiceTypeListRelationFilter
+  supervisors?: Prisma.SupervisorListRelationFilter
 }
 
 export type BranchOrderByWithRelationInput = {
@@ -251,6 +252,7 @@ export type BranchOrderByWithRelationInput = {
   pickupRegistrations?: Prisma.PickupRegistrationOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
   serviceTypes?: Prisma.ServiceTypeOrderByRelationAggregateInput
+  supervisors?: Prisma.SupervisorOrderByRelationAggregateInput
 }
 
 export type BranchWhereUniqueInput = Prisma.AtLeast<{
@@ -275,6 +277,7 @@ export type BranchWhereUniqueInput = Prisma.AtLeast<{
   pickupRegistrations?: Prisma.PickupRegistrationListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
   serviceTypes?: Prisma.ServiceTypeListRelationFilter
+  supervisors?: Prisma.SupervisorListRelationFilter
 }, "id" | "slug" | "code">
 
 export type BranchOrderByWithAggregationInput = {
@@ -327,6 +330,7 @@ export type BranchCreateInput = {
   pickupRegistrations?: Prisma.PickupRegistrationCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUncheckedCreateInput = {
@@ -347,6 +351,7 @@ export type BranchUncheckedCreateInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeUncheckedCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorUncheckedCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUpdateInput = {
@@ -367,6 +372,7 @@ export type BranchUpdateInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateInput = {
@@ -387,6 +393,7 @@ export type BranchUncheckedUpdateInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUncheckedUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUncheckedUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchCreateManyInput = {
@@ -639,6 +646,22 @@ export type BranchUpdateOneWithoutServiceTypesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BranchUpdateToOneWithWhereWithoutServiceTypesInput, Prisma.BranchUpdateWithoutServiceTypesInput>, Prisma.BranchUncheckedUpdateWithoutServiceTypesInput>
 }
 
+export type BranchCreateNestedOneWithoutSupervisorsInput = {
+  create?: Prisma.XOR<Prisma.BranchCreateWithoutSupervisorsInput, Prisma.BranchUncheckedCreateWithoutSupervisorsInput>
+  connectOrCreate?: Prisma.BranchCreateOrConnectWithoutSupervisorsInput
+  connect?: Prisma.BranchWhereUniqueInput
+}
+
+export type BranchUpdateOneWithoutSupervisorsNestedInput = {
+  create?: Prisma.XOR<Prisma.BranchCreateWithoutSupervisorsInput, Prisma.BranchUncheckedCreateWithoutSupervisorsInput>
+  connectOrCreate?: Prisma.BranchCreateOrConnectWithoutSupervisorsInput
+  upsert?: Prisma.BranchUpsertWithoutSupervisorsInput
+  disconnect?: Prisma.BranchWhereInput | boolean
+  delete?: Prisma.BranchWhereInput | boolean
+  connect?: Prisma.BranchWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BranchUpdateToOneWithWhereWithoutSupervisorsInput, Prisma.BranchUpdateWithoutSupervisorsInput>, Prisma.BranchUncheckedUpdateWithoutSupervisorsInput>
+}
+
 export type BranchCreateWithoutRegionInput = {
   id?: string
   name: string
@@ -656,6 +679,7 @@ export type BranchCreateWithoutRegionInput = {
   pickupRegistrations?: Prisma.PickupRegistrationCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUncheckedCreateWithoutRegionInput = {
@@ -675,6 +699,7 @@ export type BranchUncheckedCreateWithoutRegionInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeUncheckedCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorUncheckedCreateNestedManyWithoutBranchInput
 }
 
 export type BranchCreateOrConnectWithoutRegionInput = {
@@ -736,6 +761,7 @@ export type BranchCreateWithoutUsersInput = {
   pickupRegistrations?: Prisma.PickupRegistrationCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUncheckedCreateWithoutUsersInput = {
@@ -755,6 +781,7 @@ export type BranchUncheckedCreateWithoutUsersInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeUncheckedCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorUncheckedCreateNestedManyWithoutBranchInput
 }
 
 export type BranchCreateOrConnectWithoutUsersInput = {
@@ -790,6 +817,7 @@ export type BranchUpdateWithoutUsersInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateWithoutUsersInput = {
@@ -809,6 +837,7 @@ export type BranchUncheckedUpdateWithoutUsersInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUncheckedUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUncheckedUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchCreateWithoutReservationsInput = {
@@ -828,6 +857,7 @@ export type BranchCreateWithoutReservationsInput = {
   pickupRegistrations?: Prisma.PickupRegistrationCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUncheckedCreateWithoutReservationsInput = {
@@ -847,6 +877,7 @@ export type BranchUncheckedCreateWithoutReservationsInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeUncheckedCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorUncheckedCreateNestedManyWithoutBranchInput
 }
 
 export type BranchCreateOrConnectWithoutReservationsInput = {
@@ -882,6 +913,7 @@ export type BranchUpdateWithoutReservationsInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateWithoutReservationsInput = {
@@ -901,6 +933,7 @@ export type BranchUncheckedUpdateWithoutReservationsInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUncheckedUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUncheckedUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchCreateWithoutVrsInvoicesInput = {
@@ -920,6 +953,7 @@ export type BranchCreateWithoutVrsInvoicesInput = {
   pickupRegistrations?: Prisma.PickupRegistrationCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUncheckedCreateWithoutVrsInvoicesInput = {
@@ -939,6 +973,7 @@ export type BranchUncheckedCreateWithoutVrsInvoicesInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeUncheckedCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorUncheckedCreateNestedManyWithoutBranchInput
 }
 
 export type BranchCreateOrConnectWithoutVrsInvoicesInput = {
@@ -974,6 +1009,7 @@ export type BranchUpdateWithoutVrsInvoicesInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateWithoutVrsInvoicesInput = {
@@ -993,6 +1029,7 @@ export type BranchUncheckedUpdateWithoutVrsInvoicesInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUncheckedUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUncheckedUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchCreateWithoutBookingsInput = {
@@ -1012,6 +1049,7 @@ export type BranchCreateWithoutBookingsInput = {
   pickupRegistrations?: Prisma.PickupRegistrationCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUncheckedCreateWithoutBookingsInput = {
@@ -1031,6 +1069,7 @@ export type BranchUncheckedCreateWithoutBookingsInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeUncheckedCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorUncheckedCreateNestedManyWithoutBranchInput
 }
 
 export type BranchCreateOrConnectWithoutBookingsInput = {
@@ -1066,6 +1105,7 @@ export type BranchUpdateWithoutBookingsInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateWithoutBookingsInput = {
@@ -1085,6 +1125,7 @@ export type BranchUncheckedUpdateWithoutBookingsInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUncheckedUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUncheckedUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchCreateWithoutPickupRegistrationsInput = {
@@ -1104,6 +1145,7 @@ export type BranchCreateWithoutPickupRegistrationsInput = {
   bookings?: Prisma.BookingCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUncheckedCreateWithoutPickupRegistrationsInput = {
@@ -1123,6 +1165,7 @@ export type BranchUncheckedCreateWithoutPickupRegistrationsInput = {
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeUncheckedCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorUncheckedCreateNestedManyWithoutBranchInput
 }
 
 export type BranchCreateOrConnectWithoutPickupRegistrationsInput = {
@@ -1158,6 +1201,7 @@ export type BranchUpdateWithoutPickupRegistrationsInput = {
   bookings?: Prisma.BookingUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateWithoutPickupRegistrationsInput = {
@@ -1177,6 +1221,7 @@ export type BranchUncheckedUpdateWithoutPickupRegistrationsInput = {
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUncheckedUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUncheckedUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchCreateWithoutAuditLogsInput = {
@@ -1196,6 +1241,7 @@ export type BranchCreateWithoutAuditLogsInput = {
   bookings?: Prisma.BookingCreateNestedManyWithoutBranchInput
   pickupRegistrations?: Prisma.PickupRegistrationCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUncheckedCreateWithoutAuditLogsInput = {
@@ -1215,6 +1261,7 @@ export type BranchUncheckedCreateWithoutAuditLogsInput = {
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutBranchInput
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBranchInput
   serviceTypes?: Prisma.ServiceTypeUncheckedCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorUncheckedCreateNestedManyWithoutBranchInput
 }
 
 export type BranchCreateOrConnectWithoutAuditLogsInput = {
@@ -1250,6 +1297,7 @@ export type BranchUpdateWithoutAuditLogsInput = {
   bookings?: Prisma.BookingUpdateManyWithoutBranchNestedInput
   pickupRegistrations?: Prisma.PickupRegistrationUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateWithoutAuditLogsInput = {
@@ -1269,6 +1317,7 @@ export type BranchUncheckedUpdateWithoutAuditLogsInput = {
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutBranchNestedInput
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUncheckedUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUncheckedUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchCreateWithoutServiceTypesInput = {
@@ -1288,6 +1337,7 @@ export type BranchCreateWithoutServiceTypesInput = {
   bookings?: Prisma.BookingCreateNestedManyWithoutBranchInput
   pickupRegistrations?: Prisma.PickupRegistrationCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorCreateNestedManyWithoutBranchInput
 }
 
 export type BranchUncheckedCreateWithoutServiceTypesInput = {
@@ -1307,6 +1357,7 @@ export type BranchUncheckedCreateWithoutServiceTypesInput = {
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutBranchInput
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBranchInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutBranchInput
+  supervisors?: Prisma.SupervisorUncheckedCreateNestedManyWithoutBranchInput
 }
 
 export type BranchCreateOrConnectWithoutServiceTypesInput = {
@@ -1342,6 +1393,7 @@ export type BranchUpdateWithoutServiceTypesInput = {
   bookings?: Prisma.BookingUpdateManyWithoutBranchNestedInput
   pickupRegistrations?: Prisma.PickupRegistrationUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateWithoutServiceTypesInput = {
@@ -1361,6 +1413,103 @@ export type BranchUncheckedUpdateWithoutServiceTypesInput = {
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutBranchNestedInput
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUncheckedUpdateManyWithoutBranchNestedInput
+}
+
+export type BranchCreateWithoutSupervisorsInput = {
+  id?: string
+  name: string
+  slug: string
+  code: string
+  type?: $Enums.BranchType
+  address?: string | null
+  phone?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  region: Prisma.RegionCreateNestedOneWithoutBranchesInput
+  users?: Prisma.UserCreateNestedManyWithoutBranchInput
+  reservations?: Prisma.ReservationCreateNestedManyWithoutBranchInput
+  vrsInvoices?: Prisma.VrsInvoiceCreateNestedManyWithoutBranchInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutBranchInput
+  pickupRegistrations?: Prisma.PickupRegistrationCreateNestedManyWithoutBranchInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutBranchInput
+  serviceTypes?: Prisma.ServiceTypeCreateNestedManyWithoutBranchInput
+}
+
+export type BranchUncheckedCreateWithoutSupervisorsInput = {
+  id?: string
+  name: string
+  slug: string
+  code: string
+  type?: $Enums.BranchType
+  address?: string | null
+  phone?: string | null
+  regionId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutBranchInput
+  reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutBranchInput
+  vrsInvoices?: Prisma.VrsInvoiceUncheckedCreateNestedManyWithoutBranchInput
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutBranchInput
+  pickupRegistrations?: Prisma.PickupRegistrationUncheckedCreateNestedManyWithoutBranchInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutBranchInput
+  serviceTypes?: Prisma.ServiceTypeUncheckedCreateNestedManyWithoutBranchInput
+}
+
+export type BranchCreateOrConnectWithoutSupervisorsInput = {
+  where: Prisma.BranchWhereUniqueInput
+  create: Prisma.XOR<Prisma.BranchCreateWithoutSupervisorsInput, Prisma.BranchUncheckedCreateWithoutSupervisorsInput>
+}
+
+export type BranchUpsertWithoutSupervisorsInput = {
+  update: Prisma.XOR<Prisma.BranchUpdateWithoutSupervisorsInput, Prisma.BranchUncheckedUpdateWithoutSupervisorsInput>
+  create: Prisma.XOR<Prisma.BranchCreateWithoutSupervisorsInput, Prisma.BranchUncheckedCreateWithoutSupervisorsInput>
+  where?: Prisma.BranchWhereInput
+}
+
+export type BranchUpdateToOneWithWhereWithoutSupervisorsInput = {
+  where?: Prisma.BranchWhereInput
+  data: Prisma.XOR<Prisma.BranchUpdateWithoutSupervisorsInput, Prisma.BranchUncheckedUpdateWithoutSupervisorsInput>
+}
+
+export type BranchUpdateWithoutSupervisorsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumBranchTypeFieldUpdateOperationsInput | $Enums.BranchType
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  region?: Prisma.RegionUpdateOneRequiredWithoutBranchesNestedInput
+  users?: Prisma.UserUpdateManyWithoutBranchNestedInput
+  reservations?: Prisma.ReservationUpdateManyWithoutBranchNestedInput
+  vrsInvoices?: Prisma.VrsInvoiceUpdateManyWithoutBranchNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutBranchNestedInput
+  pickupRegistrations?: Prisma.PickupRegistrationUpdateManyWithoutBranchNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutBranchNestedInput
+  serviceTypes?: Prisma.ServiceTypeUpdateManyWithoutBranchNestedInput
+}
+
+export type BranchUncheckedUpdateWithoutSupervisorsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumBranchTypeFieldUpdateOperationsInput | $Enums.BranchType
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  regionId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutBranchNestedInput
+  reservations?: Prisma.ReservationUncheckedUpdateManyWithoutBranchNestedInput
+  vrsInvoices?: Prisma.VrsInvoiceUncheckedUpdateManyWithoutBranchNestedInput
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutBranchNestedInput
+  pickupRegistrations?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBranchNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutBranchNestedInput
+  serviceTypes?: Prisma.ServiceTypeUncheckedUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchCreateManyRegionInput = {
@@ -1392,6 +1541,7 @@ export type BranchUpdateWithoutRegionInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateWithoutRegionInput = {
@@ -1411,6 +1561,7 @@ export type BranchUncheckedUpdateWithoutRegionInput = {
   pickupRegistrations?: Prisma.PickupRegistrationUncheckedUpdateManyWithoutBranchNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutBranchNestedInput
   serviceTypes?: Prisma.ServiceTypeUncheckedUpdateManyWithoutBranchNestedInput
+  supervisors?: Prisma.SupervisorUncheckedUpdateManyWithoutBranchNestedInput
 }
 
 export type BranchUncheckedUpdateManyWithoutRegionInput = {
@@ -1438,6 +1589,7 @@ export type BranchCountOutputType = {
   pickupRegistrations: number
   auditLogs: number
   serviceTypes: number
+  supervisors: number
 }
 
 export type BranchCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1448,6 +1600,7 @@ export type BranchCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   pickupRegistrations?: boolean | BranchCountOutputTypeCountPickupRegistrationsArgs
   auditLogs?: boolean | BranchCountOutputTypeCountAuditLogsArgs
   serviceTypes?: boolean | BranchCountOutputTypeCountServiceTypesArgs
+  supervisors?: boolean | BranchCountOutputTypeCountSupervisorsArgs
 }
 
 /**
@@ -1509,6 +1662,13 @@ export type BranchCountOutputTypeCountServiceTypesArgs<ExtArgs extends runtime.T
   where?: Prisma.ServiceTypeWhereInput
 }
 
+/**
+ * BranchCountOutputType without action
+ */
+export type BranchCountOutputTypeCountSupervisorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupervisorWhereInput
+}
+
 
 export type BranchSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1529,6 +1689,7 @@ export type BranchSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   pickupRegistrations?: boolean | Prisma.Branch$pickupRegistrationsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.Branch$auditLogsArgs<ExtArgs>
   serviceTypes?: boolean | Prisma.Branch$serviceTypesArgs<ExtArgs>
+  supervisors?: boolean | Prisma.Branch$supervisorsArgs<ExtArgs>
   _count?: boolean | Prisma.BranchCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["branch"]>
 
@@ -1583,6 +1744,7 @@ export type BranchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   pickupRegistrations?: boolean | Prisma.Branch$pickupRegistrationsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.Branch$auditLogsArgs<ExtArgs>
   serviceTypes?: boolean | Prisma.Branch$serviceTypesArgs<ExtArgs>
+  supervisors?: boolean | Prisma.Branch$supervisorsArgs<ExtArgs>
   _count?: boolean | Prisma.BranchCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BranchIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1603,6 +1765,7 @@ export type $BranchPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     pickupRegistrations: Prisma.$PickupRegistrationPayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
     serviceTypes: Prisma.$ServiceTypePayload<ExtArgs>[]
+    supervisors: Prisma.$SupervisorPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2017,6 +2180,7 @@ export interface Prisma__BranchClient<T, Null = never, ExtArgs extends runtime.T
   pickupRegistrations<T extends Prisma.Branch$pickupRegistrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Branch$pickupRegistrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PickupRegistrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.Branch$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Branch$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   serviceTypes<T extends Prisma.Branch$serviceTypesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Branch$serviceTypesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ServiceTypePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  supervisors<T extends Prisma.Branch$supervisorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Branch$supervisorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupervisorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2622,6 +2786,30 @@ export type Branch$serviceTypesArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.ServiceTypeScalarFieldEnum | Prisma.ServiceTypeScalarFieldEnum[]
+}
+
+/**
+ * Branch.supervisors
+ */
+export type Branch$supervisorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Supervisor
+   */
+  select?: Prisma.SupervisorSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Supervisor
+   */
+  omit?: Prisma.SupervisorOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupervisorInclude<ExtArgs> | null
+  where?: Prisma.SupervisorWhereInput
+  orderBy?: Prisma.SupervisorOrderByWithRelationInput | Prisma.SupervisorOrderByWithRelationInput[]
+  cursor?: Prisma.SupervisorWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupervisorScalarFieldEnum | Prisma.SupervisorScalarFieldEnum[]
 }
 
 /**

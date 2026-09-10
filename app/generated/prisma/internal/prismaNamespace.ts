@@ -406,7 +406,10 @@ export const ModelName = {
   PickupRegistration: 'PickupRegistration',
   AuditLog: 'AuditLog',
   ServiceType: 'ServiceType',
-  VehicleModel: 'VehicleModel'
+  VehicleModel: 'VehicleModel',
+  VehicleBodyType: 'VehicleBodyType',
+  PlateCategory: 'PlateCategory',
+  Supervisor: 'Supervisor'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -422,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "region" | "branch" | "user" | "reservation" | "vrsInvoice" | "booking" | "pickupRegistration" | "auditLog" | "serviceType" | "vehicleModel"
+    modelProps: "region" | "branch" | "user" | "reservation" | "vrsInvoice" | "booking" | "pickupRegistration" | "auditLog" | "serviceType" | "vehicleModel" | "vehicleBodyType" | "plateCategory" | "supervisor"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1166,6 +1169,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    VehicleBodyType: {
+      payload: Prisma.$VehicleBodyTypePayload<ExtArgs>
+      fields: Prisma.VehicleBodyTypeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VehicleBodyTypeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VehicleBodyTypeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload>
+        }
+        findFirst: {
+          args: Prisma.VehicleBodyTypeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VehicleBodyTypeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload>
+        }
+        findMany: {
+          args: Prisma.VehicleBodyTypeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload>[]
+        }
+        create: {
+          args: Prisma.VehicleBodyTypeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload>
+        }
+        createMany: {
+          args: Prisma.VehicleBodyTypeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VehicleBodyTypeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload>[]
+        }
+        delete: {
+          args: Prisma.VehicleBodyTypeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload>
+        }
+        update: {
+          args: Prisma.VehicleBodyTypeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload>
+        }
+        deleteMany: {
+          args: Prisma.VehicleBodyTypeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VehicleBodyTypeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VehicleBodyTypeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload>[]
+        }
+        upsert: {
+          args: Prisma.VehicleBodyTypeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VehicleBodyTypePayload>
+        }
+        aggregate: {
+          args: Prisma.VehicleBodyTypeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVehicleBodyType>
+        }
+        groupBy: {
+          args: Prisma.VehicleBodyTypeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VehicleBodyTypeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VehicleBodyTypeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VehicleBodyTypeCountAggregateOutputType> | number
+        }
+      }
+    }
+    PlateCategory: {
+      payload: Prisma.$PlateCategoryPayload<ExtArgs>
+      fields: Prisma.PlateCategoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PlateCategoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PlateCategoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload>
+        }
+        findFirst: {
+          args: Prisma.PlateCategoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PlateCategoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload>
+        }
+        findMany: {
+          args: Prisma.PlateCategoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload>[]
+        }
+        create: {
+          args: Prisma.PlateCategoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload>
+        }
+        createMany: {
+          args: Prisma.PlateCategoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PlateCategoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload>[]
+        }
+        delete: {
+          args: Prisma.PlateCategoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload>
+        }
+        update: {
+          args: Prisma.PlateCategoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.PlateCategoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PlateCategoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PlateCategoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.PlateCategoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PlateCategoryPayload>
+        }
+        aggregate: {
+          args: Prisma.PlateCategoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePlateCategory>
+        }
+        groupBy: {
+          args: Prisma.PlateCategoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlateCategoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PlateCategoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PlateCategoryCountAggregateOutputType> | number
+        }
+      }
+    }
+    Supervisor: {
+      payload: Prisma.$SupervisorPayload<ExtArgs>
+      fields: Prisma.SupervisorFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SupervisorFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SupervisorFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload>
+        }
+        findFirst: {
+          args: Prisma.SupervisorFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SupervisorFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload>
+        }
+        findMany: {
+          args: Prisma.SupervisorFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload>[]
+        }
+        create: {
+          args: Prisma.SupervisorCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload>
+        }
+        createMany: {
+          args: Prisma.SupervisorCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SupervisorCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload>[]
+        }
+        delete: {
+          args: Prisma.SupervisorDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload>
+        }
+        update: {
+          args: Prisma.SupervisorUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload>
+        }
+        deleteMany: {
+          args: Prisma.SupervisorDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SupervisorUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SupervisorUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload>[]
+        }
+        upsert: {
+          args: Prisma.SupervisorUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupervisorPayload>
+        }
+        aggregate: {
+          args: Prisma.SupervisorAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupervisor>
+        }
+        groupBy: {
+          args: Prisma.SupervisorGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupervisorGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SupervisorCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupervisorCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1318,10 +1543,36 @@ export const BookingScalarFieldEnum = {
   type: 'type',
   status: 'status',
   owner: 'owner',
+  ownerAddress: 'ownerAddress',
+  ownerPhone: 'ownerPhone',
   vehicle: 'vehicle',
   plate: 'plate',
   date: 'date',
   classification: 'classification',
+  make: 'make',
+  model: 'model',
+  year: 'year',
+  bodyType: 'bodyType',
+  fuelType: 'fuelType',
+  chassisNo: 'chassisNo',
+  engineNo: 'engineNo',
+  engineCC: 'engineCC',
+  cylinders: 'cylinders',
+  netWeight: 'netWeight',
+  grossWeight: 'grossWeight',
+  tyreFW: 'tyreFW',
+  tyreFD: 'tyreFD',
+  tyreMW: 'tyreMW',
+  tyreMD: 'tyreMD',
+  tyreRW: 'tyreRW',
+  tyreRD: 'tyreRD',
+  vehicleModelId: 'vehicleModelId',
+  receiptNo: 'receiptNo',
+  receiptDate: 'receiptDate',
+  customsNo: 'customsNo',
+  customsDate: 'customsDate',
+  supervisor: 'supervisor',
+  supervisorId: 'supervisorId',
   previousOwnerName: 'previousOwnerName',
   previousOwnerPhone: 'previousOwnerPhone',
   previousOwnerAddress: 'previousOwnerAddress',
@@ -1419,6 +1670,51 @@ export const VehicleModelScalarFieldEnum = {
 } as const
 
 export type VehicleModelScalarFieldEnum = (typeof VehicleModelScalarFieldEnum)[keyof typeof VehicleModelScalarFieldEnum]
+
+
+export const VehicleBodyTypeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VehicleBodyTypeScalarFieldEnum = (typeof VehicleBodyTypeScalarFieldEnum)[keyof typeof VehicleBodyTypeScalarFieldEnum]
+
+
+export const PlateCategoryScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  badge: 'badge',
+  description: 'description',
+  plateColor: 'plateColor',
+  textColor: 'textColor',
+  isActive: 'isActive',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlateCategoryScalarFieldEnum = (typeof PlateCategoryScalarFieldEnum)[keyof typeof PlateCategoryScalarFieldEnum]
+
+
+export const SupervisorScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  badgeNumber: 'badgeNumber',
+  station: 'station',
+  isActive: 'isActive',
+  branchId: 'branchId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SupervisorScalarFieldEnum = (typeof SupervisorScalarFieldEnum)[keyof typeof SupervisorScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1744,6 +2040,9 @@ export type GlobalOmitConfig = {
   auditLog?: Prisma.AuditLogOmit
   serviceType?: Prisma.ServiceTypeOmit
   vehicleModel?: Prisma.VehicleModelOmit
+  vehicleBodyType?: Prisma.VehicleBodyTypeOmit
+  plateCategory?: Prisma.PlateCategoryOmit
+  supervisor?: Prisma.SupervisorOmit
 }
 
 /* Types for Logging */

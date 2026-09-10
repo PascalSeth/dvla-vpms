@@ -67,3 +67,18 @@ export type ServiceType = Prisma.ServiceTypeModel
  * 
  */
 export type VehicleModel = Prisma.VehicleModelModel
+/**
+ * Model VehicleBodyType
+ * 
+ */
+export type VehicleBodyType = Prisma.VehicleBodyTypeModel
+/**
+ * Model PlateCategory
+ * 
+ */
+export type PlateCategory = Prisma.PlateCategoryModel
+/**
+ * Model Supervisor
+ * 
+ */
+export type Supervisor = Prisma.SupervisorModel

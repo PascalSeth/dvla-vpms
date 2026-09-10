@@ -60,7 +60,10 @@ export const ModelName = {
   PickupRegistration: 'PickupRegistration',
   AuditLog: 'AuditLog',
   ServiceType: 'ServiceType',
-  VehicleModel: 'VehicleModel'
+  VehicleModel: 'VehicleModel',
+  VehicleBodyType: 'VehicleBodyType',
+  PlateCategory: 'PlateCategory',
+  Supervisor: 'Supervisor'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -192,10 +195,36 @@ export const BookingScalarFieldEnum = {
   type: 'type',
   status: 'status',
   owner: 'owner',
+  ownerAddress: 'ownerAddress',
+  ownerPhone: 'ownerPhone',
   vehicle: 'vehicle',
   plate: 'plate',
   date: 'date',
   classification: 'classification',
+  make: 'make',
+  model: 'model',
+  year: 'year',
+  bodyType: 'bodyType',
+  fuelType: 'fuelType',
+  chassisNo: 'chassisNo',
+  engineNo: 'engineNo',
+  engineCC: 'engineCC',
+  cylinders: 'cylinders',
+  netWeight: 'netWeight',
+  grossWeight: 'grossWeight',
+  tyreFW: 'tyreFW',
+  tyreFD: 'tyreFD',
+  tyreMW: 'tyreMW',
+  tyreMD: 'tyreMD',
+  tyreRW: 'tyreRW',
+  tyreRD: 'tyreRD',
+  vehicleModelId: 'vehicleModelId',
+  receiptNo: 'receiptNo',
+  receiptDate: 'receiptDate',
+  customsNo: 'customsNo',
+  customsDate: 'customsDate',
+  supervisor: 'supervisor',
+  supervisorId: 'supervisorId',
   previousOwnerName: 'previousOwnerName',
   previousOwnerPhone: 'previousOwnerPhone',
   previousOwnerAddress: 'previousOwnerAddress',
@@ -293,6 +322,51 @@ export const VehicleModelScalarFieldEnum = {
 } as const
 
 export type VehicleModelScalarFieldEnum = (typeof VehicleModelScalarFieldEnum)[keyof typeof VehicleModelScalarFieldEnum]
+
+
+export const VehicleBodyTypeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VehicleBodyTypeScalarFieldEnum = (typeof VehicleBodyTypeScalarFieldEnum)[keyof typeof VehicleBodyTypeScalarFieldEnum]
+
+
+export const PlateCategoryScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  badge: 'badge',
+  description: 'description',
+  plateColor: 'plateColor',
+  textColor: 'textColor',
+  isActive: 'isActive',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlateCategoryScalarFieldEnum = (typeof PlateCategoryScalarFieldEnum)[keyof typeof PlateCategoryScalarFieldEnum]
+
+
+export const SupervisorScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  badgeNumber: 'badgeNumber',
+  station: 'station',
+  isActive: 'isActive',
+  branchId: 'branchId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SupervisorScalarFieldEnum = (typeof SupervisorScalarFieldEnum)[keyof typeof SupervisorScalarFieldEnum]
 
 
 export const SortOrder = {

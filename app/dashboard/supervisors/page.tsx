@@ -1,0 +1,557 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+
+interface SupervisorItem {
+  id: string;
+  name: string;
+  badgeNumber: string | null;
+  station: string | null;
+  isActive: boolean;
+  createdAt: string;
+  _count?: {
+    bookings: number;
+  };
+}
+
+export default function SupervisorsPage() {
+  const [supervisors, setSupervisors] = useState<SupervisorItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<SupervisorItem | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Form Fields (phone and email removed as requested)
+  const [formData, setFormData] = useState({
+    name: "",
+    station: "DVLA ADENTA",
+    isActive: true,
+  });
+
+  // Notification Toast
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  function showToast(message: string, type: "success" | "error" = "success") {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  }
+
+  async function loadSupervisors() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/supervisors");
+      if (res.ok) {
+        const data = await res.json();
+        setSupervisors(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Failed to load supervisors:", err);
+      showToast("Failed to connect to supervisors API", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadSupervisors();
+  }, []);
+
+  const filteredSupervisors = useMemo(() => {
+    return supervisors.filter((s) => {
+      const q = search.toLowerCase();
+      const matchSearch =
+        s.name.toLowerCase().includes(q) ||
+        (s.badgeNumber && s.badgeNumber.toLowerCase().includes(q)) ||
+        (s.station && s.station.toLowerCase().includes(q));
+
+      const matchStatus =
+        statusFilter === "ALL"
+          ? true
+          : statusFilter === "ACTIVE"
+          ? s.isActive
+          : !s.isActive;
+
+      return matchSearch && matchStatus;
+    });
+  }, [supervisors, search, statusFilter]);
+
+  const activeCount = supervisors.filter((s) => s.isActive).length;
+  const inactiveCount = supervisors.filter((s) => !s.isActive).length;
+
+  async function handleToggleStatus(item: SupervisorItem) {
+    const updatedStatus = !item.isActive;
+    // Optimistic UI update
+    setSupervisors((prev) =>
+      prev.map((s) => (s.id === item.id ? { ...s, isActive: updatedStatus } : s))
+    );
+
+    try {
+      const res = await fetch("/api/supervisors", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: item.id, isActive: updatedStatus }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Update failed");
+      }
+      showToast(
+        `Supervisor ${item.name} marked ${updatedStatus ? "ACTIVE" : "INACTIVE"}`
+      );
+    } catch (err) {
+      // Rollback
+      setSupervisors((prev) =>
+        prev.map((s) => (s.id === item.id ? { ...s, isActive: !updatedStatus } : s))
+      );
+      showToast("Failed to update status on server", "error");
+    }
+  }
+
+  function handleOpenCreate() {
+    setEditingItem(null);
+    setFormData({
+      name: "",
+      station: "DVLA ADENTA",
+      isActive: true,
+    });
+    setFormError(null);
+    setModalOpen(true);
+  }
+
+  function handleOpenEdit(item: SupervisorItem) {
+    setEditingItem(item);
+    setFormData({
+      name: item.name,
+      station: item.station || "",
+      isActive: item.isActive,
+    });
+    setFormError(null);
+    setModalOpen(true);
+  }
+
+  async function handleSaveSupervisor(e: React.FormEvent) {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      setFormError("Full Legal Name is required");
+      return;
+    }
+
+    setIsSaving(true);
+    setFormError(null);
+
+    try {
+      if (editingItem) {
+        // Edit existing
+        const res = await fetch("/api/supervisors", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: editingItem.id,
+            name: formData.name.trim().toUpperCase(),
+            station: formData.station.trim().toUpperCase() || undefined,
+            isActive: formData.isActive,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Failed to update supervisor");
+        }
+
+        showToast(`Updated supervisor "${formData.name.toUpperCase()}"`);
+      } else {
+        // Create new (badge number is auto-generated by the server)
+        const res = await fetch("/api/supervisors", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name.trim().toUpperCase(),
+            station: formData.station.trim().toUpperCase() || undefined,
+            isActive: formData.isActive,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Failed to register supervisor");
+        }
+
+        const created = await res.json();
+        showToast(
+          `Registered supervisor "${created.name}" with Badge ${created.badgeNumber}`
+        );
+      }
+
+      setModalOpen(false);
+      await loadSupervisors();
+    } catch (err: any) {
+      setFormError(err.message || "Failed to save supervisor");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDeleteSupervisor(item: SupervisorItem) {
+    if (!confirm(`Are you sure you want to delete supervisor "${item.name}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/supervisors?id=${item.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to delete");
+      }
+
+      showToast(`Deleted supervisor "${item.name}"`);
+      await loadSupervisors();
+    } catch (err: any) {
+      alert(err.message || "Could not delete supervisor");
+    }
+  }
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 ${
+            toast.type === "success"
+              ? "bg-emerald-950 text-emerald-200 border-emerald-800"
+              : "bg-red-950 text-red-200 border-red-800"
+          }`}
+        >
+          <span>{toast.type === "success" ? "✓" : "⚠"}</span>
+          <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Header Banner */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-bold text-emerald-700 tracking-wider uppercase">
+              Station Controls &amp; Certification Personnel
+            </span>
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">
+            Certified Supervising Officers
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            Manage authorized vehicle inspection supervisors. Badge numbers are automatically generated upon registration, and active officers appear directly in the certification select dropdown at the Booking Desk.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="px-4 py-2.5 text-xs font-bold text-white bg-slate-900 hover:bg-black rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer"
+          >
+            <span>+</span>
+            <span>Register Supervisor</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <span className="text-xs font-bold text-slate-500 uppercase">Total Officers</span>
+          <p className="text-2xl font-black text-slate-900 mt-1">{supervisors.length}</p>
+          <span className="text-[11px] text-slate-400">Certified nationwide &amp; station personnel</span>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <span className="text-xs font-bold text-emerald-600 uppercase">Active for Certification</span>
+          <p className="text-2xl font-black text-emerald-700 mt-1">{activeCount}</p>
+          <span className="text-[11px] text-emerald-600/80">Available on Booking Desk dropdown</span>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+          <span className="text-xs font-bold text-slate-400 uppercase">Inactive / Off-Duty</span>
+          <p className="text-2xl font-black text-slate-500 mt-1">{inactiveCount}</p>
+          <span className="text-[11px] text-slate-400">Temporarily hidden from selection</span>
+        </div>
+      </div>
+
+      {/* Search & Filter Toolbar */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex-1 max-w-md">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by officer name, badge number, station..."
+            className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 uppercase"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-500 uppercase">Filter:</span>
+          <div className="inline-flex p-1 bg-slate-100 rounded-lg text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setStatusFilter("ALL")}
+              className={`px-3 py-1 rounded-md transition cursor-pointer ${
+                statusFilter === "ALL"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              All ({supervisors.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter("ACTIVE")}
+              className={`px-3 py-1 rounded-md transition cursor-pointer ${
+                statusFilter === "ACTIVE"
+                  ? "bg-white text-emerald-700 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Active ({activeCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter("INACTIVE")}
+              className={`px-3 py-1 rounded-md transition cursor-pointer ${
+                statusFilter === "INACTIVE"
+                  ? "bg-white text-slate-700 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Inactive ({inactiveCount})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Table of Supervisors */}
+      {loading ? (
+        <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-sm font-semibold text-slate-400">
+          Loading supervising officers from database...
+        </div>
+      ) : filteredSupervisors.length === 0 ? (
+        <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center space-y-2">
+          <p className="text-sm font-bold text-slate-700">No supervising officers found</p>
+          <p className="text-xs text-slate-400">Try adjusting your search criteria or register a new supervisor.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-50 border-b border-slate-100 text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">
+                <tr>
+                  <th className="py-3.5 px-4">Supervisor Name &amp; ID</th>
+                  <th className="py-3.5 px-4">Official Badge Number</th>
+                  <th className="py-3.5 px-4">Station / Branch</th>
+                  <th className="py-3.5 px-4">Certified Bookings</th>
+                  <th className="py-3.5 px-4">Active Status</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {filteredSupervisors.map((s) => (
+                  <tr
+                    key={s.id}
+                    className={`hover:bg-slate-50/75 transition ${
+                      !s.isActive ? "opacity-60 bg-slate-50/40" : ""
+                    }`}
+                  >
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-slate-900 text-white font-bold text-[11px] flex items-center justify-center shrink-0">
+                          {s.name.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <span className="font-extrabold text-slate-900 uppercase block">
+                            {s.name}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            ID: {s.id.slice(-8).toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded font-mono font-bold text-slate-800 bg-slate-100 border border-slate-200">
+                        {s.badgeNumber || "AUTO-PENDING"}
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4 font-semibold text-slate-700 uppercase">
+                      {s.station || "DVLA HQ"}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700">
+                        {s._count?.bookings ?? 0} bookings
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={s.isActive}
+                            onChange={() => handleToggleStatus(s)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                        <span
+                          className={`text-[11px] font-bold ${
+                            s.isActive ? "text-emerald-700" : "text-slate-400"
+                          }`}
+                        >
+                          {s.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="inline-flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(s)}
+                          className="px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded border border-slate-200 transition cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSupervisor(s)}
+                          className="px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded border border-red-200 transition cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Add / Edit Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <h3 className="text-sm font-bold text-slate-900 uppercase">
+                  {editingItem ? `Edit Officer: ${editingItem.name}` : "Register Supervising Officer"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {formError && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs font-semibold text-red-700">
+                {formError}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveSupervisor} className="space-y-3.5">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Full Legal Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value.toUpperCase() })
+                  }
+                  placeholder="E.G. ERIC ANSAH"
+                  className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 uppercase font-bold text-slate-900"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Assigned Station / Branch
+                </label>
+                <input
+                  type="text"
+                  value={formData.station}
+                  onChange={(e) =>
+                    setFormData({ ...formData, station: e.target.value.toUpperCase() })
+                  }
+                  placeholder="E.G. DVLA ADENTA"
+                  className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 uppercase"
+                />
+              </div>
+
+              {/* Auto-Generated Badge Number Notice */}
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-1">
+                <span className="text-[11px] font-bold text-emerald-900 uppercase flex items-center gap-1.5">
+                  <span>🛡️</span> Official Badge Number
+                </span>
+                <p className="text-[11px] text-emerald-800">
+                  {editingItem?.badgeNumber
+                    ? `Assigned Badge: ${editingItem.badgeNumber}`
+                    : "An official unique supervisor badge number (e.g. SUP-XXXX) will be automatically generated and assigned by the database upon registration."}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="supervisorActiveCheck"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="rounded text-slate-900 focus:ring-slate-900 h-4 w-4"
+                />
+                <label
+                  htmlFor="supervisorActiveCheck"
+                  className="text-xs font-semibold text-slate-800 cursor-pointer"
+                >
+                  Active for Booking Desk Certification Selection
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-black rounded-lg cursor-pointer disabled:opacity-50"
+                >
+                  {isSaving ? "Saving..." : "Save Supervisor"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

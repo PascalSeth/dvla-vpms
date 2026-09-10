@@ -8,20 +8,20 @@ import {
   VehicleModel,
   VEHICLE_CATALOG,
   YEARS_LIST,
-  searchVehicles,
 } from "@/lib/vehicleCatalog";
 
-/* ─── Static reference data ─── */
+/* ─── Baseline Plate Categories (Private, Commercial, Motorcycle, Government, EV, Trailer, TMP, Agri, Diplomatic) ─── */
 
-const CLASSIFICATIONS = [
+const DEFAULT_CLASSIFICATIONS = [
   { id: "PRIVATE", label: "Private (White Plate)", badge: "⚪ Private" },
   { id: "COMMERCIAL", label: "Commercial (Yellow Plate)", badge: "🟡 Commercial" },
-  { id: "ELECTRIC", label: "Electric Vehicle (EV Green Plate)", badge: "🟢 EV Green" },
-  { id: "GOVERNMENT", label: "Government (GV Split Plate)", badge: "🏛️ GV Split" },
-  { id: "TRAILER", label: "Trailer (Yellow T Plate)", badge: "🟡 Trailer" },
   { id: "MOTORCYCLE", label: "Motorcycle (Light Blue Plate)", badge: "🔵 Motorcycle" },
+  { id: "GOVERNMENT", label: "Government (GV Split Plate)", badge: "🏛️ GV Split" },
+  { id: "ELECTRIC", label: "Electric Vehicle (EV Green Plate)", badge: "🟢 EV Green" },
+  { id: "TRAILER", label: "Trailer (Yellow T Plate)", badge: "🟡 Trailer" },
   { id: "TEMPORARY", label: "Temporary (TMP Sticker Plate)", badge: "🔷 TMP Sticker" },
-  { id: "AGRICULTURAL", label: "Agricultural (Farm Machinery)", badge: "🚜 Agri" },
+  { id: "AGRICULTURAL", label: "Agricultural (Farm Machinery)", badge: "🚜 Agricultural" },
+  { id: "DIPLOMATIC", label: "Diplomatic Corps (CD Plate)", badge: "🔴 Diplomatic" },
 ];
 
 const BODY_TYPES = [
@@ -86,25 +86,9 @@ const VEHICLE_PRESETS: VehiclePreset[] = [
   { label: "Nissan Patrol (2022)", year: "2022", make: "Nissan", model: "Patrol", engineCC: "4000", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2280", grossWeight: "2890", tyreW: "265", tyreDia: "17", fuelType: "PETROL" },
 ];
 
-const TYRE_PRESETS = [
-  { label: "195/65 R15", w: "195", d: "15" },
-  { label: "205/55 R16", w: "205", d: "16" },
-  { label: "215/55 R17", w: "215", d: "17" },
-  { label: "225/60 R17", w: "225", d: "17" },
-  { label: "235/60 R18", w: "235", d: "18" },
-  { label: "265/65 R17", w: "265", d: "17" },
-  { label: "285/60 R18", w: "285", d: "18" },
-];
-
-const SAMPLE_VRS_INVOICES = [
-  { no: "4N92P81C11VR7K", label: "Seth Pascal (Audi Q7)" },
-  { no: "9X14T73B12MQ5W", label: "Nana Opoku (Lexus RX)" },
-  { no: "5Q27A81C09TK6V", label: "Selasi Dzifa (EV Tesla)" },
-];
-
-/* ── Design tokens ── */
+/* ── Design tokens: Locks capital in all inputs ── */
 const INPUT =
-  "px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#81B71A] focus:border-[#81B71A] transition-all w-full placeholder-slate-400";
+  "px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#81B71A] focus:border-[#81B71A] transition-all w-full placeholder-slate-400 uppercase tracking-wide";
 
 interface FieldProps {
   label: string;
@@ -249,7 +233,7 @@ function BookingDeskContent() {
   const isPrefill = searchParams ? searchParams.get("prefill") === "1" : false;
   const serviceParam = searchParams ? searchParams.get("service") : null;
 
-  /* ── Tab navigation state ── */
+  /* ── Tab navigation state: 3 steps + 4th Review & Inspection ── */
   const [activeTab, setActiveTab] = useState<1 | 2 | 3 | 4>(1);
 
   /* ── Map service to booking type ── */
@@ -297,38 +281,36 @@ function BookingDeskContent() {
     return getClassificationFromService(serviceParam);
   });
 
-  const [selectedService] = useState(serviceParam || "");
-
   /* ── VRS Quick-Fill states ── */
   const [vrsInvoiceNo, setVrsInvoiceNo] = useState("");
   const [isFetchingVrs, setIsFetchingVrs] = useState(false);
   const [vrsSuccessMessage, setVrsSuccessMessage] = useState("");
   const [alreadyBookedError, setAlreadyBookedError] = useState<string | null>(null);
 
-  /* ── Owner ── */
+  /* ── Owner: All text state locked to uppercase ── */
   const [regNo, setRegNo] = useState(() => {
     if (isPrefill && searchParams) {
       const platePattern = searchParams.get("platePattern");
-      if (platePattern) return platePattern;
+      if (platePattern) return platePattern.toUpperCase();
       const rangeStart = searchParams.get("rangeStart");
       if (rangeStart) {
         const prefix = searchParams.get("prefix") || "KX";
-        return `${prefix} ${rangeStart}-AD`;
+        return `${prefix} ${rangeStart}-AD`.toUpperCase();
       }
     }
     return "";
   });
 
   const [ownerName, setOwnerName] = useState(() => {
-    return isPrefill && searchParams ? (searchParams.get("holder") || "") : "";
+    return isPrefill && searchParams ? (searchParams.get("holder") || "").toUpperCase() : "";
   });
 
   const [address, setAddress] = useState(() => {
-    return isPrefill && searchParams ? (searchParams.get("address") || "") : "";
+    return isPrefill && searchParams ? (searchParams.get("address") || "").toUpperCase() : "";
   });
 
   const [phone, setPhone] = useState(() => {
-    return isPrefill && searchParams ? (searchParams.get("phone") || "") : "";
+    return isPrefill && searchParams ? (searchParams.get("phone") || "").toUpperCase() : "";
   });
 
   const [oldOwnerName, setOldOwnerName] = useState("");
@@ -339,7 +321,7 @@ function BookingDeskContent() {
   const [showExtraAddr, setShowExtraAddr] = useState(false);
   const [showExtraCustom, setShowExtraCustom] = useState(false);
 
-  /* ── Vehicle specs ── */
+  /* ── Vehicle specs: Make, Model, Year, Body, Fuel, VIN, CC, Cylinders ── */
   const [make, setMake] = useState("");
   const [year, setYear] = useState("");
   const [model, setModel] = useState("");
@@ -349,8 +331,16 @@ function BookingDeskContent() {
   const [chassisNo, setChassisNo] = useState("");
   const [bodyType, setBodyType] = useState("Saloon");
   const [fuelType, setFuelType] = useState("PETROL");
-  const [netWeight, setNetWeight] = useState("");
-  const [grossWeight, setGrossWeight] = useState("");
+
+  /* ── Silent background defaults for tyres/weights (removed from user UI) ── */
+  const [netWeight, setNetWeight] = useState("1500");
+  const [grossWeight, setGrossWeight] = useState("2000");
+  const [tyreFW, setTyreFW] = useState("215");
+  const [tyreFD, setTyreFD] = useState("16");
+  const [tyreMW, setTyreMW] = useState("");
+  const [tyreMD, setTyreMD] = useState("");
+  const [tyreRW, setTyreRW] = useState("215");
+  const [tyreRD, setTyreRD] = useState("16");
 
   /* ── Database-Backed Vehicle Catalog State ── */
   const chassisInputRef = useRef<HTMLInputElement>(null);
@@ -379,7 +369,6 @@ function BookingDeskContent() {
           return;
         }
       }
-      // Fallback to static catalog if DB is still warming up
       setDbVehicles(VEHICLE_CATALOG);
     } catch (e) {
       console.error("Failed to load vehicle catalog from DB:", e);
@@ -407,7 +396,7 @@ function BookingDeskContent() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Vehicles filtered strictly by the active tab (used for Quick Pick chips so chips are NEVER hidden by search text)
+  // Vehicles filtered strictly by active category
   const tabVehicles = useMemo(() => {
     const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
     if (selectedMakeFilter === "Custom") {
@@ -426,9 +415,7 @@ function BookingDeskContent() {
     return list;
   }, [dbVehicles, selectedMakeFilter]);
 
-  // Dropdown search results:
-  // If search query is empty -> shows tabVehicles
-  // If user is typing -> searches across ALL vehicles globally, so any make/model can be searched & overwritten!
+  // Dropdown search results across ALL vehicles globally
   const filteredCatalogVehicles = useMemo(() => {
     const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
     const q = vehicleSearchQuery.toLowerCase().trim();
@@ -447,18 +434,15 @@ function BookingDeskContent() {
     });
   }, [dbVehicles, tabVehicles, vehicleSearchQuery]);
 
-  // Brand tab click handler:
-  // Sets filter, clears search text, and sets Make so the officer can overwrite immediately!
   function handleSelectBrandTab(tabId: string) {
     setSelectedMakeFilter(tabId);
     setVehicleSearchQuery("");
     setIsVehicleDropdownOpen(false);
     if (!["All", "Custom", "Commercial", "SUV", "EV"].includes(tabId)) {
-      setMake(tabId);
+      setMake(tabId.toUpperCase());
     }
   }
 
-  // Clear / Reset vehicle selection to start completely fresh and allow instant overwrite
   function handleResetVehicle() {
     setMake("");
     setModel("");
@@ -467,12 +451,12 @@ function BookingDeskContent() {
     setCylinders("4");
     setBodyType("Saloon");
     setFuelType("PETROL");
-    setNetWeight("");
-    setGrossWeight("");
-    setTyreFW("");
-    setTyreFD("");
-    setTyreRW("");
-    setTyreRD("");
+    setNetWeight("1500");
+    setGrossWeight("2000");
+    setTyreFW("215");
+    setTyreFD("16");
+    setTyreRW("215");
+    setTyreRD("16");
     setTyreMW("");
     setTyreMD("");
     setEngineNo("");
@@ -483,7 +467,6 @@ function BookingDeskContent() {
     setIsVehicleDropdownOpen(false);
   }
 
-  // Check if current form make/model is already known in DB
   const isCurrentModelInDb = useMemo(() => {
     if (!make.trim() || !model.trim()) return true;
     const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
@@ -494,7 +477,6 @@ function BookingDeskContent() {
     );
   }, [make, model, dbVehicles]);
 
-  // Save unlisted / custom vehicle model to database catalog
   async function handleSaveCurrentModelToDb() {
     if (!make.trim() || !model.trim()) {
       alert("Please enter both Make and Model before saving to catalog.");
@@ -503,8 +485,8 @@ function BookingDeskContent() {
     try {
       setIsSavingCustomModel(true);
       const payload = {
-        make: make.trim(),
-        model: model.trim(),
+        make: make.trim().toUpperCase(),
+        model: model.trim().toUpperCase(),
         year: year.trim() || selectedCatalogYear || "2024",
         bodyType: bodyType || "Saloon",
         engineCC: engineCC.trim() || "2000",
@@ -528,7 +510,7 @@ function BookingDeskContent() {
         if (result.vehicle) {
           setDbVehicles((prev) => [result.vehicle, ...prev.filter((x) => x.id !== result.vehicle.id)]);
         }
-        setSaveModelSuccess(`"${make.trim()} ${model.trim()}" saved to Database Catalog! Available across all desks.`);
+        setSaveModelSuccess(`"${make.trim().toUpperCase()} ${model.trim().toUpperCase()}" saved to Database Catalog!`);
         setTimeout(() => setSaveModelSuccess(null), 5000);
       } else {
         const err = await res.json();
@@ -543,68 +525,193 @@ function BookingDeskContent() {
 
   function handleSelectVehicle(v: VehicleModel | any, customYear?: string) {
     const yr = customYear || selectedCatalogYear || "2024";
-    setMake(v.make);
-    setModel(v.model);
+    setMake((v.make || "").toUpperCase());
+    setModel((v.model || "").toUpperCase());
     setYear(yr);
-    setEngineCC(v.engineCC);
-    setCylinders(v.cylinders);
-    setBodyType(v.bodyType);
-    setFuelType(v.fuelType);
-    setNetWeight(v.netWeight);
-    setGrossWeight(v.grossWeight);
-    setTyreFW(v.tyreW);
-    setTyreFD(v.tyreDia);
-    setTyreRW(v.tyreW);
-    setTyreRD(v.tyreDia);
+    setEngineCC(v.engineCC || "2000");
+    setCylinders(v.cylinders || "4");
+    setBodyType(v.bodyType || "Saloon");
+    setFuelType(v.fuelType || "PETROL");
+    setNetWeight(v.netWeight || "1500");
+    setGrossWeight(v.grossWeight || "2000");
+    setTyreFW(v.tyreW || "215");
+    setTyreFD(v.tyreDia || "16");
+    setTyreRW(v.tyreW || "215");
+    setTyreRD(v.tyreDia || "16");
     setTyreMW("");
     setTyreMD("");
-
-    // Engine number is unique to each individual physical vehicle and is NOT prefilled
     setEngineNo("");
 
-    // Clear search box so it is ready for any next search without blocking
     setVehicleSearchQuery("");
     setIsVehicleDropdownOpen(false);
     setAutoFilledNotice(
-      `Specifications auto-filled from Database for ${v.make} ${v.model} (${yr})! Please enter the physical Chassis number below.`
+      `✓ Specifications auto-filled: ${v.make.toUpperCase()} ${v.model.toUpperCase()} (${yr}) — ${v.engineCC} CC • ${v.cylinders} Cylinders. Please enter the physical VIN below.`
     );
 
-    // Automatically focus the Chassis / VIN Number input field
     setTimeout(() => {
       chassisInputRef.current?.focus();
     }, 150);
   }
 
-  // Quick helper to register from search query
   function handleUseUnlistedFromSearch() {
     if (!vehicleSearchQuery.trim()) return;
     const parts = vehicleSearchQuery.trim().split(/\s+/);
     const newMake = parts[0] || "";
-    const newModel = parts.slice(1).join(" ") || "Standard";
-    setMake(newMake.charAt(0).toUpperCase() + newMake.slice(1));
-    setModel(newModel);
+    const newModel = parts.slice(1).join(" ") || "STANDARD";
+    setMake(newMake.toUpperCase());
+    setModel(newModel.toUpperCase());
     setYear(selectedCatalogYear || "2024");
     setVehicleSearchQuery("");
     setIsVehicleDropdownOpen(false);
     setAutoFilledNotice(
-      `Unlisted vehicle initialized: "${newMake} ${newModel}". Fill in specifications and click "Save to Database Catalog".`
+      `Unlisted vehicle initialized: "${newMake.toUpperCase()} ${newModel.toUpperCase()}". Specifications can be saved to catalog.`
     );
   }
 
-  /* ── Tyres ── */
-  const [tyreFW, setTyreFW] = useState("");
-  const [tyreFD, setTyreFD] = useState("");
-  const [tyreMW, setTyreMW] = useState("");
-  const [tyreMD, setTyreMD] = useState("");
-  const [tyreRW, setTyreRW] = useState("");
-  const [tyreRD, setTyreRD] = useState("");
-
-  /* ── Audit (NO HARDCODED DATES!) ── */
+  /* ── Official Revenue Receipt & Date (Step 1) ── */
   const [receiptNo, setReceiptNo] = useState("");
+  const [receiptDate, setReceiptDate] = useState(() => new Date().toISOString().slice(0, 10));
+
+  /* ── Customs & Certification (Step 3) ── */
   const [customsNo, setCustomsNo] = useState("");
-  const [customsDate, setCustomsDate] = useState(""); // Starts empty so worker enters freely
+  const [customsDate, setCustomsDate] = useState("");
   const [supervisor, setSupervisor] = useState("");
-  const regOfficer = "A. Owusu";
+  const [selectedSupervisorId, setSelectedSupervisorId] = useState("");
+
+  /* ── Database-Driven Plate Categories & Supervisors ── */
+  interface PlateCategoryDbItem {
+    id: string;
+    code: string;
+    name: string;
+    badge: string;
+    description?: string | null;
+    plateColor?: string | null;
+    textColor?: string | null;
+    isActive: boolean;
+  }
+
+  interface SupervisorDbItem {
+    id: string;
+    name: string;
+    badgeNumber?: string | null;
+    station?: string | null;
+    branch?: {
+      id: string;
+      name: string;
+      code?: string;
+    } | null;
+    isActive: boolean;
+  }
+
+  const [dbPlateCategories, setDbPlateCategories] = useState<PlateCategoryDbItem[]>([]);
+  const [dbSupervisors, setDbSupervisors] = useState<SupervisorDbItem[]>([]);
+  const [dbBodyTypes, setDbBodyTypes] = useState<{ code: string; name: string; isActive: boolean }[]>([]);
+  const [isQuickAddSupervisorOpen, setIsQuickAddSupervisorOpen] = useState(false);
+  const [newSupervisorName, setNewSupervisorName] = useState("");
+  const [newSupervisorStation, setNewSupervisorStation] = useState("");
+  const [isSavingSupervisor, setIsSavingSupervisor] = useState(false);
+
+  async function loadSupervisors() {
+    try {
+      const res = await fetch("/api/supervisors?activeOnly=true");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const activeOnly = data.filter((s: any) => s.isActive !== false);
+          setDbSupervisors(activeOnly);
+          return activeOnly;
+        }
+      }
+    } catch (err) {
+      console.error("Failed loading supervisors from DB:", err);
+    }
+    return [];
+  }
+
+  async function loadPlateCategories() {
+    try {
+      const res = await fetch("/api/plates/categories?activeOnly=true");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const activeOnly = data.filter((c: any) => c.isActive !== false);
+          setDbPlateCategories(activeOnly);
+          return activeOnly;
+        }
+      }
+    } catch (err) {
+      console.error("Failed loading plate categories from DB:", err);
+    }
+    return [];
+  }
+
+  async function loadBodyTypes() {
+    try {
+      const res = await fetch("/api/vehicles/body-types?activeOnly=true");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const activeOnly = data.filter((bt: any) => bt.isActive !== false);
+          setDbBodyTypes(activeOnly);
+          return activeOnly;
+        }
+      }
+    } catch (err) {
+      console.error("Failed loading body types from DB:", err);
+    }
+    return [];
+  }
+
+  useEffect(() => {
+    loadPlateCategories();
+    loadSupervisors();
+    loadBodyTypes();
+
+    const handleSync = () => {
+      loadPlateCategories();
+      loadSupervisors();
+      loadBodyTypes();
+    };
+
+    window.addEventListener("focus", handleSync);
+    document.addEventListener("visibilitychange", handleSync);
+    return () => {
+      window.removeEventListener("focus", handleSync);
+      document.removeEventListener("visibilitychange", handleSync);
+    };
+  }, []);
+
+  const activeCategories = useMemo(() => {
+    if (dbPlateCategories.length > 0) {
+      const active = dbPlateCategories
+        .filter(c => c.isActive !== false)
+        .map(c => ({
+          id: c.code,
+          label: c.name,
+          badge: c.badge,
+        }));
+      if (active.length > 0) return active;
+    }
+    return DEFAULT_CLASSIFICATIONS;
+  }, [dbPlateCategories]);
+
+  // Keep classification aligned with active categories
+  useEffect(() => {
+    if (activeCategories.length > 0 && !activeCategories.some(c => c.id === classification)) {
+      setClassification(activeCategories[0].id);
+    }
+  }, [activeCategories, classification]);
+
+  // Default supervisor if available or align if currently selected supervisor became inactive
+  useEffect(() => {
+    if (dbSupervisors.length > 0) {
+      const isCurrentActive = dbSupervisors.some(s => s.name === supervisor);
+      if (!supervisor || !isCurrentActive) {
+        setSupervisor(dbSupervisors[0].name);
+        setSelectedSupervisorId(dbSupervisors[0].id);
+      }
+    }
+  }, [dbSupervisors, supervisor]);
 
   /* ── UI state ── */
   const [isSuccess, setIsSuccess] = useState(false);
@@ -721,7 +828,6 @@ function BookingDeskContent() {
   const activeReservation = checkPlateReservation(regNo, reservations);
   const activeServiceDef = displayBookingTypes.find(b => b.id === bookingType);
 
-  // Previous title owner details are strictly driven by the Service Type definition configured in the Services page
   const isTransfer = Boolean(
     activeServiceDef
       ? activeServiceDef.requiresPreviousOwner
@@ -746,12 +852,11 @@ function BookingDeskContent() {
     bookingType.includes("SPECIAL") ||
     bookingType.includes("CUSTOM");
 
-  // Tab completion & required field validation state
+  /* ── 3 Streamlined Steps Validation ── */
   const [attemptedTabs, setAttemptedTabs] = useState<Record<number, boolean>>({
     1: false,
     2: false,
     3: false,
-    4: false,
   });
 
   const missingFieldsTab1 = useMemo(() => {
@@ -760,6 +865,8 @@ function BookingDeskContent() {
     if (!classification.trim()) missing.push({ id: "input-classification", label: "Plate Classification" });
     if (!regNo.trim()) missing.push({ id: "input-regNo", label: "Assigned Plate Number" });
     if (!ownerName.trim()) missing.push({ id: "input-ownerName", label: isTransfer ? "New Owner Full Legal Name" : "Owner Full Legal Name" });
+    if (!receiptNo.trim()) missing.push({ id: "input-receiptNo", label: "Revenue Receipt Number" });
+    if (!receiptDate.trim()) missing.push({ id: "input-receiptDate", label: "Receipt Payment Date" });
     if (isTransfer) {
       if (activeServiceDef?.prevOwnerRequireName !== false && !oldOwnerName.trim()) {
         missing.push({ id: "input-oldOwnerName", label: "Previous Owner Full Name" });
@@ -775,10 +882,10 @@ function BookingDeskContent() {
       }
     }
     return missing;
-  }, [bookingType, classification, regNo, ownerName, isTransfer, activeServiceDef, oldOwnerName, oldOwnerPhone, oldOwnerAddr, oldOwnerCustom]);
+  }, [bookingType, classification, regNo, ownerName, receiptNo, receiptDate, isTransfer, activeServiceDef, oldOwnerName, oldOwnerPhone, oldOwnerAddr, oldOwnerCustom]);
 
   const totalFieldsTab1 = useMemo(() => {
-    let count = 4;
+    let count = 6;
     if (isTransfer) {
       if (activeServiceDef?.prevOwnerRequireName !== false) count++;
       if (Boolean(activeServiceDef?.prevOwnerRequirePhone)) count++;
@@ -788,6 +895,7 @@ function BookingDeskContent() {
     return count;
   }, [isTransfer, activeServiceDef]);
 
+  // Tab 2: Kept CC and Cylinders! Axles and tyres temporarily removed.
   const missingFieldsTab2 = useMemo(() => {
     const missing: { id: string; label: string }[] = [];
     if (!make.trim()) missing.push({ id: "input-make", label: "Make" });
@@ -797,44 +905,28 @@ function BookingDeskContent() {
     if (!fuelType.trim()) missing.push({ id: "input-fuelType", label: "Fuel Type" });
     if (!chassisNo.trim()) missing.push({ id: "input-chassisNo", label: "Chassis / VIN Number" });
     if (!engineCC.trim()) missing.push({ id: "input-engineCC", label: "Engine Displacement (CC)" });
+    if (!cylinders.trim()) missing.push({ id: "input-cylinders", label: "Number of Cylinders" });
     return missing;
-  }, [make, model, year, bodyType, fuelType, chassisNo, engineCC]);
+  }, [make, model, year, bodyType, fuelType, chassisNo, engineCC, cylinders]);
 
-  const totalFieldsTab2 = 7;
+  const totalFieldsTab2 = 8;
 
+  // Step 3: Customs & Certification
   const missingFieldsTab3 = useMemo(() => {
     const missing: { id: string; label: string }[] = [];
-    if (!tyreFW.trim()) missing.push({ id: "input-tyreFW", label: "Front Tyre Width" });
-    if (!tyreFD.trim()) missing.push({ id: "input-tyreFD", label: "Front Tyre Rim" });
-    if (!tyreRW.trim()) missing.push({ id: "input-tyreRW", label: "Rear Tyre Width" });
-    if (!tyreRD.trim()) missing.push({ id: "input-tyreRD", label: "Rear Tyre Rim" });
-    return missing;
-  }, [tyreFW, tyreFD, tyreRW, tyreRD]);
-
-  const totalFieldsTab3 = 4;
-
-  const missingFieldsTab4 = useMemo(() => {
-    const missing: { id: string; label: string }[] = [];
-    if (!receiptNo.trim()) missing.push({ id: "input-receiptNo", label: "Revenue Receipt Number" });
     if (!customsNo.trim()) missing.push({ id: "input-customsNo", label: "Customs Declaration Number" });
     if (!customsDate.trim()) missing.push({ id: "input-customsDate", label: "Customs Clearance Date" });
     if (!supervisor.trim()) missing.push({ id: "input-supervisor", label: "Supervising Certification Officer" });
     return missing;
-  }, [receiptNo, customsNo, customsDate, supervisor]);
+  }, [customsNo, customsDate, supervisor]);
 
-  const totalFieldsTab4 = 4;
+  const totalFieldsTab3 = 3;
 
-  const isTab1Done = missingFieldsTab1.length === 0;
-  const isTab2Done = missingFieldsTab2.length === 0;
-  const isTab3Done = missingFieldsTab3.length === 0;
-  const isTab4Done = missingFieldsTab4.length === 0;
-
-  const totalRequiredFields = totalFieldsTab1 + totalFieldsTab2 + totalFieldsTab3 + totalFieldsTab4;
+  const totalRequiredFields = totalFieldsTab1 + totalFieldsTab2 + totalFieldsTab3;
   const totalCompletedFields =
     (totalFieldsTab1 - missingFieldsTab1.length) +
     (totalFieldsTab2 - missingFieldsTab2.length) +
-    (totalFieldsTab3 - missingFieldsTab3.length) +
-    (totalFieldsTab4 - missingFieldsTab4.length);
+    (totalFieldsTab3 - missingFieldsTab3.length);
 
   const overallCompletionPercent = Math.round((totalCompletedFields / totalRequiredFields) * 100);
 
@@ -859,13 +951,13 @@ function BookingDeskContent() {
     setActiveTab(2);
   }
 
-  function handleNextTab2(targetTab: 3 | 4) {
+  function handleNextTab2() {
     if (missingFieldsTab2.length > 0) {
       setAttemptedTabs(prev => ({ ...prev, 2: true }));
       focusField(missingFieldsTab2[0].id, 2);
       return;
     }
-    setActiveTab(targetTab);
+    setActiveTab(3);
   }
 
   function handleNextTab3() {
@@ -878,18 +970,21 @@ function BookingDeskContent() {
   }
 
   function applyPreset(p: VehiclePreset) {
-    setMake(p.make); setYear(p.year); setModel(p.model); setEngineCC(p.engineCC);
-    setCylinders(p.cylinders); setBodyType(p.bodyType);
-    setNetWeight(p.netWeight); setGrossWeight(p.grossWeight);
-    setTyreFW(p.tyreW); setTyreFD(p.tyreDia);
-    setTyreRW(p.tyreW); setTyreRD(p.tyreDia);
-    setTyreMW(""); setTyreMD("");
+    setMake(p.make.toUpperCase());
+    setYear(p.year);
+    setModel(p.model.toUpperCase());
+    setEngineCC(p.engineCC);
+    setCylinders(p.cylinders);
+    setBodyType(p.bodyType);
     setFuelType(p.fuelType);
-  }
-
-  function applyTyre(w: string, d: string) {
-    setTyreFW(w); setTyreFD(d);
-    setTyreRW(w); setTyreRD(d);
+    setNetWeight(p.netWeight);
+    setGrossWeight(p.grossWeight);
+    setTyreFW(p.tyreW);
+    setTyreFD(p.tyreDia);
+    setTyreRW(p.tyreW);
+    setTyreRD(p.tyreDia);
+    setTyreMW("");
+    setTyreMD("");
   }
 
   function generateNewDVLAFormat() {
@@ -904,22 +999,28 @@ function BookingDeskContent() {
     setIsSimulating(true);
     setTimeout(() => {
       const p = VEHICLE_PRESETS[14]; // Toyota Land Cruiser
-      setOwnerName("Ebenezer Kwabena Boateng");
-      setAddress("House No. 12, Frafraha Junction, Adenta, Accra");
+      setOwnerName("EBENEZER KWABENA BOATENG");
+      setAddress("HOUSE NO. 12, FRAFRAHA JUNCTION, ADENTA, ACCRA");
       setPhone("+233 24 489 0291");
       setRegNo(generateNewDVLAFormat());
       setEngineNo("SQRF4J20-291823");
       setChassisNo("JTEBU5JR8P2091837");
       setYear("2024");
-      setModel("Land Cruiser");
+      setModel("LAND CRUISER");
       setReceiptNo("4702604819");
       setCustomsNo("4708912/26");
       setCustomsDate(new Date().toISOString().slice(0, 10));
-      setSupervisor("Saviour");
+      const matchedSup = dbSupervisors.length > 0 ? dbSupervisors[0] : null;
+      if (matchedSup) {
+        setSupervisor(matchedSup.name);
+        setSelectedSupervisorId(matchedSup.id);
+      } else {
+        setSupervisor("SAVIOUR ADOM");
+      }
       if (isTransfer) {
-        setOldOwnerName("Seth Pascal Kofi");
+        setOldOwnerName("SETH PASCAL KOFI");
         setOldOwnerPhone("+233 24 901 8273");
-        setOldOwnerAddr("Plot 8, Adentan Municipal Area, Accra");
+        setOldOwnerAddr("PLOT 8, ADENTAN MUNICIPAL AREA, ACCRA");
         setOldOwnerCustom("AFF-2026/0912-GH");
       }
       applyPreset(p);
@@ -933,15 +1034,15 @@ function BookingDeskContent() {
     setOldOwnerName(""); setOldOwnerPhone(""); setOldOwnerAddr(""); setOldOwnerCustom("");
     setShowExtraPhone(false); setShowExtraAddr(false); setShowExtraCustom(false);
     setMake(""); setYear(""); setModel(""); setEngineCC(""); setEngineNo(""); setChassisNo("");
-    setBodyType("Saloon"); setNetWeight(""); setGrossWeight("");
-    setTyreFW(""); setTyreFD(""); setTyreMW(""); setTyreMD(""); setTyreRW(""); setTyreRD("");
-    setReceiptNo(""); setCustomsNo(""); setCustomsDate(""); setSupervisor("");
+    setBodyType("Saloon"); setNetWeight("1500"); setGrossWeight("2000");
+    setTyreFW("215"); setTyreFD("16"); setTyreMW(""); setTyreMD(""); setTyreRW("215"); setTyreRD("16");
+    setReceiptNo(""); setCustomsNo(""); setCustomsDate(""); setSupervisor(""); setSelectedSupervisorId("");
     setCylinders("4"); setFuelType("PETROL");
     setRegNo("");
     setVrsInvoiceNo("");
     setVrsSuccessMessage("");
     setAlreadyBookedError(null);
-    setAttemptedTabs({ 1: false, 2: false, 3: false, 4: false });
+    setAttemptedTabs({ 1: false, 2: false, 3: false });
     setActiveTab(1);
   }
 
@@ -1004,7 +1105,7 @@ function BookingDeskContent() {
             if (match) {
               isAlreadyBooked = true;
               setAlreadyBookedError(
-                `⚠️ Notice: VRS Invoice #${invoice.invoiceNo} has ALREADY been booked into the system (Booking ID: #${match.id} — Owner: ${match.owner}).`
+                `⚠️ Notice: VRS Invoice #${invoice.invoiceNo} has ALREADY been booked in system (Booking #${match.id} — ${match.owner}).`
               );
             }
           }
@@ -1021,39 +1122,39 @@ function BookingDeskContent() {
       setAlreadyBookedError(null);
       setBookingType(invoice.bookingType);
       setClassification(invoice.classification);
-      setRegNo(invoice.regNo);
-      setOwnerName(invoice.ownerName);
-      setAddress(invoice.address);
-      setPhone(invoice.phone);
+      setRegNo((invoice.regNo || "").toUpperCase());
+      setOwnerName((invoice.ownerName || "").toUpperCase());
+      setAddress((invoice.address || "").toUpperCase());
+      setPhone((invoice.phone || "").toUpperCase());
 
-      setMake(invoice.make);
+      setMake((invoice.make || "").toUpperCase());
       const yearMatch = invoice.yearModel.match(/(\d{4})$/);
       const extractedYear = yearMatch ? yearMatch[1] : "";
       const extractedModel = yearMatch ? invoice.yearModel.replace(/\s*\d{4}$/, "") : invoice.yearModel;
       setYear(extractedYear);
-      setModel(extractedModel);
-      setEngineCC(invoice.engineCC);
-      setCylinders(invoice.cylinders);
-      setEngineNo(invoice.engineNo);
-      setChassisNo(invoice.chassisNo);
+      setModel((extractedModel || "").toUpperCase());
+      setEngineCC(invoice.engineCC || "2000");
+      setCylinders(invoice.cylinders || "4");
+      setEngineNo((invoice.engineNo || "").toUpperCase());
+      setChassisNo((invoice.chassisNo || "").toUpperCase());
       setBodyType(invoice.bodyType || "Saloon");
       setFuelType(invoice.fuelType || "PETROL");
-      setNetWeight(invoice.netWeight);
-      setGrossWeight(invoice.grossWeight);
+      setNetWeight(invoice.netWeight || "1500");
+      setGrossWeight(invoice.grossWeight || "2000");
 
-      setTyreFW(invoice.tyreFW);
-      setTyreFD(invoice.tyreFD);
-      setTyreMW(invoice.tyreMW);
-      setTyreMD(invoice.tyreMD);
-      setTyreRW(invoice.tyreRW);
-      setTyreRD(invoice.tyreRD);
+      setTyreFW(invoice.tyreFW || "215");
+      setTyreFD(invoice.tyreFD || "16");
+      setTyreMW(invoice.tyreMW || "");
+      setTyreMD(invoice.tyreMD || "");
+      setTyreRW(invoice.tyreRW || "215");
+      setTyreRD(invoice.tyreRD || "16");
 
       setReceiptNo("");
       setCustomsNo("");
       setCustomsDate("");
 
       setVrsSuccessMessage(`VRS Invoice #${invoice.invoiceNo} imported successfully.`);
-      setActiveTab(4); // navigate to customs & review
+      setActiveTab(3); // Navigate directly to Customs & Certification
     } else {
       alert("Invoice not found in VRS. Please check the 14-character invoice number (e.g. 4N92P81C11VR7K).");
     }
@@ -1068,7 +1169,7 @@ function BookingDeskContent() {
       return;
     }
 
-    // Step-by-step verification: Tab 1 -> Tab 2 -> Tab 3 -> Tab 4
+    // Step-by-step verification: Step 1 -> Step 2 -> Step 3
     if (missingFieldsTab1.length > 0) {
       focusField(missingFieldsTab1[0].id, 1);
       alert(`⚠️ Step 1 Incomplete: Please enter "${missingFieldsTab1[0].label}" before certifying.`);
@@ -1087,12 +1188,6 @@ function BookingDeskContent() {
       return;
     }
 
-    if (missingFieldsTab4.length > 0) {
-      focusField(missingFieldsTab4[0].id, 4);
-      alert(`⚠️ Step 4 Incomplete: Please enter "${missingFieldsTab4[0].label}" before certifying.`);
-      return;
-    }
-
     const activeRes = checkPlateReservation(regNo, reservations);
     if (activeRes) {
       const updated = reservations.map(r => {
@@ -1108,7 +1203,7 @@ function BookingDeskContent() {
       saveStoredReservations(updated);
     }
 
-    const fullPlate = regNo.trim();
+    const fullPlate = regNo.trim().toUpperCase();
 
     try {
       const res = await fetch("/api/bookings", {
@@ -1117,31 +1212,45 @@ function BookingDeskContent() {
         body: JSON.stringify({
           type: bookingType,
           status: "pending",
-          owner: ownerName || "Unknown Owner",
-          vehicle: `${make} ${model} (${year})`.trim() || "Vehicle",
+          owner: ownerName.trim().toUpperCase() || "UNKNOWN OWNER",
+          address: address.trim().toUpperCase() || undefined,
+          phone: phone.trim().toUpperCase() || undefined,
+          vehicle: `${make.trim().toUpperCase()} ${model.trim().toUpperCase()} (${year})`.trim() || "VEHICLE",
           plate: fullPlate || undefined,
           date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
           classification: classification,
-          vrsInvoiceNo: vrsInvoiceNo.trim() || undefined,
-          make: make.trim() || undefined,
-          model: model.trim() || undefined,
+          receiptNo: receiptNo.trim().toUpperCase() || undefined,
+          receiptDate: receiptDate.trim() || undefined,
+          customsNo: customsNo.trim().toUpperCase() || undefined,
+          customsDate: customsDate.trim() || undefined,
+          supervisor: supervisor.trim().toUpperCase() || undefined,
+          supervisorId: selectedSupervisorId || undefined,
+          vrsInvoiceNo: vrsInvoiceNo.trim().toUpperCase() || undefined,
+          make: make.trim().toUpperCase() || undefined,
+          model: model.trim().toUpperCase() || undefined,
           yearModel: year.trim() || undefined,
           bodyType: bodyType || undefined,
           engineCC: engineCC.trim() || undefined,
           cylinders: cylinders || undefined,
+          engineNo: engineNo.trim().toUpperCase() || undefined,
+          chassisNo: chassisNo.trim().toUpperCase() || undefined,
           fuelType: fuelType || undefined,
-          netWeight: netWeight.trim() || undefined,
-          grossWeight: grossWeight.trim() || undefined,
-          tyreFW: tyreFW.trim() || undefined,
-          tyreFD: tyreFD.trim() || undefined,
+          netWeight: (netWeight && netWeight.trim()) || "1500",
+          grossWeight: (grossWeight && grossWeight.trim()) || "2000",
+          tyreFW: (tyreFW && tyreFW.trim()) || "215",
+          tyreFD: (tyreFD && tyreFD.trim()) || "16",
+          tyreMW: tyreMW.trim() || undefined,
+          tyreMD: tyreMD.trim() || undefined,
+          tyreRW: (tyreRW && tyreRW.trim()) || "215",
+          tyreRD: (tyreRD && tyreRD.trim()) || "16",
           createdById: sessionUser?.id || undefined,
           userId: sessionUser?.id || undefined,
           userName: sessionUser?.name || sessionUser?.username || "Officer",
           branchId: sessionUser?.branchId || sessionUser?.branch?.id || undefined,
-          previousOwnerName: isTransfer ? oldOwnerName.trim() || undefined : undefined,
-          previousOwnerPhone: isTransfer ? oldOwnerPhone.trim() || undefined : undefined,
-          previousOwnerAddress: isTransfer ? oldOwnerAddr.trim() || undefined : undefined,
-          previousOwnerCustom: isTransfer ? oldOwnerCustom.trim() || undefined : undefined,
+          previousOwnerName: isTransfer ? oldOwnerName.trim().toUpperCase() || undefined : undefined,
+          previousOwnerPhone: isTransfer ? oldOwnerPhone.trim().toUpperCase() || undefined : undefined,
+          previousOwnerAddress: isTransfer ? oldOwnerAddr.trim().toUpperCase() || undefined : undefined,
+          previousOwnerCustom: isTransfer ? oldOwnerCustom.trim().toUpperCase() || undefined : undefined,
         }),
       });
 
@@ -1152,6 +1261,7 @@ function BookingDeskContent() {
       }
 
       setIsSuccess(true);
+      fetchDbVehicles();
     } catch (err) {
       console.error("Error creating booking in DB:", err);
       alert("System error creating booking.");
@@ -1160,26 +1270,32 @@ function BookingDeskContent() {
 
   /* ════════════════ RENDER ════════════════ */
   return (
-    <div className="space-y-4 max-w-6xl mx-auto pb-16">
+    <div className="space-y-4 max-w-6xl mx-auto pb-32 lg:pb-16">
 
-      {/* ── 1. Clean, Compact Top Header Bar ── */}
-      <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
+      {/* ── 1. Top Header Bar ── */}
+      <div className="bg-white border border-slate-200 rounded-xl px-4 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm font-bold text-slate-900 tracking-tight">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <h1 className="text-sm font-black text-slate-900 uppercase tracking-tight">
               Vehicle Registration Desk
             </h1>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
               VRS Online
             </span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 uppercase">
+              {sessionUser?.branch?.name ? String(sessionUser.branch.name).toUpperCase() : "DVLA ADENTA"}
+            </span>
+            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+              CAPS LOCKED
+            </span>
           </div>
-          <p className="text-xs text-slate-500">
-            Adenta Station Registry &bull; Enter registration details or import VRS invoice.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Official Logbook Entry • Follow the 3-step filing procedure and certify in review.
           </p>
         </div>
 
-        {/* Compact Quick Actions */}
+        {/* Action Toolbar */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Inline VRS Invoice Search */}
           <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
@@ -1187,8 +1303,8 @@ function BookingDeskContent() {
               type="text"
               value={vrsInvoiceNo}
               onChange={e => setVrsInvoiceNo(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 14))}
-              placeholder="VRS Invoice #"
-              className="px-2.5 py-1.5 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none w-32 md:w-36"
+              placeholder="VRS INVOICE #"
+              className="px-2.5 py-1.5 text-xs font-mono font-bold text-slate-800 placeholder-slate-400 focus:outline-none w-32 md:w-36 uppercase"
             />
             <button
               type="button"
@@ -1204,9 +1320,19 @@ function BookingDeskContent() {
             type="button"
             onClick={handleAutofillSimulation}
             disabled={isSimulating}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
           >
-            {isSimulating ? "Scanning..." : "Simulate Scan"}
+            <span>⚡ Demo Auto-Fill</span>
+          </button>
+
+          {/* Quick Mobile Review Shortcut */}
+          <button
+            type="button"
+            onClick={() => setActiveTab(4)}
+            className="lg:hidden px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold transition cursor-pointer flex items-center gap-1"
+            title="Preview plate and review"
+          >
+            <span>🔍 Plate</span>
           </button>
 
           <button
@@ -1241,11 +1367,11 @@ function BookingDeskContent() {
             <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center font-bold text-lg">
               ✓
             </div>
-            <h3 className="font-bold text-base text-slate-900">Registration Successfully Filed</h3>
+            <h3 className="font-bold text-base text-slate-900 uppercase">Registration Successfully Filed</h3>
             <p className="text-xs text-slate-500">Official logbook record entered into DVLA database.</p>
           </div>
 
-          <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 font-mono text-xs space-y-2 text-slate-700">
+          <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 font-mono text-xs space-y-2 text-slate-700 uppercase">
             <div className="flex justify-between border-b border-slate-200 pb-2">
               <span className="text-slate-400">PLATE NUMBER:</span>
               <span className="font-bold text-slate-900">{regNo || "PENDING"}</span>
@@ -1266,6 +1392,10 @@ function BookingDeskContent() {
             <div className="flex justify-between">
               <span className="text-slate-400">VEHICLE:</span>
               <span>{make} {model} {year && `(${year})`}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">ENGINE SPECS:</span>
+              <span>{engineCC} CC • {cylinders} CYLINDERS</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">CHASSIS / VIN:</span>
@@ -1310,16 +1440,16 @@ function BookingDeskContent() {
         /* ── 3. Main Two-Column Workstation ── */
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
 
-          {/* ── Left Column (2/3): Simple, Well-Organized Form Card ── */}
+          {/* ── Left Column (2/3): Streamlined 3-Step Workstation ── */}
           <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
 
-            {/* Clean Tab Header Strip with Live Requirement Status */}
-            <div className="flex border-b border-slate-200 bg-slate-50/50">
+            {/* Modern 4-Step Stepper Navigation Strip */}
+            <div className="flex border-b border-slate-200 bg-slate-50/70">
               {([
-                { id: 1, label: "1. Owner & Filing", total: totalFieldsTab1, missing: missingFieldsTab1.length, attempted: attemptedTabs[1] },
-                { id: 2, label: "2. Vehicle Details", total: totalFieldsTab2, missing: missingFieldsTab2.length, attempted: attemptedTabs[2] },
-                { id: 3, label: "3. Axle & Tyres", total: totalFieldsTab3, missing: missingFieldsTab3.length, attempted: attemptedTabs[3] },
-                { id: 4, label: "4. Customs & Audit", total: totalFieldsTab4, missing: missingFieldsTab4.length, attempted: attemptedTabs[4] },
+                { id: 1, stepNum: 1, label: "1. Owner & Filing", shortLabel: "1. Owner", total: totalFieldsTab1, missing: missingFieldsTab1.length, attempted: attemptedTabs[1] },
+                { id: 2, stepNum: 2, label: "2. Vehicle Specs", shortLabel: "2. Vehicle", total: totalFieldsTab2, missing: missingFieldsTab2.length, attempted: attemptedTabs[2] },
+                { id: 3, stepNum: 3, label: "3. Customs & Certification", shortLabel: "3. Customs", total: totalFieldsTab3, missing: missingFieldsTab3.length, attempted: attemptedTabs[3] },
+                { id: 4, stepNum: 4, label: "4. Review & Inspection", shortLabel: "4. Review", total: totalRequiredFields, missing: totalRequiredFields - totalCompletedFields, attempted: false },
               ] as const).map(tab => {
                 const active = activeTab === tab.id;
                 const isDone = tab.missing === 0;
@@ -1328,39 +1458,39 @@ function BookingDeskContent() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id as 1 | 2 | 3 | 4)}
-                    className={`flex-1 py-3 px-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1.5 ${
+                    className={`flex-1 py-3 px-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 ${
                       active
-                        ? "border-[#81B71A] text-slate-900 bg-white"
+                        ? "border-[#81B71A] text-slate-900 bg-white font-bold shadow-2xs"
                         : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/60"
                     }`}
                   >
-                    <span>{tab.label}</span>
-                    {isDone ? (
-                      <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-0.5 border border-emerald-300">
-                        ✓ Done
-                      </span>
-                    ) : tab.attempted ? (
-                      <span className="px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold flex items-center gap-0.5 border border-rose-300 animate-pulse">
-                        ! {tab.missing} Missing
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-slate-400 font-normal">
-                        ({tab.total - tab.missing}/{tab.total})
-                      </span>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
+                      active
+                        ? "bg-[#103014] text-white"
+                        : isDone
+                        ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                        : "bg-slate-200 text-slate-600"
+                    }`}>
+                      {isDone && !active ? "✓" : tab.stepNum}
+                    </span>
+                    <span className="hidden md:inline">{tab.label}</span>
+                    <span className="md:hidden">{tab.shortLabel}</span>
+                    {tab.attempted && !isDone && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shrink-0" />
                     )}
                   </button>
                 );
               })}
             </div>
 
-            {/* Form Body with Generous Padding and Clean Layout */}
-            <div className="p-5">
+            {/* Form Body with Generous Padding */}
+            <div className="p-4 sm:p-5">
 
-              {/* ── TAB 1: OWNER & FILING ── */}
+              {/* ── STEP 1: OWNER & FILING ── */}
               {activeTab === 1 && (
                 <div className="space-y-4">
-                  {/* Step 1 Requirements Callout Banner */}
-                  <div className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition ${
+                  {/* Step 1 Compact Status Bar */}
+                  <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${
                     missingFieldsTab1.length === 0
                       ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
                       : attemptedTabs[1]
@@ -1368,26 +1498,19 @@ function BookingDeskContent() {
                       : "bg-slate-50 border-slate-200 text-slate-700"
                   }`}>
                     <div className="flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${
                         missingFieldsTab1.length === 0 ? "bg-emerald-500" : attemptedTabs[1] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
                       }`} />
-                      <div>
-                        <p className="font-bold">
-                          {missingFieldsTab1.length === 0
-                            ? "✓ All required filing details completed"
-                            : attemptedTabs[1]
-                            ? `⚠️ Action Needed: ${missingFieldsTab1.length} required ${missingFieldsTab1.length === 1 ? "field is" : "fields are"} missing`
-                            : `Step 1 Requirements: ${totalFieldsTab1 - missingFieldsTab1.length} of ${totalFieldsTab1} completed`}
-                        </p>
-                        {missingFieldsTab1.length > 0 && (
-                          <p className="text-[11px] text-slate-500 font-normal">
-                            Required: {missingFieldsTab1.map(f => f.label).join(", ")}
-                          </p>
-                        )}
-                      </div>
+                      <span className="font-semibold text-[11px] uppercase">
+                        {missingFieldsTab1.length === 0
+                          ? "Step 1: All required filing details completed"
+                          : attemptedTabs[1]
+                          ? `Action Needed: ${missingFieldsTab1.length} required field${missingFieldsTab1.length === 1 ? " is" : "s are"} missing`
+                          : `Step 1: Filing & Owner Details (${totalFieldsTab1 - missingFieldsTab1.length}/${totalFieldsTab1} Completed)`}
+                      </span>
                     </div>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0 self-start sm:self-auto">
-                      {totalFieldsTab1 - missingFieldsTab1.length}/{totalFieldsTab1} Ready
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0">
+                      {totalFieldsTab1 - missingFieldsTab1.length}/{totalFieldsTab1} Done
                     </span>
                   </div>
 
@@ -1422,7 +1545,6 @@ function BookingDeskContent() {
                           ))
                         )}
                       </select>
-                      {/* Active Service DB Metadata Chip */}
                       {(() => {
                         const currentSvc = displayBookingTypes.find(b => b.id === bookingType);
                         if (!currentSvc) return null;
@@ -1452,7 +1574,7 @@ function BookingDeskContent() {
                         onChange={(e) => setClassification(e.target.value)}
                         className={INPUT}
                       >
-                        {CLASSIFICATIONS.map(c => (
+                        {activeCategories.map(c => (
                           <option key={c.id} value={c.id}>
                             {c.label}
                           </option>
@@ -1476,7 +1598,7 @@ function BookingDeskContent() {
                         value={regNo}
                         onChange={e => setRegNo(e.target.value.toUpperCase())}
                         required
-                        placeholder={isSpecialOrCustomized ? "e.g. KX 1111-AD" : "e.g. 1092-ADXY"}
+                        placeholder={isSpecialOrCustomized ? "E.G. KX 1111-AD" : "E.G. 1092-ADXY"}
                         className={INPUT + " font-mono font-bold"}
                       />
                       {activeReservation && (
@@ -1497,9 +1619,9 @@ function BookingDeskContent() {
                       <input
                         id="input-ownerName"
                         value={ownerName}
-                        onChange={e => setOwnerName(e.target.value)}
+                        onChange={e => setOwnerName(e.target.value.toUpperCase())}
                         required
-                        placeholder="Enter owner or corporate name"
+                        placeholder="ENTER OWNER OR CORPORATE NAME"
                         className={INPUT}
                       />
                     </Field>
@@ -1516,8 +1638,8 @@ function BookingDeskContent() {
                         <input
                           id="input-address"
                           value={address}
-                          onChange={e => setAddress(e.target.value)}
-                          placeholder="Street, Town/Sub-district, Region"
+                          onChange={e => setAddress(e.target.value.toUpperCase())}
+                          placeholder="STREET, TOWN / SUB-DISTRICT, REGION"
                           className={INPUT}
                         />
                       </Field>
@@ -1531,14 +1653,14 @@ function BookingDeskContent() {
                       <input
                         id="input-phone"
                         value={phone}
-                        onChange={e => setPhone(e.target.value)}
-                        placeholder="e.g. 0241234567"
+                        onChange={e => setPhone(e.target.value.toUpperCase())}
+                        placeholder="E.G. 0241234567"
                         className={INPUT}
                       />
                     </Field>
                   </div>
 
-                  {/* Transfer specific fields - Strictly driven by Service Type definition from Service Page */}
+                  {/* Transfer specific fields */}
                   {isTransfer && (
                     <div className="p-4 bg-gradient-to-r from-amber-50/40 via-slate-50 to-amber-50/20 border border-amber-200/90 rounded-xl space-y-3.5 shadow-2xs animate-in fade-in duration-150">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/70 pb-2.5">
@@ -1548,23 +1670,11 @@ function BookingDeskContent() {
                             <span>Previous Title Owner &amp; Transfer Details</span>
                           </span>
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase tracking-wider">
-                            ⚡ Auto-Detected: Required by Service
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-500 font-medium">
-                            Configured Parameters: {[
-                              (activeServiceDef?.prevOwnerRequireName !== false) && "Name",
-                              activeServiceDef?.prevOwnerRequirePhone && "Phone",
-                              (activeServiceDef?.prevOwnerRequireAddress !== false) && "Address",
-                              activeServiceDef?.prevOwnerRequireCustom && (activeServiceDef.prevOwnerCustomLabel || "Custom Ref"),
-                            ].filter(Boolean).join(" • ")}
+                            ⚡ Required by Service
                           </span>
                         </div>
                       </div>
 
-                      {/* Configured Parameter Input Fields */}
                       {(() => {
                         const needName = activeServiceDef?.prevOwnerRequireName !== false;
                         const needPhone = Boolean(activeServiceDef?.prevOwnerRequirePhone) || showExtraPhone;
@@ -1589,9 +1699,9 @@ function BookingDeskContent() {
                                   <input
                                     id="input-oldOwnerName"
                                     value={oldOwnerName}
-                                    onChange={e => setOldOwnerName(e.target.value)}
+                                    onChange={e => setOldOwnerName(e.target.value.toUpperCase())}
                                     required={activeServiceDef?.prevOwnerRequireName !== false}
-                                    placeholder="Full legal name of previous registered owner"
+                                    placeholder="FULL LEGAL NAME OF PREVIOUS OWNER"
                                     className={INPUT}
                                   />
                                 </Field>
@@ -1611,9 +1721,9 @@ function BookingDeskContent() {
                                   <input
                                     id="input-oldOwnerPhone"
                                     value={oldOwnerPhone}
-                                    onChange={e => setOldOwnerPhone(e.target.value)}
+                                    onChange={e => setOldOwnerPhone(e.target.value.toUpperCase())}
                                     required={Boolean(activeServiceDef?.prevOwnerRequirePhone)}
-                                    placeholder="e.g. 0241234567 or international"
+                                    placeholder="E.G. 0241234567"
                                     className={INPUT}
                                   />
                                 </Field>
@@ -1622,7 +1732,7 @@ function BookingDeskContent() {
                               {needAddress && (
                                 <div className={needPhone && needName && !needCustom ? "md:col-span-2" : ""}>
                                   <Field
-                                    label="Previous Owner Residential / Registered Address"
+                                    label="Previous Owner Address"
                                     required={activeServiceDef?.prevOwnerRequireAddress !== false}
                                     optional={activeServiceDef?.prevOwnerRequireAddress === false}
                                     isFilled={Boolean(oldOwnerAddr.trim())}
@@ -1634,9 +1744,9 @@ function BookingDeskContent() {
                                     <input
                                       id="input-oldOwnerAddr"
                                       value={oldOwnerAddr}
-                                      onChange={e => setOldOwnerAddr(e.target.value)}
+                                      onChange={e => setOldOwnerAddr(e.target.value.toUpperCase())}
                                       required={activeServiceDef?.prevOwnerRequireAddress !== false}
-                                      placeholder="Street, Town/Sub-district, Region"
+                                      placeholder="STREET, TOWN / SUB-DISTRICT, REGION"
                                       className={INPUT}
                                     />
                                   </Field>
@@ -1658,9 +1768,9 @@ function BookingDeskContent() {
                                     <input
                                       id="input-oldOwnerCustom"
                                       value={oldOwnerCustom}
-                                      onChange={e => setOldOwnerCustom(e.target.value)}
+                                      onChange={e => setOldOwnerCustom(e.target.value.toUpperCase())}
                                       required={Boolean(activeServiceDef?.prevOwnerRequireCustom)}
-                                      placeholder={`Enter ${customLabel}`}
+                                      placeholder={`ENTER ${customLabel.toUpperCase()}`}
                                       className={INPUT}
                                     />
                                   </Field>
@@ -1668,7 +1778,6 @@ function BookingDeskContent() {
                               )}
                             </div>
 
-                            {/* Optional expansion if some fields were not toggled on the service */}
                             {(!needPhone || !needAddress || !needCustom) && (
                               <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
                                 <span className="text-[10px] text-slate-400 font-medium">
@@ -1711,35 +1820,56 @@ function BookingDeskContent() {
                     </div>
                   )}
 
-                  {/* Quick Vehicle Preset Shortcut on Tab 1 */}
-                  <div className="p-3 bg-gradient-to-r from-emerald-50/50 to-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                    <div>
-                      <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  {/* ── Official Revenue Receipt & Payment Verification ── */}
+                  <div className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-3 shadow-2xs">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-                        Fast-Track Vehicle Auto-Fill:
-                      </p>
-                      <p className="text-[10px] text-slate-500">
-                        Select a vehicle model now to prefill all specs and jump directly to chassis number:
-                      </p>
+                        <span>Official Revenue Receipt Verification</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        Bank / Treasury Payment Verification (Filing timestamp recorded automatically)
+                      </span>
                     </div>
-                    <div className="flex flex-wrap gap-1">
-                      {["Toyota Corolla", "Toyota Camry", "Toyota Hilux", "Hyundai Elantra", "Benz C-Class"].map((name) => {
-                        const match = VEHICLE_CATALOG.find((v) => `${v.make} ${v.model}`.toLowerCase().includes(name.toLowerCase()));
-                        if (!match) return null;
-                        return (
-                          <button
-                            key={name}
-                            type="button"
-                            onClick={() => {
-                              handleSelectVehicle(match);
-                              setActiveTab(2);
-                            }}
-                            className="px-2.5 py-1 bg-white hover:bg-emerald-600 hover:text-white text-slate-700 border border-slate-200 hover:border-emerald-600 rounded text-[11px] font-semibold transition cursor-pointer shadow-2xs"
-                          >
-                            {name}
-                          </button>
-                        );
-                      })}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      <Field
+                        label="Revenue Receipt Number"
+                        required
+                        isFilled={Boolean(receiptNo.trim())}
+                        hasError={attemptedTabs[1] && !receiptNo.trim()}
+                        errorMessage="Revenue Receipt Number is required"
+                        fieldId="receiptNo"
+                        hint="Official receipt from bank / cash desk"
+                      >
+                        <input
+                          id="input-receiptNo"
+                          value={receiptNo}
+                          onChange={e => setReceiptNo(e.target.value.toUpperCase())}
+                          required
+                          placeholder="E.G. 4702604819"
+                          className={INPUT + " font-mono font-bold"}
+                        />
+                      </Field>
+
+                      <Field
+                        label="Receipt Payment Date"
+                        required
+                        isFilled={Boolean(receiptDate.trim())}
+                        hasError={attemptedTabs[1] && !receiptDate.trim()}
+                        errorMessage="Receipt Payment Date is required"
+                        fieldId="receiptDate"
+                        hint="Date on official receipt"
+                      >
+                        <input
+                          id="input-receiptDate"
+                          type="date"
+                          value={receiptDate}
+                          onChange={e => setReceiptDate(e.target.value)}
+                          required
+                          className={INPUT}
+                        />
+                      </Field>
                     </div>
                   </div>
 
@@ -1747,7 +1877,7 @@ function BookingDeskContent() {
                     <button
                       type="button"
                       onClick={handleNextTab1}
-                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
                     >
                       <span>Next: Vehicle Details →</span>
                     </button>
@@ -1755,11 +1885,11 @@ function BookingDeskContent() {
                 </div>
               )}
 
-              {/* ── TAB 2: VEHICLE DETAILS ── */}
+              {/* ── STEP 2: VEHICLE DETAILS (HIGH-VISIBILITY VEHICLE SELECTION + CC + CYLINDERS) ── */}
               {activeTab === 2 && (
                 <div className="space-y-4">
-                  {/* Step 2 Requirements Callout Banner */}
-                  <div className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition ${
+                  {/* Step 2 Compact Status Bar */}
+                  <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${
                     missingFieldsTab2.length === 0
                       ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
                       : attemptedTabs[2]
@@ -1767,217 +1897,49 @@ function BookingDeskContent() {
                       : "bg-slate-50 border-slate-200 text-slate-700"
                   }`}>
                     <div className="flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${
                         missingFieldsTab2.length === 0 ? "bg-emerald-500" : attemptedTabs[2] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
                       }`} />
-                      <div>
-                        <p className="font-bold">
-                          {missingFieldsTab2.length === 0
-                            ? "✓ All required vehicle specifications completed"
-                            : attemptedTabs[2]
-                            ? `⚠️ Action Needed: ${missingFieldsTab2.length} required ${missingFieldsTab2.length === 1 ? "spec is" : "specs are"} missing`
-                            : `Step 2 Requirements: ${totalFieldsTab2 - missingFieldsTab2.length} of ${totalFieldsTab2} completed`}
-                        </p>
-                        {missingFieldsTab2.length > 0 && (
-                          <p className="text-[11px] text-slate-500 font-normal">
-                            Required: {missingFieldsTab2.map(f => f.label).join(", ")}
-                          </p>
-                        )}
-                      </div>
+                      <span className="font-semibold text-[11px] uppercase">
+                        {missingFieldsTab2.length === 0
+                          ? "Step 2: All required vehicle specifications completed"
+                          : attemptedTabs[2]
+                          ? `Action Needed: ${missingFieldsTab2.length} required spec${missingFieldsTab2.length === 1 ? " is" : "s are"} missing`
+                          : `Step 2: Vehicle Specifications (${totalFieldsTab2 - missingFieldsTab2.length}/${totalFieldsTab2} Completed)`}
+                      </span>
                     </div>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0 self-start sm:self-auto">
-                      {totalFieldsTab2 - missingFieldsTab2.length}/{totalFieldsTab2} Ready
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0">
+                      {totalFieldsTab2 - missingFieldsTab2.length}/{totalFieldsTab2} Done
                     </span>
                   </div>
-                  {/* Central Vehicle Database Catalog & Auto-Fill Station */}
-                  <div className="p-4 bg-gradient-to-r from-emerald-50/80 via-slate-50 to-emerald-50/50 border border-emerald-300/80 rounded-xl space-y-3.5 shadow-2xs">
-                    {/* Header with DB Status */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+
+                  {/* ══════════════════════════════════════════════════════════════
+                      HERO VEHICLE SELECTION & SPECIFICATION AUTO-FILL STATION
+                      (High-Visibility, Vibrant, Impossible to Miss)
+                  ══════════════════════════════════════════════════════════════ */}
+                  <div className="p-4 sm:p-5 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/70 border-2 border-emerald-500/80 rounded-2xl space-y-4 shadow-sm">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-                            Central Vehicle Database Catalog
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black bg-emerald-700 text-white uppercase tracking-wider shadow-2xs">
+                            <span>🚘 VEHICLE SELECTION</span>
                           </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-700 text-white uppercase tracking-wider shadow-2xs flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
-                            <span>{isDbLoading ? "Connecting..." : `${dbVehicles.length} Models in DB`}</span>
+                          <span className="text-xs font-black text-slate-900 uppercase">
+                            Instant Specification Auto-Fill
                           </span>
-                          {dbVehicles.some((v: any) => v.isCustom) && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-600 text-white shadow-2xs">
-                              {dbVehicles.filter((v: any) => v.isCustom).length} Station-Added
-                            </span>
-                          )}
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            {isDbLoading ? "Connecting..." : `${dbVehicles.length} Verified Models`}
+                          </span>
                         </div>
-                        <p className="text-[11px] text-slate-600 font-normal mt-0.5">
-                          Search or select from database specifications to auto-fill technical specs. <strong>Officers only need to fill the physical Chassis Number.</strong> Engine number is optional. Unlisted vehicles are stored in the database automatically.
+                        <p className="text-xs text-slate-600 mt-1">
+                          Click any popular model below or search by name. Technical specs (CC, Cylinders, Body Type) are filled automatically!
                         </p>
-                      </div>
-                    </div>
-
-                    {/* Make & Category Quick Tabs */}
-                    <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] font-medium text-slate-600">
-                      {[
-                        { id: "All", label: "All Vehicles" },
-                        { id: "Toyota", label: "Toyota" },
-                        { id: "Hyundai", label: "Hyundai" },
-                        { id: "Mercedes-Benz", label: "Mercedes" },
-                        { id: "Honda", label: "Honda" },
-                        { id: "Kia", label: "Kia" },
-                        { id: "Nissan", label: "Nissan" },
-                        { id: "SUV", label: "SUV / 4x4" },
-                        { id: "Commercial", label: "Pickups & Trucks" },
-                        { id: "EV", label: "Electric (EV)" },
-                        { id: "Custom", label: "Station Added" },
-                      ].map((tab) => {
-                        const count =
-                          tab.id === "All"
-                            ? dbVehicles.length
-                            : tab.id === "Custom"
-                            ? dbVehicles.filter((v: any) => v.isCustom).length
-                            : tab.id === "Commercial"
-                            ? dbVehicles.filter((v: any) => v.bodyType?.includes("Pickup") || v.bodyType?.includes("Truck") || v.bodyType?.includes("Van")).length
-                            : tab.id === "SUV"
-                            ? dbVehicles.filter((v: any) => v.bodyType?.includes("SUV")).length
-                            : tab.id === "EV"
-                            ? dbVehicles.filter((v: any) => v.fuelType === "ELECTRIC").length
-                            : dbVehicles.filter((v: any) => v.make?.toLowerCase() === tab.id.toLowerCase()).length;
-
-                        if (count === 0 && (tab.id === "Custom" || tab.id === "EV")) return null;
-
-                        const isTabActive = selectedMakeFilter === tab.id;
-                        return (
-                          <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => handleSelectBrandTab(tab.id)}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer whitespace-nowrap border ${
-                              isTabActive
-                                ? "bg-slate-900 text-white border-slate-900 shadow-2xs"
-                                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
-                            }`}
-                          >
-                            <span>{tab.label}</span>
-                            <span className={`ml-1 text-[10px] px-1 rounded ${isTabActive ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-500"}`}>
-                              {count}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Search & Year Selection Controls */}
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 relative" ref={vehicleSearchDropdownRef}>
-                      {/* Search Combobox Input */}
-                      <div className="sm:col-span-3 relative">
-                        <input
-                          type="text"
-                          value={vehicleSearchQuery}
-                          onChange={(e) => {
-                            setVehicleSearchQuery(e.target.value);
-                            setIsVehicleDropdownOpen(true);
-                          }}
-                          onFocus={() => setIsVehicleDropdownOpen(true)}
-                          placeholder="Search database vehicles (e.g. Corolla, Camry, Hilux, C300, Tucson, GLE, Tiggo 8, Howo...)"
-                          className="w-full pl-9 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-2xs transition"
-                        />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                        </span>
-                        {vehicleSearchQuery && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setVehicleSearchQuery("");
-                              setIsVehicleDropdownOpen(false);
-                            }}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700 cursor-pointer font-bold"
-                            title="Clear search"
-                          >
-                            ×
-                          </button>
-                        )}
-
-                        {/* Interactive Dropdown Results from Database */}
-                        {isVehicleDropdownOpen && (
-                          <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100">
-                            {filteredCatalogVehicles.length === 0 ? (
-                              <div className="p-4 space-y-2 text-center">
-                                <p className="text-xs text-slate-600">
-                                  No database match found for <strong>&quot;{vehicleSearchQuery}&quot;</strong>.
-                                </p>
-                                <button
-                                  type="button"
-                                  onClick={handleUseUnlistedFromSearch}
-                                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
-                                >
-                                  <span>Use &quot;{vehicleSearchQuery}&quot; &amp; Save to Database</span>
-                                </button>
-                              </div>
-                            ) : (
-                              <>
-                                <div className="px-3 py-1.5 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
-                                  <span>Database Models ({filteredCatalogVehicles.length} found)</span>
-                                  <span className="text-emerald-700 font-semibold">Select / Overwrite</span>
-                                </div>
-                                {filteredCatalogVehicles.slice(0, 30).map((v: any) => (
-                                  <button
-                                    key={v.id || `${v.make}-${v.model}`}
-                                    type="button"
-                                    onClick={() => handleSelectVehicle(v)}
-                                    className="w-full px-3.5 py-2.5 text-left hover:bg-emerald-50/70 transition flex items-center justify-between gap-2 cursor-pointer group"
-                                  >
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 uppercase shrink-0">
-                                        {v.bodyType?.includes("Pickup") ? "Pickup" : v.bodyType?.includes("SUV") ? "SUV" : v.bodyType?.includes("Van") ? "Van" : "Saloon"}
-                                      </span>
-                                      <div className="min-w-0">
-                                        <div className="flex items-center gap-1.5">
-                                          <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-800 truncate">
-                                            {v.make} {v.model}
-                                          </p>
-                                          {v.isCustom && (
-                                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-700 border border-purple-200">
-                                              Station Added
-                                            </span>
-                                          )}
-                                        </div>
-                                        <p className="text-[10px] text-slate-500 truncate">
-                                          {v.engineCC}cc &bull; {v.cylinders} Cyl &bull; {v.fuelType} &bull; {v.bodyType}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 shrink-0">
-                                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200 hidden sm:inline-block">
-                                        Tyres: {v.tyreW}/{v.tyreDia}
-                                      </span>
-                                      <span className="text-xs font-bold text-emerald-600 group-hover:translate-x-0.5 transition-transform">
-                                        Select &rarr;
-                                      </span>
-                                    </div>
-                                  </button>
-                                ))}
-                                {vehicleSearchQuery.trim() && (
-                                  <div className="p-2 bg-slate-50 border-t border-slate-100 text-center">
-                                    <button
-                                      type="button"
-                                      onClick={handleUseUnlistedFromSearch}
-                                      className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer"
-                                    >
-                                      Not listed? Register &quot;{vehicleSearchQuery}&quot; to Database
-                                    </button>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        )}
                       </div>
 
                       {/* Year Selector */}
-                      <div className="relative">
+                      <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
+                        <span className="text-[11px] font-bold text-slate-600 uppercase">Model Year:</span>
                         <select
                           value={selectedCatalogYear}
                           onChange={(e) => {
@@ -1987,140 +1949,266 @@ function BookingDeskContent() {
                               setYear(newYr);
                             }
                           }}
-                          className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-2xs transition cursor-pointer"
+                          className="px-2.5 py-1.5 bg-white border-2 border-emerald-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs transition cursor-pointer"
                         >
                           {YEARS_LIST.map((yr) => (
                             <option key={yr} value={yr}>
-                              Year: {yr}
+                              {yr}
                             </option>
                           ))}
                         </select>
                       </div>
                     </div>
 
-                    {/* Filtered Quick Fleet Chips & Clear/Overwrite Action */}
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                        <span>Quick Pick ({selectedMakeFilter}):</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-400 font-normal">Click any model to auto-fill</span>
-                          {(make || model) && (
-                            <button
-                              type="button"
-                              onClick={handleResetVehicle}
-                              className="text-[10px] text-red-600 hover:text-red-800 font-bold cursor-pointer underline flex items-center gap-0.5"
-                            >
-                              <span>Clear / Reset</span>
-                            </button>
-                          )}
+                    {/* Active Selected Vehicle Highlight Banner */}
+                    {make.trim() && model.trim() && (
+                      <div className="p-3.5 bg-gradient-to-r from-emerald-800 to-teal-900 text-white rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/40 flex items-center justify-center font-bold text-lg shrink-0">
+                            ✓
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                                ACTIVE VEHICLE SELECTION
+                              </span>
+                              <span className="text-xs text-emerald-200 font-mono">
+                                Year: {year || selectedCatalogYear}
+                              </span>
+                            </div>
+                            <h3 className="text-sm sm:text-base font-extrabold tracking-wide text-white uppercase mt-0.5">
+                              {make} {model}
+                            </h3>
+                            <p className="text-[11px] text-emerald-200/90 font-medium">
+                              Engine: <strong>{engineCC} CC</strong> &bull; <strong>{cylinders} Cylinders</strong> &bull; {fuelType} &bull; {bodyType}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <button
+                            type="button"
+                            onClick={handleResetVehicle}
+                            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-xs font-bold text-white transition cursor-pointer flex items-center gap-1"
+                          >
+                            <span>✕ Clear / Change</span>
+                          </button>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {tabVehicles.slice(0, 14).map((v: any) => {
-                          const isSelected = make.toLowerCase() === v.make.toLowerCase() && model.toLowerCase() === v.model.toLowerCase();
+                    )}
+
+                    {/* Search Bar with Autocomplete Dropdown */}
+                    <div className="relative" ref={vehicleSearchDropdownRef}>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={vehicleSearchQuery}
+                          onChange={(e) => {
+                            setVehicleSearchQuery(e.target.value.toUpperCase());
+                            setIsVehicleDropdownOpen(true);
+                          }}
+                          onFocus={() => setIsVehicleDropdownOpen(true)}
+                          placeholder="SEARCH VEHICLE CATALOG (E.G. COROLLA, CAMRY, HILUX, TUCSON, BENZ, PRADO...)"
+                          className="w-full pl-10 pr-9 py-2.5 bg-white border-2 border-emerald-300 focus:border-emerald-600 rounded-xl text-xs font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 shadow-xs transition uppercase"
+                        />
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-600 pointer-events-none">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                        </span>
+                        {vehicleSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setVehicleSearchQuery("");
+                              setIsVehicleDropdownOpen(false);
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700 cursor-pointer font-bold"
+                            title="Clear search"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Search Results Dropdown */}
+                      {isVehicleDropdownOpen && (
+                        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100">
+                          {filteredCatalogVehicles.length === 0 ? (
+                            <div className="p-4 space-y-2 text-center">
+                              <p className="text-xs text-slate-600 uppercase">
+                                No database match for &quot;{vehicleSearchQuery}&quot;.
+                              </p>
+                              <button
+                                type="button"
+                                onClick={handleUseUnlistedFromSearch}
+                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-2xs inline-flex items-center gap-1.5 uppercase"
+                              >
+                                <span>Use &quot;{vehicleSearchQuery}&quot; &amp; Register specs</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="px-3 py-1.5 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
+                                <span>Matching Models ({filteredCatalogVehicles.length})</span>
+                                <span className="text-emerald-700 font-semibold">Click to Auto-Fill</span>
+                              </div>
+                              {filteredCatalogVehicles.slice(0, 30).map((v: any) => (
+                                <button
+                                  key={v.id || `${v.make}-${v.model}`}
+                                  type="button"
+                                  onClick={() => handleSelectVehicle(v)}
+                                  className="w-full px-3.5 py-2.5 text-left hover:bg-emerald-50 transition flex items-center justify-between gap-2 cursor-pointer group"
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 uppercase shrink-0">
+                                      {v.bodyType?.includes("Pickup") ? "Pickup" : v.bodyType?.includes("SUV") ? "SUV" : "Saloon"}
+                                    </span>
+                                    <div className="min-w-0">
+                                      <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-800 truncate uppercase">
+                                        {v.make} {v.model}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 truncate uppercase">
+                                        {v.engineCC} CC &bull; {v.cylinders} CYLINDERS &bull; {v.fuelType}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <span className="text-xs font-bold text-emerald-600 group-hover:translate-x-0.5 transition-transform shrink-0">
+                                    Select &rarr;
+                                  </span>
+                                </button>
+                              ))}
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Popular Ghanaian Fleet Tiles (High-Visibility Grid) */}
+                    <div className="space-y-2 pt-1">
+                      <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                        <span className="flex items-center gap-1.5">
+                          <span className="text-amber-500">★</span>
+                          <span>Popular Fleet Quick-Pick:</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-normal">Click any tile to auto-fill specs</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                        {[
+                          { name: "Corolla", make: "Toyota", icon: "🚗", cc: "2000", cyl: "4" },
+                          { name: "Camry", make: "Toyota", icon: "🚘", cc: "2500", cyl: "4" },
+                          { name: "Hilux", make: "Toyota", icon: "🛻", cc: "2800", cyl: "4" },
+                          { name: "Land Cruiser", make: "Toyota", icon: "🚙", cc: "2400", cyl: "4" },
+                          { name: "Tucson", make: "Hyundai", icon: "🚙", cc: "2000", cyl: "4" },
+                          { name: "Civic", make: "Honda", icon: "🚗", cc: "1500", cyl: "4" },
+                          { name: "Navara", make: "Nissan", icon: "🛻", cc: "2500", cyl: "4" },
+                          { name: "C-Class", make: "Mercedes-Benz", icon: "🏎️", cc: "2000", cyl: "4" },
+                          { name: "Model Y", make: "Tesla", icon: "⚡", cc: "EV", cyl: "N/A" },
+                          { name: "Dashing", make: "Jetour", icon: "🚙", cc: "1500", cyl: "4" },
+                        ].map((item) => {
+                          const isSelected = make.toUpperCase() === item.make.toUpperCase() && model.toUpperCase() === item.name.toUpperCase();
                           return (
                             <button
-                              key={v.id || `${v.make}-${v.model}`}
+                              key={item.name}
                               type="button"
-                              onClick={() => handleSelectVehicle(v)}
-                              className={`px-2.5 py-1 rounded-md text-[11px] transition cursor-pointer flex items-center gap-1.5 border ${
+                              onClick={() => {
+                                const match = (dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG).find(
+                                  v => v.make.toLowerCase() === item.make.toLowerCase() && v.model.toLowerCase().includes(item.name.toLowerCase())
+                                );
+                                if (match) {
+                                  handleSelectVehicle(match);
+                                } else {
+                                  setMake(item.make.toUpperCase());
+                                  setModel(item.name.toUpperCase());
+                                  setYear(selectedCatalogYear);
+                                  setEngineCC(item.cc);
+                                  setCylinders(item.cyl);
+                                  setChassisNo("");
+                                  setTimeout(() => chassisInputRef.current?.focus(), 150);
+                                }
+                              }}
+                              className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between gap-1 shadow-2xs ${
                                 isSelected
-                                  ? "bg-emerald-700 text-white border-emerald-800 font-bold shadow-2xs"
-                                  : "bg-white hover:bg-emerald-50 text-slate-700 border-slate-200 hover:border-emerald-300 font-medium"
+                                  ? "bg-emerald-700 text-white border-emerald-800 ring-2 ring-emerald-500"
+                                  : "bg-white hover:bg-emerald-50/80 text-slate-800 border-slate-200 hover:border-emerald-400"
                               }`}
                             >
-                              <span className="font-semibold">{v.make}</span>
-                              <span>{v.model}</span>
-                              {v.isCustom && (
-                                <span className={`text-[9px] font-bold px-1 py-0.2 rounded ${isSelected ? "bg-white/20 text-white" : "bg-purple-100 text-purple-700"}`}>
-                                  Custom
+                              <div className="flex items-center justify-between">
+                                <span className="text-base">{item.icon}</span>
+                                <span className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded ${
+                                  isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                                }`}>
+                                  {item.cc === "EV" ? "EV" : `${item.cc}cc`}
                                 </span>
-                              )}
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-semibold text-slate-400 uppercase leading-none">
+                                  {item.make}
+                                </p>
+                                <p className={`text-xs font-extrabold uppercase truncate leading-tight mt-0.5 ${
+                                  isSelected ? "text-white" : "text-slate-900"
+                                }`}>
+                                  {item.name}
+                                </p>
+                              </div>
                             </button>
                           );
                         })}
                       </div>
                     </div>
 
-                    {/* Auto-filled banner */}
+                    {/* Brand Filter Pills */}
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] font-medium text-slate-600 pt-1 border-t border-emerald-100">
+                      {[
+                        { id: "All", label: "All Makes" },
+                        { id: "Toyota", label: "Toyota" },
+                        { id: "Hyundai", label: "Hyundai" },
+                        { id: "Mercedes-Benz", label: "Mercedes" },
+                        { id: "Honda", label: "Honda" },
+                        { id: "Nissan", label: "Nissan" },
+                        { id: "SUV", label: "SUV / 4x4" },
+                        { id: "Commercial", label: "Pickups & Trucks" },
+                        { id: "EV", label: "Electric (EV)" },
+                      ].map((tab) => {
+                        const isTabActive = selectedMakeFilter === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => handleSelectBrandTab(tab.id)}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer whitespace-nowrap border uppercase ${
+                              isTabActive
+                                ? "bg-slate-900 text-white border-slate-900 shadow-2xs"
+                                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Auto-filled notice */}
                     {autoFilledNotice && (
-                      <div className="p-2.5 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-between text-xs text-emerald-900 font-medium">
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-emerald-700 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span>{autoFilledNotice}</span>
-                        </div>
+                      <div className="p-2.5 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-between text-xs text-emerald-900 font-bold uppercase">
+                        <span>{autoFilledNotice}</span>
                         <button
                           type="button"
                           onClick={() => setAutoFilledNotice(null)}
-                          className="text-emerald-700 hover:text-emerald-950 text-sm font-bold cursor-pointer ml-2"
+                          className="text-emerald-700 hover:text-emerald-950 font-bold cursor-pointer ml-2"
                         >
-                          ×
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Saved to database success notice */}
-                    {saveModelSuccess && (
-                      <div className="p-2.5 rounded-lg bg-purple-100 border border-purple-300 flex items-center justify-between text-xs text-purple-950 font-medium">
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-purple-700 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span>{saveModelSuccess}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setSaveModelSuccess(null)}
-                          className="text-purple-700 hover:text-purple-950 text-sm font-bold cursor-pointer ml-2"
-                        >
-                          ×
+                          ✕
                         </button>
                       </div>
                     )}
                   </div>
 
-                  {/* Unlisted Vehicle Database Persistence Action Banner */}
-                  {make.trim() && model.trim() && (
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-                      <div className="flex items-center gap-2">
-                        {isCurrentModelInDb ? (
-                          <>
-                            <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="text-slate-700 font-medium">
-                              <strong>{make} {model}</strong> is registered in the central database catalog.
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
-                            <span className="text-slate-700">
-                              <strong>{make} {model}</strong> is not yet in the central database catalog.
-                            </span>
-                          </>
-                        )}
-                      </div>
-                      {!isCurrentModelInDb && (
-                        <button
-                          type="button"
-                          disabled={isSavingCustomModel}
-                          onClick={handleSaveCurrentModelToDb}
-                          className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-[11px] font-bold transition cursor-pointer shadow-2xs flex items-center gap-1.5 shrink-0 disabled:opacity-50"
-                        >
-                          <span>{isSavingCustomModel ? "Saving..." : `Save "${make} ${model}" to Database`}</span>
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* ── SECTION 1: VEHICLE IDENTITY (Inline Row: Make, Model, Year, Body Type, Fuel Type) ── */}
+                  {/* ── SECTION 1: VEHICLE IDENTITY (Make, Model, Year, Body Type, Fuel Type) ── */}
                   <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-2xs">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                       <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                        1. Vehicle Identity &amp; Classification
+                        1. Vehicle Identity
                       </span>
                       <span className="text-[10px] text-slate-400 font-medium">
                         Auto-fills from catalog or editable
@@ -2139,9 +2227,9 @@ function BookingDeskContent() {
                         <input
                           id="input-make"
                           value={make}
-                          onChange={e => setMake(e.target.value)}
+                          onChange={e => setMake(e.target.value.toUpperCase())}
                           required
-                          placeholder="e.g. Toyota"
+                          placeholder="E.G. TOYOTA"
                           className={INPUT}
                         />
                       </Field>
@@ -2157,9 +2245,9 @@ function BookingDeskContent() {
                         <input
                           id="input-model"
                           value={model}
-                          onChange={e => setModel(e.target.value)}
+                          onChange={e => setModel(e.target.value.toUpperCase())}
                           required
-                          placeholder="e.g. Camry"
+                          placeholder="E.G. CAMRY"
                           className={INPUT}
                         />
                       </Field>
@@ -2175,7 +2263,7 @@ function BookingDeskContent() {
                         <input
                           id="input-year"
                           value={year}
-                          onChange={e => setYear(e.target.value)}
+                          onChange={e => setYear(e.target.value.toUpperCase())}
                           required
                           placeholder="2025"
                           className={INPUT + " font-mono"}
@@ -2194,9 +2282,14 @@ function BookingDeskContent() {
                           onChange={e => setBodyType(e.target.value)}
                           className={INPUT}
                         >
-                          {BODY_TYPES.map(bt => (
-                            <option key={bt} value={bt}>{bt}</option>
-                          ))}
+                          {(dbBodyTypes.length > 0
+                            ? dbBodyTypes.map(bt => (
+                                <option key={bt.code} value={bt.name}>{bt.name.toUpperCase()}</option>
+                              ))
+                            : BODY_TYPES.map(bt => (
+                                <option key={bt} value={bt}>{bt.toUpperCase()}</option>
+                              ))
+                          )}
                         </select>
                       </Field>
 
@@ -2213,14 +2306,14 @@ function BookingDeskContent() {
                           className={INPUT}
                         >
                           {FUEL_TYPES.map(f => (
-                            <option key={f.id} value={f.id}>{f.label}</option>
+                            <option key={f.id} value={f.id}>{f.label.toUpperCase()}</option>
                           ))}
                         </select>
                       </Field>
                     </div>
                   </div>
 
-                  {/* ── SECTION 2: PHYSICAL SERIAL IDENTIFIERS (Inline Row: Chassis & Optional Engine No) ── */}
+                  {/* ── SECTION 2: PHYSICAL SERIAL IDENTIFIERS (Chassis & Optional Engine No) ── */}
                   <div className="bg-slate-50/80 border border-slate-200 rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
                       <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
@@ -2232,7 +2325,6 @@ function BookingDeskContent() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Chassis / VIN: Required, primary field */}
                       <Field 
                         label="Chassis / VIN Number (17 Characters)" 
                         required 
@@ -2249,7 +2341,7 @@ function BookingDeskContent() {
                             value={chassisNo}
                             onChange={e => setChassisNo(e.target.value.toUpperCase())}
                             required
-                            placeholder="e.g. JTEBU5JR8P2091837"
+                            placeholder="E.G. JTEBU5JR8P2091837"
                             className={`${INPUT} font-mono font-bold text-sm tracking-wider uppercase ${
                               make && model && !chassisNo
                                 ? "ring-2 ring-emerald-500 border-emerald-500 bg-emerald-50/20"
@@ -2258,13 +2350,12 @@ function BookingDeskContent() {
                           />
                           {make && model && !chassisNo && (
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-                              Enter VIN
+                              ENTER VIN
                             </span>
                           )}
                         </div>
                       </Field>
 
-                      {/* Engine Number: OPTIONAL, not required */}
                       <Field 
                         label="Engine Serial Number" 
                         optional
@@ -2276,25 +2367,25 @@ function BookingDeskContent() {
                           id="input-engineNo"
                           value={engineNo}
                           onChange={e => setEngineNo(e.target.value.toUpperCase())}
-                          placeholder="e.g. 1UR-894012 (Optional)"
+                          placeholder="E.G. 1UR-894012 (OPTIONAL)"
                           className={`${INPUT} font-mono uppercase text-sm`}
                         />
                       </Field>
                     </div>
                   </div>
 
-                  {/* ── SECTION 3: TECHNICAL & WEIGHT SPECIFICATIONS (Inline Row: CC, Cylinders, Net, Gross) ── */}
+                  {/* ── SECTION 3: TECHNICAL ENGINE SPECS (CC & Cylinders Kept - Axles & Tyres Removed) ── */}
                   <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-2xs">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                       <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                        3. Technical &amp; Weight Specifications
+                        3. Engine Specifications
                       </span>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        Engine rating and certified weight specs
+                      <span className="text-[10px] text-emerald-700 font-semibold uppercase">
+                        ⚡ Axles &amp; tyres simplified
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field
                         label="Engine Displacement (CC)"
                         required
@@ -2302,101 +2393,66 @@ function BookingDeskContent() {
                         hasError={attemptedTabs[2] && !engineCC.trim()}
                         errorMessage="Engine Displacement is required"
                         fieldId="engineCC"
+                        hint="Engine capacity in cubic centimeters"
                       >
                         <input
                           id="input-engineCC"
                           value={engineCC}
-                          onChange={e => setEngineCC(e.target.value)}
+                          onChange={e => setEngineCC(e.target.value.toUpperCase())}
                           required
                           placeholder="2400"
-                          className={INPUT + " font-mono"}
+                          className={INPUT + " font-mono font-bold text-sm"}
                         />
                       </Field>
 
                       <Field
-                        label="Cylinders"
+                        label="Number of Cylinders"
+                        required
                         isFilled={Boolean(cylinders.trim())}
                         fieldId="cylinders"
+                        hint="Select engine configuration"
                       >
                         <select
                           id="input-cylinders"
                           value={cylinders}
                           onChange={e => setCylinders(e.target.value)}
-                          className={INPUT + " font-mono"}
+                          className={INPUT + " font-mono font-bold text-sm"}
                         >
-                          <option value="3">3 Cylinders</option>
-                          <option value="4">4 Cylinders</option>
-                          <option value="6">6 Cylinders</option>
-                          <option value="8">8 Cylinders</option>
-                          <option value="N/A">N/A (Electric / EV)</option>
+                          <option value="3">3 CYLINDERS</option>
+                          <option value="4">4 CYLINDERS</option>
+                          <option value="6">6 CYLINDERS</option>
+                          <option value="8">8 CYLINDERS</option>
+                          <option value="N/A">N/A (ELECTRIC / EV)</option>
                         </select>
-                      </Field>
-
-                      <Field
-                        label="Net Weight (kg)"
-                        optional
-                        isFilled={Boolean(netWeight.trim())}
-                        fieldId="netWeight"
-                      >
-                        <input
-                          id="input-netWeight"
-                          value={netWeight}
-                          onChange={e => setNetWeight(e.target.value)}
-                          placeholder="1650"
-                          className={INPUT + " font-mono"}
-                        />
-                      </Field>
-
-                      <Field
-                        label="Gross Weight (kg)"
-                        optional
-                        isFilled={Boolean(grossWeight.trim())}
-                        fieldId="grossWeight"
-                      >
-                        <input
-                          id="input-grossWeight"
-                          value={grossWeight}
-                          onChange={e => setGrossWeight(e.target.value)}
-                          placeholder="2150"
-                          className={INPUT + " font-mono"}
-                        />
                       </Field>
                     </div>
                   </div>
 
+                  {/* Step 2 Bottom Navigation */}
                   <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <button
                       type="button"
                       onClick={() => setActiveTab(1)}
-                      className="px-3.5 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer w-full sm:w-auto"
+                      className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer w-full sm:w-auto"
                     >
                       ← Back to Owner Details
                     </button>
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                      <button
-                        type="button"
-                        onClick={() => handleNextTab2(3)}
-                        className="px-3.5 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
-                      >
-                        Axle &amp; Tyres →
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleNextTab2(4)}
-                        className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-2xs transition cursor-pointer flex items-center gap-1.5"
-                      >
-                        <span>Review &amp; Submit (Tyres Auto-Filled) →</span>
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={handleNextTab2}
+                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-2xs transition cursor-pointer flex items-center gap-1.5 w-full sm:w-auto justify-center"
+                    >
+                      <span>Next: Customs &amp; Certification →</span>
+                    </button>
                   </div>
                 </div>
               )}
 
-              {/* ── TAB 3: AXLE & TYRES ── */}
+              {/* ── STEP 3: CUSTOMS & CERTIFICATION (Directly after Vehicle Details) ── */}
               {activeTab === 3 && (
                 <div className="space-y-4">
-                  {/* Step 3 Requirements Callout Banner */}
-                  <div className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition ${
+                  {/* Step 3 Compact Status Bar */}
+                  <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${
                     missingFieldsTab3.length === 0
                       ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
                       : attemptedTabs[3]
@@ -2404,262 +2460,49 @@ function BookingDeskContent() {
                       : "bg-slate-50 border-slate-200 text-slate-700"
                   }`}>
                     <div className="flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${
                         missingFieldsTab3.length === 0 ? "bg-emerald-500" : attemptedTabs[3] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
                       }`} />
-                      <div>
-                        <p className="font-bold">
-                          {missingFieldsTab3.length === 0
-                            ? "✓ All required axle & tyre dimensions completed"
-                            : attemptedTabs[3]
-                            ? `⚠️ Action Needed: ${missingFieldsTab3.length} required ${missingFieldsTab3.length === 1 ? "dimension is" : "dimensions are"} missing`
-                            : `Step 3 Requirements: ${totalFieldsTab3 - missingFieldsTab3.length} of ${totalFieldsTab3} completed`}
-                        </p>
-                        {missingFieldsTab3.length > 0 && (
-                          <p className="text-[11px] text-slate-500 font-normal">
-                            Required: {missingFieldsTab3.map(f => f.label).join(", ")}
-                          </p>
-                        )}
-                      </div>
+                      <span className="font-semibold text-[11px] uppercase">
+                        {missingFieldsTab3.length === 0
+                          ? "Step 3: Customs clearance & certifying officer verified"
+                          : attemptedTabs[3]
+                          ? `Action Needed: ${missingFieldsTab3.length} required field${missingFieldsTab3.length === 1 ? " is" : "s are"} missing`
+                          : `Step 3: Customs & Certification (${totalFieldsTab3 - missingFieldsTab3.length}/${totalFieldsTab3} Completed)`}
+                      </span>
                     </div>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0 self-start sm:self-auto">
-                      {totalFieldsTab3 - missingFieldsTab3.length}/{totalFieldsTab3} Ready
-                    </span>
-                  </div>
-
-                  {/* Quick-select common tyre sizes */}
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
-                    <span className="text-xs font-semibold text-slate-700 block">
-                      Standard Tyre Presets (Front &amp; Rear):
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {TYRE_PRESETS.map(t => (
-                        <button
-                          key={t.label}
-                          type="button"
-                          onClick={() => applyTyre(t.w, t.d)}
-                          className="px-2.5 py-1 rounded bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-medium transition cursor-pointer shadow-2xs"
-                        >
-                          {t.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Axle Inputs */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 space-y-2">
-                      <span className="text-xs font-bold text-slate-800 block">Front Axle</span>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Field
-                          label="Width (mm)"
-                          required
-                          isFilled={Boolean(tyreFW.trim())}
-                          hasError={attemptedTabs[3] && !tyreFW.trim()}
-                          errorMessage="Width required"
-                          fieldId="tyreFW"
-                        >
-                          <input
-                            id="input-tyreFW"
-                            value={tyreFW}
-                            onChange={e => setTyreFW(e.target.value)}
-                            placeholder="235"
-                            className={INPUT + " font-mono"}
-                          />
-                        </Field>
-                        <Field
-                          label="Rim (in)"
-                          required
-                          isFilled={Boolean(tyreFD.trim())}
-                          hasError={attemptedTabs[3] && !tyreFD.trim()}
-                          errorMessage="Rim required"
-                          fieldId="tyreFD"
-                        >
-                          <input
-                            id="input-tyreFD"
-                            value={tyreFD}
-                            onChange={e => setTyreFD(e.target.value)}
-                            placeholder="18"
-                            className={INPUT + " font-mono"}
-                          />
-                        </Field>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 space-y-2">
-                      <span className="text-xs font-bold text-slate-800 block">Middle Axle (Opt.)</span>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Field
-                          label="Width (mm)"
-                          optional
-                          isFilled={Boolean(tyreMW.trim())}
-                          fieldId="tyreMW"
-                        >
-                          <input
-                            id="input-tyreMW"
-                            value={tyreMW}
-                            onChange={e => setTyreMW(e.target.value)}
-                            placeholder="—"
-                            className={INPUT + " font-mono"}
-                          />
-                        </Field>
-                        <Field
-                          label="Rim (in)"
-                          optional
-                          isFilled={Boolean(tyreMD.trim())}
-                          fieldId="tyreMD"
-                        >
-                          <input
-                            id="input-tyreMD"
-                            value={tyreMD}
-                            onChange={e => setTyreMD(e.target.value)}
-                            placeholder="—"
-                            className={INPUT + " font-mono"}
-                          />
-                        </Field>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 space-y-2">
-                      <span className="text-xs font-bold text-slate-800 block">Rear Axle</span>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Field
-                          label="Width (mm)"
-                          required
-                          isFilled={Boolean(tyreRW.trim())}
-                          hasError={attemptedTabs[3] && !tyreRW.trim()}
-                          errorMessage="Width required"
-                          fieldId="tyreRW"
-                        >
-                          <input
-                            id="input-tyreRW"
-                            value={tyreRW}
-                            onChange={e => setTyreRW(e.target.value)}
-                            placeholder="235"
-                            className={INPUT + " font-mono"}
-                          />
-                        </Field>
-                        <Field
-                          label="Rim (in)"
-                          required
-                          isFilled={Boolean(tyreRD.trim())}
-                          hasError={attemptedTabs[3] && !tyreRD.trim()}
-                          errorMessage="Rim required"
-                          fieldId="tyreRD"
-                        >
-                          <input
-                            id="input-tyreRD"
-                            value={tyreRD}
-                            onChange={e => setTyreRD(e.target.value)}
-                            placeholder="18"
-                            className={INPUT + " font-mono"}
-                          />
-                        </Field>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-100 flex justify-between">
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab(2)}
-                      className="px-3.5 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
-                    >
-                      ← Back
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleNextTab3}
-                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition cursor-pointer shadow-2xs flex items-center gap-1.5"
-                    >
-                      <span>Next: Customs &amp; Audit →</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ── TAB 4: CUSTOMS & AUDIT ── */}
-              {activeTab === 4 && (
-                <div className="space-y-4">
-                  {/* Step 4 Requirements Callout Banner */}
-                  <div className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition ${
-                    missingFieldsTab4.length === 0
-                      ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
-                      : attemptedTabs[4]
-                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
-                      : "bg-slate-50 border-slate-200 text-slate-700"
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                        missingFieldsTab4.length === 0 ? "bg-emerald-500" : attemptedTabs[4] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
-                      }`} />
-                      <div>
-                        <p className="font-bold">
-                          {missingFieldsTab4.length === 0
-                            ? "✓ All required customs & certification entries completed"
-                            : attemptedTabs[4]
-                            ? `⚠️ Action Needed: ${missingFieldsTab4.length} required ${missingFieldsTab4.length === 1 ? "entry is" : "entries are"} missing`
-                            : `Step 4 Requirements: ${totalFieldsTab4 - missingFieldsTab4.length} of ${totalFieldsTab4} completed`}
-                        </p>
-                        {missingFieldsTab4.length > 0 && (
-                          <p className="text-[11px] text-slate-500 font-normal">
-                            Required: {missingFieldsTab4.map(f => f.label).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0 self-start sm:self-auto">
-                      {totalFieldsTab4 - missingFieldsTab4.length}/{totalFieldsTab4} Ready
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0">
+                      {totalFieldsTab3 - missingFieldsTab3.length}/{totalFieldsTab3} Done
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <Field
-                      label="Official Revenue Receipt Number"
-                      required
-                      isFilled={Boolean(receiptNo.trim())}
-                      hasError={attemptedTabs[4] && !receiptNo.trim()}
-                      errorMessage="Revenue Receipt Number is required"
-                      fieldId="receiptNo"
-                    >
-                      <input
-                        id="input-receiptNo"
-                        value={receiptNo}
-                        onChange={e => setReceiptNo(e.target.value)}
-                        required
-                        placeholder="e.g. 4702604819"
-                        className={INPUT + " font-mono font-bold"}
-                      />
-                    </Field>
-
-                    <Field
                       label="Customs Declaration Number"
                       required
                       isFilled={Boolean(customsNo.trim())}
-                      hasError={attemptedTabs[4] && !customsNo.trim()}
+                      hasError={attemptedTabs[3] && !customsNo.trim()}
                       errorMessage="Customs Declaration Number is required"
                       fieldId="customsNo"
                     >
                       <input
                         id="input-customsNo"
                         value={customsNo}
-                        onChange={e => setCustomsNo(e.target.value)}
+                        onChange={e => setCustomsNo(e.target.value.toUpperCase())}
                         required
-                        placeholder="e.g. 4708912/26"
+                        placeholder="E.G. 4708912/26"
                         className={INPUT + " font-mono font-bold"}
                       />
                     </Field>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <Field
                       label="Customs Clearance Date"
                       required
                       isFilled={Boolean(customsDate.trim())}
-                      hasError={attemptedTabs[4] && !customsDate.trim()}
+                      hasError={attemptedTabs[3] && !customsDate.trim()}
                       errorMessage="Customs Clearance Date is required"
                       fieldId="customsDate"
-                      hint="Empty until verified"
+                      hint="Clearance stamp date"
                     >
                       <input
                         id="input-customsDate"
@@ -2670,57 +2513,240 @@ function BookingDeskContent() {
                         className={INPUT}
                       />
                     </Field>
+                  </div>
 
+                  <div className="grid grid-cols-1 gap-3.5">
                     <Field
                       label="Supervising Certification Officer"
                       required
                       isFilled={Boolean(supervisor.trim())}
-                      hasError={attemptedTabs[4] && !supervisor.trim()}
-                      errorMessage="Supervising Certification Officer is required"
+                      hasError={attemptedTabs[3] && !supervisor.trim()}
+                      errorMessage="Supervising Certification Officer must be selected"
                       fieldId="supervisor"
-                      hint="Type officer name / badge"
+                      hint="Select certified inspecting officer from database"
                     >
-                      <input
-                        id="input-supervisor"
-                        value={supervisor}
-                        onChange={e => setSupervisor(e.target.value)}
-                        required
-                        placeholder="e.g. Eric Ansah (Officer ID: DVLA-402)"
-                        className={INPUT}
-                      />
+                      <div className="flex gap-2">
+                        <select
+                          id="input-supervisor"
+                          value={supervisor}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setSupervisor(val);
+                            const sObj = dbSupervisors.find(s => s.name === val);
+                            setSelectedSupervisorId(sObj ? sObj.id : "");
+                          }}
+                          required
+                          className={`${INPUT} flex-1`}
+                        >
+                          <option value="">-- SELECT CERTIFIED OFFICER --</option>
+                          {dbSupervisors
+                            .filter(s => s.isActive !== false)
+                            .map(s => {
+                              const branchDisplay = s.station || s.branch?.name || "DVLA HQ";
+                              return (
+                                <option key={s.id} value={s.name}>
+                                  {s.name} — {branchDisplay}
+                                </option>
+                              );
+                            })}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => setIsQuickAddSupervisorOpen(true)}
+                          className="px-3.5 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg whitespace-nowrap transition cursor-pointer flex items-center gap-1.5"
+                          title="Register a new certified supervisor to database"
+                        >
+                          <span>+ Add</span>
+                        </button>
+                      </div>
                     </Field>
                   </div>
 
-                  <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                  {/* Summary Verification Card */}
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 uppercase">
+                    <span className="text-xs font-bold text-slate-800 tracking-wider block">
                       Summary Verification
                     </span>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
                       <div>
-                        <span className="text-slate-400 block text-[10px]">Plate:</span>
-                        <span className="font-bold text-slate-900 font-mono">{regNo || "Pending"}</span>
+                        <span className="text-slate-400 block text-[10px]">PLATE:</span>
+                        <span className="font-bold text-slate-900 font-mono">{regNo || "PENDING"}</span>
                       </div>
                       <div>
-                        <span className="text-slate-400 block text-[10px]">Owner:</span>
-                        <span className="font-semibold text-slate-900 truncate block">{ownerName || "Pending"}</span>
+                        <span className="text-slate-400 block text-[10px]">OWNER:</span>
+                        <span className="font-semibold text-slate-900 truncate block">{ownerName || "PENDING"}</span>
                       </div>
                       <div>
-                        <span className="text-slate-400 block text-[10px]">Vehicle:</span>
+                        <span className="text-slate-400 block text-[10px]">RECEIPT NO:</span>
+                        <span className="font-mono text-slate-900 truncate block">{receiptNo || "PENDING"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">VEHICLE:</span>
                         <span className="font-semibold text-slate-900 truncate block">{make || "—"} {model}</span>
                       </div>
                       <div>
                         <span className="text-slate-400 block text-[10px]">VIN:</span>
                         <span className="font-mono text-slate-900 truncate block">{chassisNo || "—"}</span>
                       </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">CUSTOMS:</span>
+                        <span className="font-mono text-slate-900 truncate block">{customsNo || "—"}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="pt-2">
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(2)}
+                      className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer w-full sm:w-auto"
+                    >
+                      ← Back to Vehicle Details
+                    </button>
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                      <button
+                        type="button"
+                        onClick={handleNextTab3}
+                        className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-black uppercase shadow-2xs transition cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto"
+                      >
+                        <span>Review &amp; Inspect Plate →</span>
+                      </button>
+                      <button
+                        type="submit"
+                        className={`hidden lg:flex px-5 py-2.5 rounded-lg text-xs font-black uppercase transition shadow-2xs cursor-pointer items-center justify-center gap-1.5 ${
+                          overallCompletionPercent === 100
+                            ? "bg-[#103014] hover:bg-[#18481e] text-white"
+                            : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30"
+                        }`}
+                      >
+                        <span>Certify &amp; Submit</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── STEP 4: PLATE INSPECTION & FINAL REVIEW (Dedicated Mobile Review & Full Desk Inspection) ── */}
+              {activeTab === 4 && (
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  {/* Review Header Banner */}
+                  <div className="p-3.5 rounded-xl bg-slate-900 text-white flex items-center justify-between shadow-xs">
+                    <div>
+                      <span className="text-[10px] font-bold text-emerald-400 tracking-wider uppercase block">
+                        Ghana Official Registry &bull; Logbook Verification
+                      </span>
+                      <h3 className="text-sm font-black uppercase tracking-wide">
+                        Plate Inspection &amp; Final Review
+                      </h3>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+                      overallCompletionPercent === 100
+                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                        : "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                    }`}>
+                      {totalCompletedFields}/{totalRequiredFields} Ready ({overallCompletionPercent}%)
+                    </span>
+                  </div>
+
+                  {/* Ghana Digital Plate Visualizer Card */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center space-y-3 shadow-2xs">
+                    <div className="w-full flex justify-between items-center text-xs pb-2 border-b border-slate-200">
+                      <span className="font-bold text-slate-800 uppercase tracking-wide">
+                        Official Ghana Digital Plate
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-white border border-slate-200 text-slate-700">
+                        {activeCategories.find(c => c.id === classification)?.badge || "⚪ Private"}
+                      </span>
+                    </div>
+
+                    <div className="w-full max-w-[340px] py-1">
+                      <DigitalPlate 
+                        plateNumber={regNo || "PENDING"} 
+                        category={classification as PlateCategory}
+                        region="GREATER ACCRA"
+                        slogan="GREATER ACCRA"
+                        vin={chassisNo || "PENDING"}
+                        make={make || "VEHICLE"}
+                      />
+                    </div>
+
+                    {/* Quick Category Preview / Switch Buttons */}
+                    <div className="flex items-center justify-center gap-1.5 pt-2 border-t border-slate-200 flex-wrap w-full">
+                      <span className="text-[10px] text-slate-400 uppercase font-semibold w-full text-center">Plate Category:</span>
+                      {activeCategories.map(cat => {
+                        const active = classification === cat.id;
+                        return (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => setClassification(cat.id)}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition cursor-pointer ${
+                              active
+                                ? "bg-slate-900 text-white font-bold shadow-xs"
+                                : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                            }`}
+                          >
+                            {cat.badge}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Full Logbook Filing Summary Verification Card */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-2xs uppercase">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <span className="text-xs font-bold text-slate-800 tracking-wider">
+                        Logbook Record Verification
+                      </span>
+                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        Act 683 Compliant
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">PLATE NUMBER:</span>
+                        <span className="font-bold text-slate-900 font-mono text-sm">{regNo || "PENDING"}</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">REGISTERED OWNER:</span>
+                        <span className="font-semibold text-slate-900 truncate block">{ownerName || "PENDING"}</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">REVENUE RECEIPT #:</span>
+                        <span className="font-mono font-bold text-slate-900 truncate block">{receiptNo || "PENDING"}</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">VEHICLE:</span>
+                        <span className="font-semibold text-slate-900 truncate block">{make || "—"} {model} {year && `(${year})`}</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">ENGINE / SPECS:</span>
+                        <span className="font-semibold text-slate-900 truncate block">{engineCC ? `${engineCC} CC` : "—"} • {cylinders || "—"} CYL</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">CHASSIS / VIN:</span>
+                        <span className="font-mono font-semibold text-slate-900 truncate block">{chassisNo || "—"}</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="text-slate-400 block text-[10px]">CUSTOMS REF:</span>
+                        <span className="font-mono text-slate-900 truncate block">{customsNo || "—"}</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 col-span-2 sm:col-span-2">
+                        <span className="text-slate-400 block text-[10px]">SUPERVISING OFFICER:</span>
+                        <span className="font-bold text-slate-900 truncate block">{supervisor || "—"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Submit & Edit Navigation Buttons */}
+                  <div className="pt-2 space-y-2.5">
                     <button
                       type="submit"
-                      className={`w-full py-3 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer flex items-center justify-center gap-1.5 ${
+                      className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-2 ${
                         overallCompletionPercent === 100
-                          ? "bg-[#103014] hover:bg-[#18481e] text-white"
+                          ? "bg-[#103014] hover:bg-[#18481e] text-white ring-2 ring-emerald-400/50"
                           : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-400/40"
                       }`}
                     >
@@ -2734,23 +2760,27 @@ function BookingDeskContent() {
                       ) : (
                         <>
                           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                          <span>Certify &amp; Submit ({totalRequiredFields - totalCompletedFields} Required Fields Left)</span>
+                          <span>Certify &amp; Submit ({totalRequiredFields - totalCompletedFields} Missing Entries)</span>
                         </>
                       )}
                     </button>
-                    <p className="text-[10px] text-center text-slate-400 mt-1.5">
-                      DVLA Adenta Station Registry &bull; Certified under Road Traffic Act 683
-                    </p>
-                  </div>
 
-                  <div className="pt-1 flex justify-start">
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab(3)}
-                      className="px-3.5 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
-                    >
-                      ← Back to Tyres
-                    </button>
+                    <div className="flex items-center justify-between pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab(3)}
+                        className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                      >
+                        ← Edit Customs &amp; Certification
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab(1)}
+                        className="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
+                      >
+                        Edit From Beginning
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2758,14 +2788,14 @@ function BookingDeskContent() {
             </div>
           </div>
 
-          {/* ── Right Column (1/3): Clean Live Plate Inspector & Interactive Filing Checklist ── */}
-          <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden lg:sticky lg:top-20 space-y-3.5 p-4">
+          {/* ── Right Column (1/3): Plate Inspection & Requirements Checklist (Desktop Only: Hidden on Mobile) ── */}
+          <div className="hidden lg:block bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden lg:sticky lg:top-20 space-y-3.5 p-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <span className="text-xs font-bold text-slate-800">
+              <span className="text-xs font-bold text-slate-800 uppercase">
                 Plate Inspection
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-700">
-                {CLASSIFICATIONS.find(c => c.id === classification)?.badge}
+                {activeCategories.find(c => c.id === classification)?.badge || "⚪ Private"}
               </span>
             </div>
 
@@ -2785,32 +2815,31 @@ function BookingDeskContent() {
 
             {/* Quick Category Preview Buttons */}
             <div className="flex items-center justify-center gap-1 pb-1.5 border-b border-slate-100 flex-wrap">
-              {(["PRIVATE", "COMMERCIAL", "ELECTRIC", "GOVERNMENT"] as const).map(catKey => {
-                const active = classification === catKey;
-                const conf = CLASSIFICATIONS.find(c => c.id === catKey);
+              {activeCategories.map(cat => {
+                const active = classification === cat.id;
                 return (
                   <button
-                    key={catKey}
+                    key={cat.id}
                     type="button"
-                    onClick={() => setClassification(catKey)}
+                    onClick={() => setClassification(cat.id)}
                     className={`px-2 py-1 rounded text-[10px] font-medium transition cursor-pointer ${
                       active
                         ? "bg-slate-900 text-white font-bold"
                         : "bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100"
                     }`}
                   >
-                    {conf?.badge}
+                    {cat.badge}
                   </button>
                 );
               })}
             </div>
 
-            {/* ── Live Interactive Filing Checklist ── */}
+            {/* ── Live Interactive Filing Checklist (3 Steps) ── */}
             <div className="bg-slate-50/80 border border-slate-200 rounded-xl p-3 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <span className={`w-2 h-2 rounded-full ${overallCompletionPercent === 100 ? "bg-emerald-500" : "bg-amber-500 animate-pulse"}`} />
-                  <span className="text-xs font-bold text-slate-800">
+                  <span className="text-xs font-bold text-slate-800 uppercase">
                     Filing Requirements
                   </span>
                 </div>
@@ -2837,7 +2866,7 @@ function BookingDeskContent() {
                 />
               </div>
 
-              {/* Checklist Sections */}
+              {/* Checklist Items: Grouped by 3 Steps */}
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-0.5 text-xs">
                 {/* Step 1 Items */}
                 <div className="space-y-1">
@@ -2848,7 +2877,7 @@ function BookingDeskContent() {
                       onClick={() => setActiveTab(1)}
                       className="text-emerald-700 hover:underline cursor-pointer"
                     >
-                      Tab 1
+                      Step 1
                     </button>
                   </div>
                   <div className="grid grid-cols-1 gap-1">
@@ -2864,6 +2893,18 @@ function BookingDeskContent() {
                       isDone={Boolean(ownerName.trim())}
                       onClick={() => focusField("input-ownerName", 1)}
                     />
+                    <ChecklistItem
+                      label="Revenue Receipt #"
+                      value={receiptNo}
+                      isDone={Boolean(receiptNo.trim())}
+                      onClick={() => focusField("input-receiptNo", 1)}
+                    />
+                    <ChecklistItem
+                      label="Payment Date"
+                      value={receiptDate}
+                      isDone={Boolean(receiptDate.trim())}
+                      onClick={() => focusField("input-receiptDate", 1)}
+                    />
                     {isTransfer && activeServiceDef?.prevOwnerRequireName !== false && (
                       <ChecklistItem
                         label="Prev Owner Name"
@@ -2875,7 +2916,7 @@ function BookingDeskContent() {
                   </div>
                 </div>
 
-                {/* Step 2 Items */}
+                {/* Step 2 Items (Kept CC & Cylinders) */}
                 <div className="space-y-1 pt-1 border-t border-slate-200/60">
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     <span>2. Vehicle Details</span>
@@ -2884,7 +2925,7 @@ function BookingDeskContent() {
                       onClick={() => setActiveTab(2)}
                       className="text-emerald-700 hover:underline cursor-pointer"
                     >
-                      Tab 2
+                      Step 2
                     </button>
                   </div>
                   <div className="grid grid-cols-1 gap-1">
@@ -2902,9 +2943,15 @@ function BookingDeskContent() {
                     />
                     <ChecklistItem
                       label="Engine Displacement"
-                      value={engineCC ? `${engineCC} cc` : ""}
+                      value={engineCC ? `${engineCC} CC` : ""}
                       isDone={Boolean(engineCC.trim())}
                       onClick={() => focusField("input-engineCC", 2)}
+                    />
+                    <ChecklistItem
+                      label="Cylinders"
+                      value={cylinders ? `${cylinders} CYL` : ""}
+                      isDone={Boolean(cylinders.trim())}
+                      onClick={() => focusField("input-cylinders", 2)}
                     />
                   </div>
                 </div>
@@ -2912,77 +2959,43 @@ function BookingDeskContent() {
                 {/* Step 3 Items */}
                 <div className="space-y-1 pt-1 border-t border-slate-200/60">
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    <span>3. Axle &amp; Tyres</span>
+                    <span>3. Customs &amp; Certification</span>
                     <button
                       type="button"
                       onClick={() => setActiveTab(3)}
                       className="text-emerald-700 hover:underline cursor-pointer"
                     >
-                      Tab 3
+                      Step 3
                     </button>
                   </div>
                   <div className="grid grid-cols-1 gap-1">
-                    <ChecklistItem
-                      label="Front Tyres"
-                      value={tyreFW && tyreFD ? `${tyreFW}/${tyreFD}` : ""}
-                      isDone={Boolean(tyreFW.trim() && tyreFD.trim())}
-                      onClick={() => focusField("input-tyreFW", 3)}
-                    />
-                    <ChecklistItem
-                      label="Rear Tyres"
-                      value={tyreRW && tyreRD ? `${tyreRW}/${tyreRD}` : ""}
-                      isDone={Boolean(tyreRW.trim() && tyreRD.trim())}
-                      onClick={() => focusField("input-tyreRW", 3)}
-                    />
-                  </div>
-                </div>
-
-                {/* Step 4 Items */}
-                <div className="space-y-1 pt-1 border-t border-slate-200/60">
-                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    <span>4. Customs &amp; Audit</span>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab(4)}
-                      className="text-emerald-700 hover:underline cursor-pointer"
-                    >
-                      Tab 4
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 gap-1">
-                    <ChecklistItem
-                      label="Revenue Receipt"
-                      value={receiptNo}
-                      isDone={Boolean(receiptNo.trim())}
-                      onClick={() => focusField("input-receiptNo", 4)}
-                    />
                     <ChecklistItem
                       label="Customs Declaration"
                       value={customsNo}
                       isDone={Boolean(customsNo.trim())}
-                      onClick={() => focusField("input-customsNo", 4)}
+                      onClick={() => focusField("input-customsNo", 3)}
                     />
                     <ChecklistItem
                       label="Clearance Date"
                       value={customsDate}
                       isDone={Boolean(customsDate.trim())}
-                      onClick={() => focusField("input-customsDate", 4)}
+                      onClick={() => focusField("input-customsDate", 3)}
                     />
                     <ChecklistItem
                       label="Supervising Officer"
                       value={supervisor}
                       isDone={Boolean(supervisor.trim())}
-                      onClick={() => focusField("input-supervisor", 4)}
+                      onClick={() => focusField("input-supervisor", 3)}
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Direct Submit shortcut */}
+            {/* Desktop-only secondary submit shortcut (Hidden on mobile to eliminate clumped double-button!) */}
             <button
               type="submit"
-              className={`w-full py-2.5 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer mt-2 flex items-center justify-center gap-1.5 ${
+              className={`hidden lg:flex w-full py-2.5 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer mt-2 items-center justify-center gap-1.5 uppercase ${
                 overallCompletionPercent === 100
                   ? "bg-[#103014] hover:bg-[#18481e] text-white"
                   : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30"
@@ -2998,13 +3011,200 @@ function BookingDeskContent() {
               ) : (
                 <>
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  <span>Submit ({totalRequiredFields - totalCompletedFields} Required Left)</span>
+                  <span>Submit ({totalRequiredFields - totalCompletedFields} Left)</span>
                 </>
               )}
             </button>
           </div>
 
         </form>
+      )}
+
+      {/* ── 4. Mobile Dedicated Sticky Bottom Navigation Bar ── */}
+      {!isSuccess && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+          <div className="max-w-md mx-auto flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-extrabold text-slate-900 uppercase">
+                {activeTab === 1 && "Step 1 of 4: Owner & Filing"}
+                {activeTab === 2 && "Step 2 of 4: Vehicle Specs"}
+                {activeTab === 3 && "Step 3 of 4: Customs & Officer"}
+                {activeTab === 4 && "Step 4 of 4: Plate & Review"}
+              </p>
+              <p className="text-[10px] font-semibold text-emerald-700">
+                {totalCompletedFields}/{totalRequiredFields} Required Fields Done ({overallCompletionPercent}%)
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {activeTab > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab((activeTab - 1) as 1 | 2 | 3)}
+                  className="px-3 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer"
+                >
+                  ← Back
+                </button>
+              )}
+
+              {activeTab === 1 && (
+                <button
+                  type="button"
+                  onClick={handleNextTab1}
+                  className="px-3.5 py-2 text-xs font-extrabold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-2xs transition cursor-pointer"
+                >
+                  Next: Vehicle →
+                </button>
+              )}
+
+              {activeTab === 2 && (
+                <button
+                  type="button"
+                  onClick={handleNextTab2}
+                  className="px-3.5 py-2 text-xs font-extrabold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-2xs transition cursor-pointer"
+                >
+                  Next: Customs →
+                </button>
+              )}
+
+              {activeTab === 3 && (
+                <button
+                  type="button"
+                  onClick={handleNextTab3}
+                  className="px-3.5 py-2 text-xs font-black uppercase text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-2xs transition cursor-pointer"
+                >
+                  Review Plate →
+                </button>
+              )}
+
+              {activeTab === 4 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    const form = document.querySelector("form");
+                    if (form) form.requestSubmit();
+                  }}
+                  className={`px-3.5 py-2 text-xs font-black uppercase rounded-lg shadow-sm transition cursor-pointer ${
+                    overallCompletionPercent === 100
+                      ? "bg-[#103014] text-white ring-1 ring-emerald-400"
+                      : "bg-slate-900 text-amber-300 border border-amber-500/40"
+                  }`}
+                >
+                  Certify &amp; Submit
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Quick Add Supervisor Modal ── */}
+      {isQuickAddSupervisorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <h3 className="text-sm font-bold text-slate-900 uppercase">
+                  Register Certified Supervisor
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsQuickAddSupervisorOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!newSupervisorName.trim()) return;
+                setIsSavingSupervisor(true);
+                try {
+                  const res = await fetch("/api/supervisors", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      name: newSupervisorName.trim().toUpperCase(),
+                      station: newSupervisorStation.trim().toUpperCase() || (sessionUser?.branch?.name ? String(sessionUser.branch.name).toUpperCase() : "DVLA ADENTA"),
+                      branchId: sessionUser?.branchId || sessionUser?.branch?.id || undefined,
+                    }),
+                  });
+                  if (res.ok) {
+                    const created = await res.json();
+                    await loadSupervisors();
+                    setSupervisor(created.name);
+                    setSelectedSupervisorId(created.id);
+                    setIsQuickAddSupervisorOpen(false);
+                    setNewSupervisorName("");
+                    setNewSupervisorStation("");
+                  } else {
+                    const err = await res.json();
+                    alert(err.error || "Failed to register supervisor");
+                  }
+                } catch (err) {
+                  console.error("Error creating supervisor:", err);
+                  alert("Failed to save supervisor to database");
+                } finally {
+                  setIsSavingSupervisor(false);
+                }
+              }}
+              className="space-y-3.5"
+            >
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Full Legal Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newSupervisorName}
+                  onChange={e => setNewSupervisorName(e.target.value.toUpperCase())}
+                  placeholder="E.G. KWAME MENSAH"
+                  className={INPUT}
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Station / Branch
+                </label>
+                <input
+                  type="text"
+                  value={newSupervisorStation}
+                  onChange={e => setNewSupervisorStation(e.target.value.toUpperCase())}
+                  placeholder="E.G. DVLA ADENTA"
+                  className={INPUT}
+                />
+              </div>
+
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-[11px] text-emerald-800">
+                <span className="font-bold">🛡️ Auto-Assigned Badge:</span> A unique certified supervisor badge (e.g. SUP-XXXX) will be automatically assigned upon creation.
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsQuickAddSupervisorOpen(false)}
+                  className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingSupervisor || !newSupervisorName.trim()}
+                  className="px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-black rounded-lg cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingSupervisor ? "Registering..." : "Save Supervisor"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
     </div>
