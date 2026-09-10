@@ -159,7 +159,7 @@ export function DigitalPlate({
   let leftText = "";
   let rightText = plateNumber;
   let bgGradient = "linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%)";
-  let textColor = "#0f172a";
+  const textColor = "#0f172a";
   let showRedGreenTriangles = false;
 
   if (normCat === "GOVERNMENT") {
@@ -225,12 +225,12 @@ export function DigitalPlate({
         </span>
       </div>
 
-      {/* Center Registration Number - Centered vertically & horizontally */}
-      <div className={`absolute inset-0 flex items-center justify-center z-20 ${isSplitPlate ? 'pl-[20%]' : ''}`}>
-        <span className="font-sans font-black uppercase tracking-wider leading-none text-center" 
+      {/* Center Registration Number - Single Horizontal Line */}
+      <div className={`absolute inset-0 flex items-center justify-center z-20 px-2 ${isSplitPlate ? 'pl-[22%]' : ''}`}>
+        <span className="font-sans font-black uppercase tracking-wider leading-none text-center whitespace-nowrap" 
               style={{ 
                 color: textColor, 
-                fontSize: 'clamp(22px, 8vw, 38px)',
+                fontSize: isSplitPlate ? 'clamp(15px, 5.2vw, 25px)' : 'clamp(18px, 6.2vw, 30px)',
                 fontFamily: "'Arial Black', 'Impact', 'Arial', sans-serif",
                 textShadow: '1px 1.5px 0px rgba(255,255,255,0.9), -0.5px -0.5px 0px rgba(0,0,0,0.25)' 
               }}>

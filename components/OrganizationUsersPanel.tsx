@@ -13,19 +13,23 @@ interface OrgUser {
 }
 
 interface UserForm {
-  username: string;
-  password: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  middleName: string;
   email: string;
   role: "SUPERADMIN" | "SUPERVISOR" | "DATA_ENTRY";
+  username?: string;
+  password?: string;
 }
 
 const EMPTY_USER_FORM: UserForm = {
-  username: "",
-  password: "",
-  name: "",
+  firstName: "",
+  lastName: "",
+  middleName: "",
   email: "",
   role: "DATA_ENTRY",
+  username: "",
+  password: "",
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -95,21 +99,34 @@ export default function OrganizationUsersPanel({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) {
+      setError("First Name, Last Name, and Official Email are required.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const isEditing = Boolean(editingUserId);
+      const fullName = `${form.firstName.trim()} ${form.middleName.trim() ? form.middleName.trim() + " " : ""}${form.lastName.trim()}`.trim();
       const payload = isEditing
         ? {
-            username: form.username,
-            name: form.name,
-            email: form.email,
+            name: fullName,
+            firstName: form.firstName.trim(),
+            lastName: form.lastName.trim(),
+            middleName: form.middleName.trim() || null,
+            email: form.email.trim().toLowerCase(),
             role: form.role,
             organizationId,
-            ...(form.password.trim() ? { password: form.password } : {}),
+            ...(form.password?.trim() ? { password: form.password.trim() } : {}),
           }
         : {
-            ...form,
+            firstName: form.firstName.trim(),
+            lastName: form.lastName.trim(),
+            middleName: form.middleName.trim() || undefined,
+            email: form.email.trim().toLowerCase(),
+            role: form.role,
             organizationId,
           };
 
@@ -141,12 +158,15 @@ export default function OrganizationUsersPanel({
 
   const handleEdit = (user: OrgUser) => {
     setEditingUserId(user.id);
+    const parts = (user.name || "").trim().split(/\s+/);
     setForm({
-      username: user.username,
-      password: "",
-      name: user.name,
+      firstName: parts[0] || "",
+      lastName: parts.slice(1).join(" ") || "",
+      middleName: "",
       email: user.email || "",
       role: user.role,
+      username: user.username,
+      password: "",
     });
     setError("");
   };
@@ -291,56 +311,95 @@ export default function OrganizationUsersPanel({
               </button>
             )}
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {!editingUserId && (
+              <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 leading-relaxed">
+                ⚡ Username will be auto-generated as <span className="font-mono font-bold">firstname.lastname</span>. An activation email with temporary credentials will be dispatched.
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider block mb-1" style={{ color: "#9aa3be" }}>First Name *</label>
+                <input
+                  required
+                  value={form.firstName}
+                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                  placeholder="Kwame"
+                  className="w-full px-3 py-2 rounded-lg border text-xs outline-none focus:border-[#81B71A]"
+                  style={{ borderColor: "#e8edf5", color: "#374167" }}
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider block mb-1" style={{ color: "#9aa3be" }}>Last Name *</label>
+                <input
+                  required
+                  value={form.lastName}
+                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                  placeholder="Mensah"
+                  className="w-full px-3 py-2 rounded-lg border text-xs outline-none focus:border-[#81B71A]"
+                  style={{ borderColor: "#e8edf5", color: "#374167" }}
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1.5" style={{ color: "#9aa3be" }}>Full Name</label>
+              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1" style={{ color: "#9aa3be" }}>Middle Name (Optional)</label>
               <input
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none focus:border-[#81B71A]"
+                value={form.middleName}
+                onChange={(e) => setForm({ ...form, middleName: e.target.value })}
+                placeholder="Kofi"
+                className="w-full px-3 py-2 rounded-lg border text-xs outline-none focus:border-[#81B71A]"
                 style={{ borderColor: "#e8edf5", color: "#374167" }}
               />
             </div>
+
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1.5" style={{ color: "#9aa3be" }}>Username</label>
-              <input
-                required
-                value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().replace(/\s+/g, "") })}
-                className="w-full px-3 py-2.5 rounded-lg border text-sm font-mono outline-none focus:border-[#81B71A]"
-                style={{ borderColor: "#e8edf5", color: "#374167" }}
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1.5" style={{ color: "#9aa3be" }}>Email</label>
+              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1" style={{ color: "#9aa3be" }}>Official Email *</label>
               <input
                 type="email"
+                required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none focus:border-[#81B71A]"
+                placeholder="officer@dvla.gov.gh"
+                className="w-full px-3 py-2 rounded-lg border text-xs outline-none focus:border-[#81B71A]"
                 style={{ borderColor: "#e8edf5", color: "#374167" }}
               />
             </div>
+
+            {editingUserId && (
+              <>
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider block mb-1" style={{ color: "#9aa3be" }}>Username</label>
+                  <input
+                    disabled
+                    value={`@${form.username}`}
+                    className="w-full px-3 py-2 rounded-lg border text-xs font-mono bg-slate-100"
+                    style={{ borderColor: "#e8edf5", color: "#64748b" }}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider block mb-1" style={{ color: "#9aa3be" }}>
+                    Password <span className="normal-case font-normal">(leave blank to keep)</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border text-xs outline-none focus:border-[#81B71A]"
+                    style={{ borderColor: "#e8edf5", color: "#374167" }}
+                  />
+                </div>
+              </>
+            )}
+
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1.5" style={{ color: "#9aa3be" }}>
-                Password {editingUserId && <span className="normal-case font-normal">(leave blank to keep)</span>}
-              </label>
-              <input
-                type="password"
-                required={!editingUserId}
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none focus:border-[#81B71A]"
-                style={{ borderColor: "#e8edf5", color: "#374167" }}
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1.5" style={{ color: "#9aa3be" }}>Role</label>
+              <label className="text-[10px] font-bold uppercase tracking-wider block mb-1" style={{ color: "#9aa3be" }}>Role Tier *</label>
               <select
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value as UserForm["role"] })}
-                className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none focus:border-[#81B71A]"
+                className="w-full px-3 py-2 rounded-lg border text-xs outline-none focus:border-[#81B71A]"
                 style={{ borderColor: "#e8edf5", color: "#374167" }}
               >
                 <option value="DATA_ENTRY">Data Entry</option>

@@ -1,27 +1,27 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const organizations = await prisma.organization.findMany({
+    const branches = await prisma.branch.findMany({
       orderBy: { name: "asc" },
       select: {
         id: true,
         name: true,
         slug: true,
         code: true,
-        description: true,
+        address: true,
         createdAt: true,
         _count: {
           select: { users: true },
         },
       },
     });
-    return NextResponse.json(organizations);
+    return NextResponse.json(branches);
   } catch (error) {
-    console.error("Error fetching organizations:", error);
+    console.error("Error fetching organizations/branches:", error);
     return NextResponse.json(
-      { error: "Failed to fetch organizations" },
+      { error: "Failed to fetch branches" },
       { status: 500 }
     );
   }
@@ -38,19 +38,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const organization = await prisma.organization.create({
+    // Get or create default region if not present
+    let defaultRegion = await prisma.region.findFirst();
+    if (!defaultRegion) {
+      defaultRegion = await prisma.region.create({
+        data: {
+          name: "Greater Accra Region",
+          code: "GAR",
+          description: "Default Headquarter Region",
+        },
+      });
+    }
+
+    const branch = await prisma.branch.create({
       data: {
         name: name.trim(),
         slug: slug.trim().toLowerCase().replace(/\s+/g, "-"),
         code: code.trim().toUpperCase(),
-        description: description?.trim() || null,
+        address: description?.trim() || null,
+        regionId: defaultRegion.id,
       },
       select: {
         id: true,
         name: true,
         slug: true,
         code: true,
-        description: true,
         createdAt: true,
         _count: {
           select: { users: true },
@@ -58,11 +70,11 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(organization, { status: 201 });
+    return NextResponse.json(branch, { status: 201 });
   } catch (error) {
-    console.error("Error creating organization:", error);
+    console.error("Error creating branch:", error);
     return NextResponse.json(
-      { error: "Failed to create organization. Slug or code may already exist." },
+      { error: "Failed to create branch. Slug or code may already exist." },
       { status: 500 }
     );
   }

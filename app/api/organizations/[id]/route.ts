@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
-const orgSelect = {
+const branchSelect = {
   id: true,
   name: true,
   slug: true,
   code: true,
-  description: true,
+  address: true,
   createdAt: true,
   _count: {
     select: { users: true },
@@ -18,19 +18,19 @@ type RouteContext = { params: Promise<{ id: string }> };
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const organization = await prisma.organization.findUnique({
+    const branch = await prisma.branch.findUnique({
       where: { id },
-      select: orgSelect,
+      select: branchSelect,
     });
 
-    if (!organization) {
-      return NextResponse.json({ error: "Organization not found." }, { status: 404 });
+    if (!branch) {
+      return NextResponse.json({ error: "Branch not found." }, { status: 404 });
     }
 
-    return NextResponse.json(organization);
+    return NextResponse.json(branch);
   } catch (error) {
-    console.error("Error fetching organization:", error);
-    return NextResponse.json({ error: "Failed to fetch organization." }, { status: 500 });
+    console.error("Error fetching branch:", error);
+    return NextResponse.json({ error: "Failed to fetch branch." }, { status: 500 });
   }
 }
 
@@ -46,27 +46,27 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    const existing = await prisma.organization.findUnique({ where: { id } });
+    const existing = await prisma.branch.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "Organization not found." }, { status: 404 });
+      return NextResponse.json({ error: "Branch not found." }, { status: 404 });
     }
 
-    const organization = await prisma.organization.update({
+    const updated = await prisma.branch.update({
       where: { id },
       data: {
         name: name.trim(),
         slug: slug.trim().toLowerCase().replace(/\s+/g, "-"),
         code: code.trim().toUpperCase(),
-        description: description?.trim() || null,
+        address: description?.trim() || null,
       },
-      select: orgSelect,
+      select: branchSelect,
     });
 
-    return NextResponse.json(organization);
+    return NextResponse.json(updated);
   } catch (error) {
-    console.error("Error updating organization:", error);
+    console.error("Error updating branch:", error);
     return NextResponse.json(
-      { error: "Failed to update organization. Slug or code may already exist." },
+      { error: "Failed to update branch. Slug or code may already exist." },
       { status: 500 }
     );
   }
@@ -76,13 +76,13 @@ export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
 
-    const existing = await prisma.organization.findUnique({
+    const existing = await prisma.branch.findUnique({
       where: { id },
       include: { _count: { select: { users: true } } },
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Organization not found." }, { status: 404 });
+      return NextResponse.json({ error: "Branch not found." }, { status: 404 });
     }
 
     if (existing._count.users > 0) {
@@ -92,10 +92,10 @@ export async function DELETE(_request: Request, context: RouteContext) {
       );
     }
 
-    await prisma.organization.delete({ where: { id } });
+    await prisma.branch.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting organization:", error);
-    return NextResponse.json({ error: "Failed to delete organization." }, { status: 500 });
+    console.error("Error deleting branch:", error);
+    return NextResponse.json({ error: "Failed to delete branch." }, { status: 500 });
   }
 }

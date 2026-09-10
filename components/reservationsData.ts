@@ -14,7 +14,63 @@ export interface Reservation {
   totalCount: number;
 }
 
-export const INITIAL_RESERVATIONS: Reservation[] = [];
+export const INITIAL_RESERVATIONS: Reservation[] = [
+  {
+    id: "res-gaf-01",
+    type: "Range",
+    rangeStart: 9000,
+    rangeEnd: 9099,
+    prefix: "AD",
+    year: "26",
+    holder: "Ghana Armed Forces (GAF HQ)",
+    authRef: "MOD-GAF-SEC-2026-01",
+    expiryDate: "2028-12-31",
+    status: "Active",
+    claimedCount: 24,
+    totalCount: 100,
+  },
+  {
+    id: "res-pres-02",
+    type: "Range",
+    rangeStart: 8500,
+    rangeEnd: 8550,
+    prefix: "AD",
+    year: "26",
+    holder: "Office of the President (Fleet)",
+    authRef: "OP-GOV-ALLOC-2026-04",
+    expiryDate: "2028-06-30",
+    status: "Active",
+    claimedCount: 18,
+    totalCount: 51,
+  },
+  {
+    id: "res-dip-03",
+    type: "Range",
+    rangeStart: 1000,
+    rangeEnd: 1099,
+    prefix: "CD",
+    year: "26",
+    holder: "Diplomatic Corps (CD Mission)",
+    authRef: "MFA-DIP-2026-08",
+    expiryDate: "2027-12-31",
+    status: "Active",
+    claimedCount: 42,
+    totalCount: 100,
+  },
+  {
+    id: "res-pol-04",
+    type: "Single",
+    platePattern: "AD 1000-26",
+    prefix: "AD",
+    year: "26",
+    holder: "Inspector General of Police (IGP)",
+    authRef: "GPS-HQ-VIP-01",
+    expiryDate: "2029-01-01",
+    status: "Active",
+    claimedCount: 1,
+    totalCount: 1,
+  }
+];
 
 /**
  * Fetches reservations from the Prisma database API.

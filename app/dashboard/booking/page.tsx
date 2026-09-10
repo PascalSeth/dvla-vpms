@@ -1,44 +1,44 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getStoredReservations, checkPlateReservation, saveStoredReservations, Reservation } from "../../../components/reservationsData";
 import { DigitalPlate, PlateCategory } from "@/components/DigitalPlate";
+import {
+  VehicleModel,
+  VEHICLE_CATALOG,
+  YEARS_LIST,
+  searchVehicles,
+} from "@/lib/vehicleCatalog";
 
 /* ─── Static reference data ─── */
 
-const BOOKING_TYPES = [
-  { id: "REGISTRATION", label: "Registration", sub: "New plate issuance", icon: BookingNewIcon },
-  { id: "REG_SPECIAL", label: "Registration + Special Number", sub: "Custom plate request", icon: BookingStarIcon },
-  { id: "REG_TRANSFER", label: "Registration & Transfer", sub: "Ownership change", icon: BookingTransferIcon },
-  { id: "REG_TRANSFER_SPECIAL", label: "Registration Transfer + Special Number", sub: "Transfer with custom", icon: BookingComboIcon },
-];
-
 const CLASSIFICATIONS = [
-  { id: "PRIVATE", label: "Private", sub: "Personal vehicle (White plate)", icon: ClassPrivateIcon },
-  { id: "COMMERCIAL", label: "Commercial", sub: "Taxis, buses, transport (Yellow plate)", icon: ClassCommercialIcon },
-  { id: "ELECTRIC", label: "Electric Vehicle (EV)", sub: "Green EV left-side block plate", icon: ClassGovIcon },
-  { id: "GOVERNMENT", label: "Government", sub: "Government ministries (GV split plate)", icon: ClassGovIcon },
-  { id: "TRAILER", label: "Trailer", sub: "Yellow T left-side block plate", icon: ClassCommercialIcon },
-  { id: "MOTORCYCLE", label: "Motorcycle", sub: "Light blue 2-row motorcycle plate", icon: ClassPrivateIcon },
-  { id: "TEMPORARY", label: "Temporary Sticker", sub: "Blue/Black TMP sticker plate", icon: ClassPrivateIcon },
-  { id: "AGRICULTURAL", label: "Agricultural", sub: "Farm equipment & tractors", icon: ClassEquipmentIcon },
+  { id: "PRIVATE", label: "Private (White Plate)", badge: "⚪ Private" },
+  { id: "COMMERCIAL", label: "Commercial (Yellow Plate)", badge: "🟡 Commercial" },
+  { id: "ELECTRIC", label: "Electric Vehicle (EV Green Plate)", badge: "🟢 EV Green" },
+  { id: "GOVERNMENT", label: "Government (GV Split Plate)", badge: "🏛️ GV Split" },
+  { id: "TRAILER", label: "Trailer (Yellow T Plate)", badge: "🟡 Trailer" },
+  { id: "MOTORCYCLE", label: "Motorcycle (Light Blue Plate)", badge: "🔵 Motorcycle" },
+  { id: "TEMPORARY", label: "Temporary (TMP Sticker Plate)", badge: "🔷 TMP Sticker" },
+  { id: "AGRICULTURAL", label: "Agricultural (Farm Machinery)", badge: "🚜 Agri" },
 ];
 
 const BODY_TYPES = [
-  { id: "Saloon", label: "Saloon", icon: BodySaloonIcon },
-  { id: "Hatchback", label: "Hatchback", icon: BodyHatchIcon },
-  { id: "SUV / Station Wagon", label: "SUV / 4WD", icon: BodySUVIcon },
-  { id: "Pickup / Truck", label: "Pickup", icon: BodyPickupIcon },
-  { id: "Minibus / Van", label: "Minibus", icon: BodyMinibusIcon },
-  { id: "Bus", label: "Bus", icon: BodyBusIcon },
-  { id: "Equipment / Machinery", label: "Equipment", icon: BodyEquipIcon },
+  "Saloon",
+  "Hatchback",
+  "SUV / Station Wagon",
+  "Pickup / Truck",
+  "Minibus / Van",
+  "Bus",
+  "Coupe",
+  "Equipment / Machinery",
 ];
 
 const FUEL_TYPES = [
-  { id: "PETROL", label: "Petrol", icon: FuelPetrolIcon },
-  { id: "DIESEL", label: "Diesel", icon: FuelDieselIcon },
-  { id: "ELECTRIC", label: "Electric", icon: FuelElectricIcon },
+  { id: "PETROL", label: "Petrol" },
+  { id: "DIESEL", label: "Diesel" },
+  { id: "ELECTRIC", label: "Electric" },
 ];
 
 interface VehiclePreset {
@@ -49,70 +49,41 @@ interface VehiclePreset {
 
 const VEHICLE_PRESETS: VehiclePreset[] = [
   // 2025 Models
-  { label: "Toyota Camry", year: "2025", make: "Toyota", model: "Camry", engineCC: "2500", cylinders: "4", bodyType: "Saloon", netWeight: "1590", grossWeight: "2095", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Toyota Corolla", year: "2025", make: "Toyota", model: "Corolla", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1350", grossWeight: "1790", tyreW: "215", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Honda CR-V", year: "2025", make: "Honda", model: "CR-V", engineCC: "1500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1630", grossWeight: "2150", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Honda Accord", year: "2025", make: "Honda", model: "Accord", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1480", grossWeight: "1920", tyreW: "225", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Ford Explorer", year: "2025", make: "Ford", model: "Explorer", engineCC: "2300", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1970", grossWeight: "2790", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Ford Mustang", year: "2025", make: "Ford", model: "Mustang", engineCC: "5000", cylinders: "8", bodyType: "Coupe", netWeight: "1720", grossWeight: "2150", tyreW: "255", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Tesla Model Y", year: "2025", make: "Tesla", model: "Model Y", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon", netWeight: "1910", grossWeight: "2405", tyreW: "255", tyreDia: "19", fuelType: "ELECTRIC" },
-  { label: "Hyundai Santa Fe", year: "2025", make: "Hyundai", model: "Santa Fe", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1830", grossWeight: "2510", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Kia Telluride", year: "2025", make: "Kia", model: "Telluride", engineCC: "3800", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "1980", grossWeight: "2640", tyreW: "245", tyreDia: "20", fuelType: "PETROL" },
-  { label: "BMW X5", year: "2025", make: "BMW", model: "X5", engineCC: "3000", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2100", grossWeight: "2850", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
-  { label: "BMW 3 Series", year: "2025", make: "BMW", model: "3 Series", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1620", grossWeight: "2100", tyreW: "225", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Mercedes GLE", year: "2025", make: "Mercedes-Benz", model: "GLE", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2150", grossWeight: "2930", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Lexus RX", year: "2025", make: "Lexus", model: "RX 350", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1950", grossWeight: "2600", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Nissan Rogue", year: "2025", make: "Nissan", model: "Rogue", engineCC: "1500", cylinders: "3", bodyType: "SUV / Station Wagon", netWeight: "1620", grossWeight: "2080", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Nissan Altima", year: "2025", make: "Nissan", model: "Altima", engineCC: "2500", cylinders: "4", bodyType: "Saloon", netWeight: "1510", grossWeight: "1950", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Volvo XC90", year: "2025", make: "Volvo", model: "XC90", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2120", grossWeight: "2980", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Porsche Macan", year: "2025", make: "Porsche", model: "Macan", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1850", grossWeight: "2510", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Toyota Camry (2025)", year: "2025", make: "Toyota", model: "Camry", engineCC: "2500", cylinders: "4", bodyType: "Saloon", netWeight: "1590", grossWeight: "2095", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Toyota Corolla (2025)", year: "2025", make: "Toyota", model: "Corolla", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1350", grossWeight: "1790", tyreW: "215", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Honda CR-V (2025)", year: "2025", make: "Honda", model: "CR-V", engineCC: "1500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1630", grossWeight: "2150", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Honda Accord (2025)", year: "2025", make: "Honda", model: "Accord", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1480", grossWeight: "1920", tyreW: "225", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Ford Explorer (2025)", year: "2025", make: "Ford", model: "Explorer", engineCC: "2300", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1970", grossWeight: "2790", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Ford Mustang (2025)", year: "2025", make: "Ford", model: "Mustang", engineCC: "5000", cylinders: "8", bodyType: "Coupe", netWeight: "1720", grossWeight: "2150", tyreW: "255", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Tesla Model Y (2025)", year: "2025", make: "Tesla", model: "Model Y", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon", netWeight: "1910", grossWeight: "2405", tyreW: "255", tyreDia: "19", fuelType: "ELECTRIC" },
+  { label: "Hyundai Santa Fe (2025)", year: "2025", make: "Hyundai", model: "Santa Fe", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1830", grossWeight: "2510", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Kia Telluride (2025)", year: "2025", make: "Kia", model: "Telluride", engineCC: "3800", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "1980", grossWeight: "2640", tyreW: "245", tyreDia: "20", fuelType: "PETROL" },
+  { label: "BMW X5 (2025)", year: "2025", make: "BMW", model: "X5", engineCC: "3000", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2100", grossWeight: "2850", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
+  { label: "BMW 3 Series (2025)", year: "2025", make: "BMW", model: "3 Series", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1620", grossWeight: "2100", tyreW: "225", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Mercedes GLE (2025)", year: "2025", make: "Mercedes-Benz", model: "GLE", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2150", grossWeight: "2930", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Lexus RX 350 (2025)", year: "2025", make: "Lexus", model: "RX 350", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1950", grossWeight: "2600", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Nissan Rogue (2025)", year: "2025", make: "Nissan", model: "Rogue", engineCC: "1500", cylinders: "3", bodyType: "SUV / Station Wagon", netWeight: "1620", grossWeight: "2080", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
 
   // 2024 Models
-  { label: "Toyota Land Cruiser", year: "2024", make: "Toyota", model: "Land Cruiser", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2200", grossWeight: "2950", tyreW: "265", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Toyota Tacoma", year: "2024", make: "Toyota", model: "Tacoma", engineCC: "2400", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1950", grossWeight: "2630", tyreW: "265", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Toyota Highlander", year: "2024", make: "Toyota", model: "Highlander", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1920", grossWeight: "2610", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Hyundai Tucson", year: "2024", make: "Hyundai", model: "Tucson", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1680", grossWeight: "2145", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Hyundai Sonata", year: "2024", make: "Hyundai", model: "Sonata", engineCC: "2500", cylinders: "4", bodyType: "Saloon", netWeight: "1480", grossWeight: "1940", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Kia Sportage", year: "2024", make: "Kia", model: "Sportage", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1610", grossWeight: "2090", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Kia K5", year: "2024", make: "Kia", model: "K5", engineCC: "1600", cylinders: "4", bodyType: "Saloon", netWeight: "1450", grossWeight: "1910", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Honda Civic", year: "2024", make: "Honda", model: "Civic", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1340", grossWeight: "1760", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Honda Pilot", year: "2024", make: "Honda", model: "Pilot", engineCC: "3500", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2020", grossWeight: "2680", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Subaru Outback", year: "2024", make: "Subaru", model: "Outback", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1650", grossWeight: "2220", tyreW: "225", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Mazda CX-50", year: "2024", make: "Mazda", model: "CX-50", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1680", grossWeight: "2200", tyreW: "225", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Jetour Dashing", year: "2024", make: "Jetour", model: "Dashing", engineCC: "1498", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1535", grossWeight: "1888", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Tesla Model 3", year: "2024", make: "Tesla", model: "Model 3", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "Saloon", netWeight: "1760", grossWeight: "2200", tyreW: "235", tyreDia: "18", fuelType: "ELECTRIC" },
-  { label: "Hyundai Ioniq 5", year: "2024", make: "Hyundai", model: "Ioniq 5", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon", netWeight: "2020", grossWeight: "2540", tyreW: "235", tyreDia: "19", fuelType: "ELECTRIC" },
+  { label: "Toyota Land Cruiser (2024)", year: "2024", make: "Toyota", model: "Land Cruiser", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2200", grossWeight: "2950", tyreW: "265", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Toyota Tacoma (2024)", year: "2024", make: "Toyota", model: "Tacoma", engineCC: "2400", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1950", grossWeight: "2630", tyreW: "265", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Toyota Highlander (2024)", year: "2024", make: "Toyota", model: "Highlander", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1920", grossWeight: "2610", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Hyundai Tucson (2024)", year: "2024", make: "Hyundai", model: "Tucson", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1680", grossWeight: "2145", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Kia Sportage (2024)", year: "2024", make: "Kia", model: "Sportage", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1610", grossWeight: "2090", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Honda Civic (2024)", year: "2024", make: "Honda", model: "Civic", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1340", grossWeight: "1760", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Jetour Dashing (2024)", year: "2024", make: "Jetour", model: "Dashing", engineCC: "1498", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1535", grossWeight: "1888", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
+  { label: "Jetour Traveller T2 (2024)", year: "2024", make: "Jetour", model: "Traveller T2", engineCC: "1998", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1880", grossWeight: "2255", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
+  { label: "Tesla Model 3 (2024)", year: "2024", make: "Tesla", model: "Model 3", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "Saloon", netWeight: "1760", grossWeight: "2200", tyreW: "235", tyreDia: "18", fuelType: "ELECTRIC" },
 
-  // 2023 Models
-  { label: "Toyota Corolla", year: "2023", make: "Toyota", model: "Corolla", engineCC: "1800", cylinders: "4", bodyType: "Saloon", netWeight: "1190", grossWeight: "1560", tyreW: "195", tyreDia: "15", fuelType: "PETROL" },
-  { label: "Toyota Hilux", year: "2023", make: "Toyota", model: "Hilux", engineCC: "2800", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1920", grossWeight: "3200", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Toyota Fortuner", year: "2023", make: "Toyota", model: "Fortuner", engineCC: "2700", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1920", grossWeight: "2560", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Nissan Navara", year: "2023", make: "Nissan", model: "Navara", engineCC: "2500", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1960", grossWeight: "2910", tyreW: "255", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Nissan Pathfinder", year: "2023", make: "Nissan", model: "Pathfinder", engineCC: "3500", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2040", grossWeight: "2720", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Kia Sorento", year: "2023", make: "Kia", model: "Sorento", engineCC: "2200", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1850", grossWeight: "2560", tyreW: "235", tyreDia: "18", fuelType: "DIESEL" },
-  { label: "Mercedes E-Class", year: "2023", make: "Mercedes-Benz", model: "E-Class", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1720", grossWeight: "2195", tyreW: "245", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Mercedes C-Class", year: "2023", make: "Mercedes-Benz", model: "C-Class", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1650", grossWeight: "2150", tyreW: "225", tyreDia: "18", fuelType: "PETROL" },
-  { label: "VW Golf", year: "2023", make: "Volkswagen", model: "Golf", engineCC: "1400", cylinders: "4", bodyType: "Hatchback", netWeight: "1260", grossWeight: "1735", tyreW: "205", tyreDia: "16", fuelType: "PETROL" },
-  { label: "VW Tiguan", year: "2023", make: "Volkswagen", model: "Tiguan", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1620", grossWeight: "2150", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Ford Ranger", year: "2023", make: "Ford", model: "Ranger", engineCC: "2000", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1950", grossWeight: "3150", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Jetour X70", year: "2023", make: "Jetour", model: "X70", engineCC: "1498", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1560", grossWeight: "1930", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Jetour T2 / Traveller", year: "2023", make: "Jetour", model: "Traveller T2", engineCC: "1998", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1880", grossWeight: "2255", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
-
-  // 2022 & Older Models
-  { label: "Toyota Land Cruiser V8", year: "2022", make: "Toyota", model: "Land Cruiser V8", engineCC: "4500", cylinders: "8", bodyType: "SUV / Station Wagon", netWeight: "2630", grossWeight: "3300", tyreW: "285", tyreDia: "18", fuelType: "DIESEL" },
-  { label: "Toyota Prado", year: "2022", make: "Toyota", model: "Prado", engineCC: "2700", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2040", grossWeight: "2990", tyreW: "265", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Nissan Patrol", year: "2022", make: "Nissan", model: "Patrol", engineCC: "4000", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2280", grossWeight: "2890", tyreW: "265", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Isuzu D-Max", year: "2022", make: "Isuzu", model: "D-Max", engineCC: "3000", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1985", grossWeight: "3370", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Honda Accord", year: "2022", make: "Honda", model: "Accord", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1420", grossWeight: "1850", tyreW: "225", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Mitsubishi Pajero", year: "2021", make: "Mitsubishi", model: "Pajero", engineCC: "3200", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2350", grossWeight: "3030", tyreW: "265", tyreDia: "18", fuelType: "DIESEL" },
-  { label: "Mitsubishi L200", year: "2021", make: "Mitsubishi", model: "L200", engineCC: "2400", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1850", grossWeight: "2850", tyreW: "245", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Mazda CX-5", year: "2021", make: "Mazda", model: "CX-5", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1600", grossWeight: "2140", tyreW: "225", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Chevrolet Silverado", year: "2021", make: "Chevrolet", model: "Silverado", engineCC: "5300", cylinders: "8", bodyType: "Pickup / Truck", netWeight: "2250", grossWeight: "3175", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Chevrolet Tahoe", year: "2021", make: "Chevrolet", model: "Tahoe", engineCC: "5300", cylinders: "8", bodyType: "SUV / Station Wagon", netWeight: "2480", grossWeight: "3400", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Toyota RAV4", year: "2020", make: "Toyota", model: "RAV4", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1520", grossWeight: "2100", tyreW: "225", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Toyota Yaris", year: "2020", make: "Toyota", model: "Yaris", engineCC: "1500", cylinders: "4", bodyType: "Hatchback", netWeight: "1060", grossWeight: "1470", tyreW: "185", tyreDia: "15", fuelType: "PETROL" },
-  { label: "Hyundai Elantra", year: "2020", make: "Hyundai", model: "Elantra", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1310", grossWeight: "1750", tyreW: "205", tyreDia: "16", fuelType: "PETROL" },
-  { label: "Ford F-150", year: "2020", make: "Ford", model: "F-150", engineCC: "3500", cylinders: "6", bodyType: "Pickup / Truck", netWeight: "2220", grossWeight: "3130", tyreW: "275", tyreDia: "18", fuelType: "PETROL" },
+  // 2023 & Older
+  { label: "Toyota Hilux (2023)", year: "2023", make: "Toyota", model: "Hilux", engineCC: "2800", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1920", grossWeight: "3200", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Toyota Fortuner (2023)", year: "2023", make: "Toyota", model: "Fortuner", engineCC: "2700", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1920", grossWeight: "2560", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Nissan Navara (2023)", year: "2023", make: "Nissan", model: "Navara", engineCC: "2500", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1960", grossWeight: "2910", tyreW: "255", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Mercedes E-Class (2023)", year: "2023", make: "Mercedes-Benz", model: "E-Class", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1720", grossWeight: "2195", tyreW: "245", tyreDia: "18", fuelType: "PETROL" },
+  { label: "Ford Ranger (2023)", year: "2023", make: "Ford", model: "Ranger", engineCC: "2000", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1950", grossWeight: "3150", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
+  { label: "Toyota Land Cruiser V8 (2022)", year: "2022", make: "Toyota", model: "Land Cruiser V8", engineCC: "4500", cylinders: "8", bodyType: "SUV / Station Wagon", netWeight: "2630", grossWeight: "3300", tyreW: "285", tyreDia: "18", fuelType: "DIESEL" },
+  { label: "Toyota Prado (2022)", year: "2022", make: "Toyota", model: "Prado", engineCC: "2700", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2040", grossWeight: "2990", tyreW: "265", tyreDia: "17", fuelType: "PETROL" },
+  { label: "Nissan Patrol (2022)", year: "2022", make: "Nissan", model: "Patrol", engineCC: "4000", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2280", grossWeight: "2890", tyreW: "265", tyreDia: "17", fuelType: "PETROL" },
 ];
 
 const TYRE_PRESETS = [
@@ -123,63 +94,163 @@ const TYRE_PRESETS = [
   { label: "235/60 R18", w: "235", d: "18" },
   { label: "265/65 R17", w: "265", d: "17" },
   { label: "285/60 R18", w: "285", d: "18" },
-  { label: "275/70 R18", w: "275", d: "18" },
 ];
 
-const PLATE_REGION_MAP: [RegExp, string][] = [
-  [/adenta|adentan|frafraha|oyibi|dodowa/i, "AD"],
-  [/greater accra|accra/i, "GR"],
-  [/ashanti|kumasi/i, "AS"],
-  [/western|takoradi/i, "WR"],
-  [/eastern|koforidua/i, "ER"],
-  [/northern|tamale/i, "NR"],
-  [/volta|ho\b/i, "VR"],
-  [/central|cape coast/i, "CR"],
-  [/brong|ahafo|sunyani/i, "BA"],
-  [/upper east|bolgatanga/i, "UE"],
-  [/upper west|wa\b/i, "UW"],
+const SAMPLE_VRS_INVOICES = [
+  { no: "4N92P81C11VR7K", label: "Seth Pascal (Audi Q7)" },
+  { no: "9X14T73B12MQ5W", label: "Nana Opoku (Lexus RX)" },
+  { no: "5Q27A81C09TK6V", label: "Selasi Dzifa (EV Tesla)" },
 ];
-
 
 /* ── Design tokens ── */
 const INPUT =
-  "px-3 py-2.5 bg-white border border-[#e2e8f0] rounded-lg text-xs text-[#1a2e05] font-medium focus:outline-none focus:ring-2 focus:ring-[#81B71A]/20 focus:border-[#81B71A]/60 transition w-full placeholder-[#c3ccd8]";
-const LABEL = "text-[10px] font-bold uppercase text-[#6b7a99] tracking-wider";
+  "px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#81B71A] focus:border-[#81B71A] transition-all w-full placeholder-slate-400";
 
-/* ── Field wrapper ── */
-function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
+interface FieldProps {
+  label: string;
+  children: React.ReactNode;
+  required?: boolean;
+  isFilled?: boolean;
+  hasError?: boolean;
+  errorMessage?: string;
+  hint?: string;
+  optional?: boolean;
+  fieldId?: string;
+}
+
+function Field({
+  label,
+  children,
+  required = false,
+  isFilled = false,
+  hasError = false,
+  errorMessage,
+  hint,
+  optional = false,
+  fieldId,
+}: FieldProps) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className={LABEL}>
-        {label}{required && <span className="ml-0.5 text-red-400">*</span>}
+    <div className="flex flex-col gap-1" id={fieldId ? `field-container-${fieldId}` : undefined}>
+      <label className="text-[11px] font-semibold flex items-center justify-between gap-1.5 flex-wrap">
+        <span className="flex items-center gap-1.5 flex-wrap">
+          <span className={hasError ? "text-rose-700 font-bold" : "text-slate-700"}>
+            {label}
+          </span>
+          {required && (
+            isFilled ? (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                FILLED
+              </span>
+            ) : (
+              <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase tracking-wider ${
+                hasError
+                  ? "bg-rose-600 text-white shadow-xs animate-bounce"
+                  : "bg-rose-100 text-rose-700 border border-rose-300"
+              }`}>
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                REQUIRED
+              </span>
+            )
+          )}
+          {optional && (
+            <span className="text-[9px] font-medium text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200/60">
+              Optional
+            </span>
+          )}
+        </span>
+        {hint && (
+          <span className="text-[10px] text-slate-400 font-normal hidden sm:inline-block">
+            {hint}
+          </span>
+        )}
       </label>
-      {children}
+
+      <div className={`transition-all duration-200 rounded-lg ${
+        hasError
+          ? "ring-2 ring-rose-400 border border-rose-500 bg-rose-50/20"
+          : ""
+      }`}>
+        {children}
+      </div>
+
+      {hasError && (
+        <p className="text-[10px] font-bold text-rose-600 flex items-center gap-1 animate-in fade-in duration-150">
+          <svg className="w-3.5 h-3.5 text-rose-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>{errorMessage || `${label} is required`}</span>
+        </p>
+      )}
     </div>
   );
 }
 
-/* ── Section header ── */
-function SectionHead({ n, title, icon }: { n: number; title: string; icon: React.ReactNode }) {
+function ChecklistItem({
+  label,
+  value,
+  isDone,
+  onClick,
+}: {
+  label: string;
+  value?: string;
+  isDone: boolean;
+  onClick: () => void;
+}) {
   return (
-    <div className="flex items-center gap-3 pb-4 border-b border-[#f0f3f8]">
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-        style={{ background: "linear-gradient(135deg, #1a2e05, #81B71A)", color: "white" }}>
-        {icon}
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between text-left transition cursor-pointer border ${
+        isDone
+          ? "bg-emerald-50/70 border-emerald-200/80 text-emerald-950 hover:bg-emerald-100/70"
+          : "bg-white border-slate-200 hover:border-rose-300 hover:bg-rose-50/30 text-slate-700"
+      }`}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        <span
+          className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
+            isDone
+              ? "bg-emerald-600 text-white"
+              : "border-2 border-dashed border-rose-400 text-rose-500 bg-rose-50"
+          }`}
+        >
+          {isDone ? "✓" : "!"}
+        </span>
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold truncate leading-tight">
+            {label}
+          </p>
+          {isDone && value ? (
+            <p className="text-[10px] text-emerald-700 truncate font-mono">
+              {value}
+            </p>
+          ) : (
+            <p className="text-[10px] text-rose-600 font-semibold">
+              Action Required
+            </p>
+          )}
+        </div>
       </div>
-      <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#b0bbd6" }}>Step {n}</p>
-        <h3 className="text-sm font-bold text-[#1a2e05] leading-none mt-0.5">{title}</h3>
-      </div>
-    </div>
+      <span className="text-[10px] text-slate-400 font-medium shrink-0 ml-1">
+        {isDone ? "Edit" : "Fill →"}
+      </span>
+    </button>
   );
 }
 
-/* ════════════════════════════════ PAGE ════════════════════════════════ */
+/* ════════════════ PAGE CONTENT ════════════════ */
 function BookingDeskContent() {
-
   const searchParams = useSearchParams();
   const isPrefill = searchParams ? searchParams.get("prefill") === "1" : false;
   const serviceParam = searchParams ? searchParams.get("service") : null;
+
+  /* ── Tab navigation state ── */
+  const [activeTab, setActiveTab] = useState<1 | 2 | 3 | 4>(1);
 
   /* ── Map service to booking type ── */
   const getBookingTypeFromService = (service: string | null): string => {
@@ -193,7 +264,7 @@ function BookingDeskContent() {
   const getClassificationFromService = (service: string | null): string => {
     if (!service) return "PRIVATE";
     if (service.includes("GV")) return "GOVERNMENT";
-    if (service.includes("CD")) return "GOVERNMENT"; // CD is diplomatic, treated similar to GV
+    if (service.includes("CD")) return "GOVERNMENT";
     return "PRIVATE";
   };
 
@@ -232,10 +303,9 @@ function BookingDeskContent() {
   const [vrsInvoiceNo, setVrsInvoiceNo] = useState("");
   const [isFetchingVrs, setIsFetchingVrs] = useState(false);
   const [vrsSuccessMessage, setVrsSuccessMessage] = useState("");
-  const [auditHighlightActive, setAuditHighlightActive] = useState(false);
+  const [alreadyBookedError, setAlreadyBookedError] = useState<string | null>(null);
 
   /* ── Owner ── */
-
   const [regNo, setRegNo] = useState(() => {
     if (isPrefill && searchParams) {
       const platePattern = searchParams.get("platePattern");
@@ -254,20 +324,22 @@ function BookingDeskContent() {
   });
 
   const [address, setAddress] = useState(() => {
-    return isPrefill ? "Adenta Municipal Area, Accra" : "";
+    return isPrefill && searchParams ? (searchParams.get("address") || "") : "";
   });
 
   const [phone, setPhone] = useState(() => {
-    return isPrefill ? "+233 24 123 4567" : "";
+    return isPrefill && searchParams ? (searchParams.get("phone") || "") : "";
   });
 
   const [oldOwnerName, setOldOwnerName] = useState("");
+  const [oldOwnerPhone, setOldOwnerPhone] = useState("");
   const [oldOwnerAddr, setOldOwnerAddr] = useState("");
+  const [oldOwnerCustom, setOldOwnerCustom] = useState("");
+  const [showExtraPhone, setShowExtraPhone] = useState(false);
+  const [showExtraAddr, setShowExtraAddr] = useState(false);
+  const [showExtraCustom, setShowExtraCustom] = useState(false);
 
   /* ── Vehicle specs ── */
-  const [presetSearch, setPresetSearch] = useState("");
-  const [activePreset, setActivePreset] = useState<string | null>(null);
-  const [selectedPresetYear, setSelectedPresetYear] = useState<string>("2025");
   const [make, setMake] = useState("");
   const [year, setYear] = useState("");
   const [model, setModel] = useState("");
@@ -275,10 +347,249 @@ function BookingDeskContent() {
   const [cylinders, setCylinders] = useState("4");
   const [engineNo, setEngineNo] = useState("");
   const [chassisNo, setChassisNo] = useState("");
-  const [bodyType, setBodyType] = useState("");
+  const [bodyType, setBodyType] = useState("Saloon");
   const [fuelType, setFuelType] = useState("PETROL");
   const [netWeight, setNetWeight] = useState("");
   const [grossWeight, setGrossWeight] = useState("");
+
+  /* ── Database-Backed Vehicle Catalog State ── */
+  const chassisInputRef = useRef<HTMLInputElement>(null);
+  const vehicleSearchDropdownRef = useRef<HTMLDivElement>(null);
+  const [vehicleSearchQuery, setVehicleSearchQuery] = useState("");
+  const [selectedCatalogYear, setSelectedCatalogYear] = useState("2024");
+  const [isVehicleDropdownOpen, setIsVehicleDropdownOpen] = useState(false);
+  const [autoFilledNotice, setAutoFilledNotice] = useState<string | null>(null);
+
+  // Database Vehicles state
+  const [dbVehicles, setDbVehicles] = useState<VehicleModel[]>([]);
+  const [isDbLoading, setIsDbLoading] = useState(true);
+  const [selectedMakeFilter, setSelectedMakeFilter] = useState("All");
+  const [isSavingCustomModel, setIsSavingCustomModel] = useState(false);
+  const [saveModelSuccess, setSaveModelSuccess] = useState<string | null>(null);
+
+  // Fetch vehicles from central database
+  async function fetchDbVehicles() {
+    try {
+      setIsDbLoading(true);
+      const res = await fetch("/api/vehicles");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setDbVehicles(data);
+          return;
+        }
+      }
+      // Fallback to static catalog if DB is still warming up
+      setDbVehicles(VEHICLE_CATALOG);
+    } catch (e) {
+      console.error("Failed to load vehicle catalog from DB:", e);
+      setDbVehicles(VEHICLE_CATALOG);
+    } finally {
+      setIsDbLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchDbVehicles();
+  }, []);
+
+  // Close vehicle search dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        vehicleSearchDropdownRef.current &&
+        !vehicleSearchDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsVehicleDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Vehicles filtered strictly by the active tab (used for Quick Pick chips so chips are NEVER hidden by search text)
+  const tabVehicles = useMemo(() => {
+    const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
+    if (selectedMakeFilter === "Custom") {
+      return list.filter((v: any) => v.isCustom);
+    } else if (selectedMakeFilter === "Commercial") {
+      return list.filter((v: any) =>
+        v.bodyType?.includes("Pickup") || v.bodyType?.includes("Truck") || v.bodyType?.includes("Van") || v.bodyType?.includes("Bus")
+      );
+    } else if (selectedMakeFilter === "SUV") {
+      return list.filter((v: any) => v.bodyType?.includes("SUV"));
+    } else if (selectedMakeFilter === "EV") {
+      return list.filter((v: any) => v.fuelType === "ELECTRIC");
+    } else if (selectedMakeFilter !== "All") {
+      return list.filter((v: any) => v.make?.toLowerCase() === selectedMakeFilter.toLowerCase());
+    }
+    return list;
+  }, [dbVehicles, selectedMakeFilter]);
+
+  // Dropdown search results:
+  // If search query is empty -> shows tabVehicles
+  // If user is typing -> searches across ALL vehicles globally, so any make/model can be searched & overwritten!
+  const filteredCatalogVehicles = useMemo(() => {
+    const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
+    const q = vehicleSearchQuery.toLowerCase().trim();
+
+    if (!q) {
+      return tabVehicles;
+    }
+
+    return list.filter((v: any) => {
+      const full = `${v.make} ${v.model}`.toLowerCase();
+      const m = (v.make || "").toLowerCase();
+      const mdl = (v.model || "").toLowerCase();
+      const body = (v.bodyType || "").toLowerCase();
+      const category = (v.category || "").toLowerCase();
+      return full.includes(q) || m.includes(q) || mdl.includes(q) || body.includes(q) || category.includes(q);
+    });
+  }, [dbVehicles, tabVehicles, vehicleSearchQuery]);
+
+  // Brand tab click handler:
+  // Sets filter, clears search text, and sets Make so the officer can overwrite immediately!
+  function handleSelectBrandTab(tabId: string) {
+    setSelectedMakeFilter(tabId);
+    setVehicleSearchQuery("");
+    setIsVehicleDropdownOpen(false);
+    if (!["All", "Custom", "Commercial", "SUV", "EV"].includes(tabId)) {
+      setMake(tabId);
+    }
+  }
+
+  // Clear / Reset vehicle selection to start completely fresh and allow instant overwrite
+  function handleResetVehicle() {
+    setMake("");
+    setModel("");
+    setYear(selectedCatalogYear || "2024");
+    setEngineCC("");
+    setCylinders("4");
+    setBodyType("Saloon");
+    setFuelType("PETROL");
+    setNetWeight("");
+    setGrossWeight("");
+    setTyreFW("");
+    setTyreFD("");
+    setTyreRW("");
+    setTyreRD("");
+    setTyreMW("");
+    setTyreMD("");
+    setEngineNo("");
+    setChassisNo("");
+    setVehicleSearchQuery("");
+    setAutoFilledNotice(null);
+    setSelectedMakeFilter("All");
+    setIsVehicleDropdownOpen(false);
+  }
+
+  // Check if current form make/model is already known in DB
+  const isCurrentModelInDb = useMemo(() => {
+    if (!make.trim() || !model.trim()) return true;
+    const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
+    return list.some(
+      (v) =>
+        v.make.toLowerCase() === make.trim().toLowerCase() &&
+        v.model.toLowerCase() === model.trim().toLowerCase()
+    );
+  }, [make, model, dbVehicles]);
+
+  // Save unlisted / custom vehicle model to database catalog
+  async function handleSaveCurrentModelToDb() {
+    if (!make.trim() || !model.trim()) {
+      alert("Please enter both Make and Model before saving to catalog.");
+      return;
+    }
+    try {
+      setIsSavingCustomModel(true);
+      const payload = {
+        make: make.trim(),
+        model: model.trim(),
+        year: year.trim() || selectedCatalogYear || "2024",
+        bodyType: bodyType || "Saloon",
+        engineCC: engineCC.trim() || "2000",
+        cylinders: cylinders || "4",
+        fuelType: fuelType || "PETROL",
+        netWeight: netWeight.trim() || "1500",
+        grossWeight: grossWeight.trim() || "2000",
+        tyreW: tyreFW.trim() || "215",
+        tyreDia: tyreFD.trim() || "16",
+        userId: sessionUser?.id || undefined,
+      };
+
+      const res = await fetch("/api/vehicles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        if (result.vehicle) {
+          setDbVehicles((prev) => [result.vehicle, ...prev.filter((x) => x.id !== result.vehicle.id)]);
+        }
+        setSaveModelSuccess(`"${make.trim()} ${model.trim()}" saved to Database Catalog! Available across all desks.`);
+        setTimeout(() => setSaveModelSuccess(null), 5000);
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to save vehicle model to database.");
+      }
+    } catch (e: any) {
+      alert("Error saving vehicle model: " + e.message);
+    } finally {
+      setIsSavingCustomModel(false);
+    }
+  }
+
+  function handleSelectVehicle(v: VehicleModel | any, customYear?: string) {
+    const yr = customYear || selectedCatalogYear || "2024";
+    setMake(v.make);
+    setModel(v.model);
+    setYear(yr);
+    setEngineCC(v.engineCC);
+    setCylinders(v.cylinders);
+    setBodyType(v.bodyType);
+    setFuelType(v.fuelType);
+    setNetWeight(v.netWeight);
+    setGrossWeight(v.grossWeight);
+    setTyreFW(v.tyreW);
+    setTyreFD(v.tyreDia);
+    setTyreRW(v.tyreW);
+    setTyreRD(v.tyreDia);
+    setTyreMW("");
+    setTyreMD("");
+
+    // Engine number is unique to each individual physical vehicle and is NOT prefilled
+    setEngineNo("");
+
+    // Clear search box so it is ready for any next search without blocking
+    setVehicleSearchQuery("");
+    setIsVehicleDropdownOpen(false);
+    setAutoFilledNotice(
+      `Specifications auto-filled from Database for ${v.make} ${v.model} (${yr})! Please enter the physical Chassis number below.`
+    );
+
+    // Automatically focus the Chassis / VIN Number input field
+    setTimeout(() => {
+      chassisInputRef.current?.focus();
+    }, 150);
+  }
+
+  // Quick helper to register from search query
+  function handleUseUnlistedFromSearch() {
+    if (!vehicleSearchQuery.trim()) return;
+    const parts = vehicleSearchQuery.trim().split(/\s+/);
+    const newMake = parts[0] || "";
+    const newModel = parts.slice(1).join(" ") || "Standard";
+    setMake(newMake.charAt(0).toUpperCase() + newMake.slice(1));
+    setModel(newModel);
+    setYear(selectedCatalogYear || "2024");
+    setVehicleSearchQuery("");
+    setIsVehicleDropdownOpen(false);
+    setAutoFilledNotice(
+      `Unlisted vehicle initialized: "${newMake} ${newModel}". Fill in specifications and click "Save to Database Catalog".`
+    );
+  }
 
   /* ── Tyres ── */
   const [tyreFW, setTyreFW] = useState("");
@@ -288,18 +599,16 @@ function BookingDeskContent() {
   const [tyreRW, setTyreRW] = useState("");
   const [tyreRD, setTyreRD] = useState("");
 
-  /* ── Audit ── */
-  const [regDate, setRegDate] = useState("2026-05-19");
+  /* ── Audit (NO HARDCODED DATES!) ── */
   const [receiptNo, setReceiptNo] = useState("");
   const [customsNo, setCustomsNo] = useState("");
-  const [customsDate, setCustomsDate] = useState("2026-05-19");
-  const [supervisor, setSupervisor] = useState("Eric");
+  const [customsDate, setCustomsDate] = useState(""); // Starts empty so worker enters freely
+  const [supervisor, setSupervisor] = useState("");
   const regOfficer = "A. Owusu";
 
   /* ── UI state ── */
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
-
   const [reservations, setReservations] = useState<Reservation[]>([]);
 
   useEffect(() => {
@@ -321,17 +630,254 @@ function BookingDeskContent() {
     loadReservations();
   }, []);
 
+  /* ── Dynamic SuperAdmin Services ── */
+  interface ServiceOption {
+    id: string;
+    code: string;
+    name: string;
+    description: string | null;
+    category: string | null;
+    isGlobal: boolean;
+    requiresPreviousOwner?: boolean;
+    prevOwnerRequireName?: boolean;
+    prevOwnerRequirePhone?: boolean;
+    prevOwnerRequireAddress?: boolean;
+    prevOwnerRequireCustom?: boolean;
+    prevOwnerCustomLabel?: string | null;
+  }
+  const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([]);
+  const [sessionUser, setSessionUser] = useState<{ id?: string; name?: string; username?: string; role?: string; branchId?: string; branch?: any } | null>(null);
+
+  useEffect(() => {
+    async function loadServiceTypes() {
+      try {
+        const stored = localStorage.getItem("dvla_session");
+        let activeBranchId = "";
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setSessionUser(parsed);
+            if (parsed.branchId) {
+              activeBranchId = parsed.branchId;
+            } else if (parsed.branch?.id) {
+              activeBranchId = parsed.branch.id;
+            } else if (parsed.branch?.name) {
+              const bRes = await fetch("/api/branches");
+              if (bRes.ok) {
+                const bList = await bRes.json();
+                const match = bList.find((b: any) =>
+                  b.name?.toLowerCase() === parsed.branch.name.toLowerCase() ||
+                  b.code?.toLowerCase() === parsed.branch.code?.toLowerCase()
+                );
+                if (match) activeBranchId = match.id;
+              }
+            }
+          } catch {}
+        }
+
+        const url = activeBranchId
+          ? `/api/services?branchId=${activeBranchId}&activeOnly=true`
+          : `/api/services?activeOnly=true`;
+
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setServiceOptions(data);
+            setBookingType((current) => {
+              if (!current) return data[0].code;
+              const exists = data.some((s: any) => s.code === current);
+              return exists ? current : data[0].code;
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed loading database services:", err);
+      }
+    }
+
+    loadServiceTypes();
+    window.addEventListener("dvla_session_change", loadServiceTypes);
+    return () => window.removeEventListener("dvla_session_change", loadServiceTypes);
+  }, []);
+
+  const displayBookingTypes = useMemo(() => {
+    return serviceOptions.map((s) => ({
+      id: s.code,
+      label: s.name,
+      sub: s.description || (s.isGlobal ? "Nationwide standard service" : "Station-specific service"),
+      category: s.category,
+      isGlobal: s.isGlobal,
+      name: s.name,
+      requiresPreviousOwner: Boolean(s.requiresPreviousOwner),
+      prevOwnerRequireName: s.prevOwnerRequireName !== undefined ? Boolean(s.prevOwnerRequireName) : true,
+      prevOwnerRequirePhone: Boolean(s.prevOwnerRequirePhone),
+      prevOwnerRequireAddress: s.prevOwnerRequireAddress !== undefined ? Boolean(s.prevOwnerRequireAddress) : true,
+      prevOwnerRequireCustom: Boolean(s.prevOwnerRequireCustom),
+      prevOwnerCustomLabel: s.prevOwnerCustomLabel || null,
+    }));
+  }, [serviceOptions]);
+
   const activeReservation = checkPlateReservation(regNo, reservations);
+  const activeServiceDef = displayBookingTypes.find(b => b.id === bookingType);
 
-  const isTransfer = bookingType.startsWith("REG_TRANSFER");
-  const vinLen = chassisNo.replace(/\s/g, "").length;
-  const vinValid = vinLen === 17;
+  // Previous title owner details are strictly driven by the Service Type definition configured in the Services page
+  const isTransfer = Boolean(
+    activeServiceDef
+      ? activeServiceDef.requiresPreviousOwner
+      : (bookingType === "REG_TRANSFER" || bookingType === "REG_TRANSFER_SPECIAL")
+  );
 
-  const isSpecialOrCustomized = bookingType === "REG_SPECIAL" || bookingType === "REG_TRANSFER_SPECIAL";
+  useEffect(() => {
+    setShowExtraPhone(false);
+    setShowExtraAddr(false);
+    setShowExtraCustom(false);
+    if (!isTransfer) {
+      setOldOwnerName("");
+      setOldOwnerPhone("");
+      setOldOwnerAddr("");
+      setOldOwnerCustom("");
+    }
+  }, [bookingType, isTransfer]);
 
+  const isSpecialOrCustomized =
+    bookingType === "REG_SPECIAL" ||
+    bookingType === "REG_TRANSFER_SPECIAL" ||
+    bookingType.includes("SPECIAL") ||
+    bookingType.includes("CUSTOM");
+
+  // Tab completion & required field validation state
+  const [attemptedTabs, setAttemptedTabs] = useState<Record<number, boolean>>({
+    1: false,
+    2: false,
+    3: false,
+    4: false,
+  });
+
+  const missingFieldsTab1 = useMemo(() => {
+    const missing: { id: string; label: string }[] = [];
+    if (!bookingType.trim()) missing.push({ id: "input-bookingType", label: "Filing Service Type" });
+    if (!classification.trim()) missing.push({ id: "input-classification", label: "Plate Classification" });
+    if (!regNo.trim()) missing.push({ id: "input-regNo", label: "Assigned Plate Number" });
+    if (!ownerName.trim()) missing.push({ id: "input-ownerName", label: isTransfer ? "New Owner Full Legal Name" : "Owner Full Legal Name" });
+    if (isTransfer) {
+      if (activeServiceDef?.prevOwnerRequireName !== false && !oldOwnerName.trim()) {
+        missing.push({ id: "input-oldOwnerName", label: "Previous Owner Full Name" });
+      }
+      if (Boolean(activeServiceDef?.prevOwnerRequirePhone) && !oldOwnerPhone.trim()) {
+        missing.push({ id: "input-oldOwnerPhone", label: "Previous Owner Phone" });
+      }
+      if (activeServiceDef?.prevOwnerRequireAddress !== false && !oldOwnerAddr.trim()) {
+        missing.push({ id: "input-oldOwnerAddr", label: "Previous Owner Address" });
+      }
+      if (Boolean(activeServiceDef?.prevOwnerRequireCustom) && !oldOwnerCustom.trim()) {
+        missing.push({ id: "input-oldOwnerCustom", label: activeServiceDef?.prevOwnerCustomLabel || "Transfer / Clearance Ref #" });
+      }
+    }
+    return missing;
+  }, [bookingType, classification, regNo, ownerName, isTransfer, activeServiceDef, oldOwnerName, oldOwnerPhone, oldOwnerAddr, oldOwnerCustom]);
+
+  const totalFieldsTab1 = useMemo(() => {
+    let count = 4;
+    if (isTransfer) {
+      if (activeServiceDef?.prevOwnerRequireName !== false) count++;
+      if (Boolean(activeServiceDef?.prevOwnerRequirePhone)) count++;
+      if (activeServiceDef?.prevOwnerRequireAddress !== false) count++;
+      if (Boolean(activeServiceDef?.prevOwnerRequireCustom)) count++;
+    }
+    return count;
+  }, [isTransfer, activeServiceDef]);
+
+  const missingFieldsTab2 = useMemo(() => {
+    const missing: { id: string; label: string }[] = [];
+    if (!make.trim()) missing.push({ id: "input-make", label: "Make" });
+    if (!model.trim()) missing.push({ id: "input-model", label: "Model" });
+    if (!year.trim()) missing.push({ id: "input-year", label: "Model Year" });
+    if (!bodyType.trim()) missing.push({ id: "input-bodyType", label: "Body Type" });
+    if (!fuelType.trim()) missing.push({ id: "input-fuelType", label: "Fuel Type" });
+    if (!chassisNo.trim()) missing.push({ id: "input-chassisNo", label: "Chassis / VIN Number" });
+    if (!engineCC.trim()) missing.push({ id: "input-engineCC", label: "Engine Displacement (CC)" });
+    return missing;
+  }, [make, model, year, bodyType, fuelType, chassisNo, engineCC]);
+
+  const totalFieldsTab2 = 7;
+
+  const missingFieldsTab3 = useMemo(() => {
+    const missing: { id: string; label: string }[] = [];
+    if (!tyreFW.trim()) missing.push({ id: "input-tyreFW", label: "Front Tyre Width" });
+    if (!tyreFD.trim()) missing.push({ id: "input-tyreFD", label: "Front Tyre Rim" });
+    if (!tyreRW.trim()) missing.push({ id: "input-tyreRW", label: "Rear Tyre Width" });
+    if (!tyreRD.trim()) missing.push({ id: "input-tyreRD", label: "Rear Tyre Rim" });
+    return missing;
+  }, [tyreFW, tyreFD, tyreRW, tyreRD]);
+
+  const totalFieldsTab3 = 4;
+
+  const missingFieldsTab4 = useMemo(() => {
+    const missing: { id: string; label: string }[] = [];
+    if (!receiptNo.trim()) missing.push({ id: "input-receiptNo", label: "Revenue Receipt Number" });
+    if (!customsNo.trim()) missing.push({ id: "input-customsNo", label: "Customs Declaration Number" });
+    if (!customsDate.trim()) missing.push({ id: "input-customsDate", label: "Customs Clearance Date" });
+    if (!supervisor.trim()) missing.push({ id: "input-supervisor", label: "Supervising Certification Officer" });
+    return missing;
+  }, [receiptNo, customsNo, customsDate, supervisor]);
+
+  const totalFieldsTab4 = 4;
+
+  const isTab1Done = missingFieldsTab1.length === 0;
+  const isTab2Done = missingFieldsTab2.length === 0;
+  const isTab3Done = missingFieldsTab3.length === 0;
+  const isTab4Done = missingFieldsTab4.length === 0;
+
+  const totalRequiredFields = totalFieldsTab1 + totalFieldsTab2 + totalFieldsTab3 + totalFieldsTab4;
+  const totalCompletedFields =
+    (totalFieldsTab1 - missingFieldsTab1.length) +
+    (totalFieldsTab2 - missingFieldsTab2.length) +
+    (totalFieldsTab3 - missingFieldsTab3.length) +
+    (totalFieldsTab4 - missingFieldsTab4.length);
+
+  const overallCompletionPercent = Math.round((totalCompletedFields / totalRequiredFields) * 100);
+
+  function focusField(id: string, tab: 1 | 2 | 3 | 4) {
+    setActiveTab(tab);
+    setAttemptedTabs(prev => ({ ...prev, [tab]: true }));
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.focus();
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 120);
+  }
+
+  function handleNextTab1() {
+    if (missingFieldsTab1.length > 0) {
+      setAttemptedTabs(prev => ({ ...prev, 1: true }));
+      focusField(missingFieldsTab1[0].id, 1);
+      return;
+    }
+    setActiveTab(2);
+  }
+
+  function handleNextTab2(targetTab: 3 | 4) {
+    if (missingFieldsTab2.length > 0) {
+      setAttemptedTabs(prev => ({ ...prev, 2: true }));
+      focusField(missingFieldsTab2[0].id, 2);
+      return;
+    }
+    setActiveTab(targetTab);
+  }
+
+  function handleNextTab3() {
+    if (missingFieldsTab3.length > 0) {
+      setAttemptedTabs(prev => ({ ...prev, 3: true }));
+      focusField(missingFieldsTab3[0].id, 3);
+      return;
+    }
+    setActiveTab(4);
+  }
 
   function applyPreset(p: VehiclePreset) {
-    setActivePreset(p.label);
     setMake(p.make); setYear(p.year); setModel(p.model); setEngineCC(p.engineCC);
     setCylinders(p.cylinders); setBodyType(p.bodyType);
     setNetWeight(p.netWeight); setGrossWeight(p.grossWeight);
@@ -341,10 +887,9 @@ function BookingDeskContent() {
     setFuelType(p.fuelType);
   }
 
-  function applyTyre(w: string, d: string, pos: "F" | "M" | "R" | "FR") {
-    if (pos === "F" || pos === "FR") { setTyreFW(w); setTyreFD(d); }
-    if (pos === "M") { setTyreMW(w); setTyreMD(d); }
-    if (pos === "R" || pos === "FR") { setTyreRW(w); setTyreRD(d); }
+  function applyTyre(w: string, d: string) {
+    setTyreFW(w); setTyreFD(d);
+    setTyreRW(w); setTyreRD(d);
   }
 
   function generateNewDVLAFormat() {
@@ -358,49 +903,53 @@ function BookingDeskContent() {
   function handleAutofillSimulation() {
     setIsSimulating(true);
     setTimeout(() => {
-      const p = VEHICLE_PRESETS[17];
+      const p = VEHICLE_PRESETS[14]; // Toyota Land Cruiser
       setOwnerName("Ebenezer Kwabena Boateng");
       setAddress("House No. 12, Frafraha Junction, Adenta, Accra");
       setPhone("+233 24 489 0291");
       setRegNo(generateNewDVLAFormat());
       setEngineNo("SQRF4J20-291823");
       setChassisNo("JTEBU5JR8P2091837");
-      setYear("2025");
-      setModel("Traveller T2");
-      setReceiptNo("470260*****");
-      setCustomsNo("470*****/**");
-      setCustomsDate("2026-05-15");
+      setYear("2024");
+      setModel("Land Cruiser");
+      setReceiptNo("4702604819");
+      setCustomsNo("4708912/26");
+      setCustomsDate(new Date().toISOString().slice(0, 10));
       setSupervisor("Saviour");
       if (isTransfer) {
         setOldOwnerName("Seth Pascal Kofi");
+        setOldOwnerPhone("+233 24 901 8273");
         setOldOwnerAddr("Plot 8, Adentan Municipal Area, Accra");
+        setOldOwnerCustom("AFF-2026/0912-GH");
       }
       applyPreset(p);
       setIsSimulating(false);
-    }, 850);
+    }, 400);
   }
 
   function handleReset() {
     setIsSuccess(false);
     setOwnerName(""); setAddress(""); setPhone("");
-    setOldOwnerName(""); setOldOwnerAddr("");
-    setActivePreset(null);
+    setOldOwnerName(""); setOldOwnerPhone(""); setOldOwnerAddr(""); setOldOwnerCustom("");
+    setShowExtraPhone(false); setShowExtraAddr(false); setShowExtraCustom(false);
     setMake(""); setYear(""); setModel(""); setEngineCC(""); setEngineNo(""); setChassisNo("");
-    setBodyType(""); setNetWeight(""); setGrossWeight("");
+    setBodyType("Saloon"); setNetWeight(""); setGrossWeight("");
     setTyreFW(""); setTyreFD(""); setTyreMW(""); setTyreMD(""); setTyreRW(""); setTyreRD("");
-    setReceiptNo(""); setCustomsNo(""); setCustomsDate("2026-05-19"); setSupervisor("Eric");
-    setCylinders("4"); setFuelType("PETROL"); setPresetSearch("");
+    setReceiptNo(""); setCustomsNo(""); setCustomsDate(""); setSupervisor("");
+    setCylinders("4"); setFuelType("PETROL");
     setRegNo("");
     setVrsInvoiceNo("");
     setVrsSuccessMessage("");
-    setAuditHighlightActive(false);
+    setAlreadyBookedError(null);
+    setAttemptedTabs({ 1: false, 2: false, 3: false, 4: false });
+    setActiveTab(1);
   }
 
   async function handleFetchVrs(invoiceNoToFetch: string) {
     if (!invoiceNoToFetch) return;
     setIsFetchingVrs(true);
     setVrsSuccessMessage("");
-    setAuditHighlightActive(false);
+    setAlreadyBookedError(null);
 
     type VrsInvoice = {
       invoiceNo: string;
@@ -439,9 +988,37 @@ function BookingDeskContent() {
       console.error("VRS DB fetch failed:", err);
     }
 
-
-
     if (invoice) {
+      let isAlreadyBooked = false;
+      try {
+        const bkRes = await fetch("/api/bookings");
+        if (bkRes.ok) {
+          const existingBookings = await bkRes.json();
+          if (Array.isArray(existingBookings)) {
+            const match = existingBookings.find(
+              (b: any) =>
+                b.vrsInvoice?.invoiceNo === invoice.invoiceNo ||
+                (b.plate && invoice.regNo && b.plate.trim().toUpperCase() === invoice.regNo.trim().toUpperCase())
+            );
+
+            if (match) {
+              isAlreadyBooked = true;
+              setAlreadyBookedError(
+                `⚠️ Notice: VRS Invoice #${invoice.invoiceNo} has ALREADY been booked into the system (Booking ID: #${match.id} — Owner: ${match.owner}).`
+              );
+            }
+          }
+        }
+      } catch (bkErr) {
+        console.error("Failed checking existing bookings:", bkErr);
+      }
+
+      if (isAlreadyBooked) {
+        setIsFetchingVrs(false);
+        return;
+      }
+
+      setAlreadyBookedError(null);
       setBookingType(invoice.bookingType);
       setClassification(invoice.classification);
       setRegNo(invoice.regNo);
@@ -459,8 +1036,8 @@ function BookingDeskContent() {
       setCylinders(invoice.cylinders);
       setEngineNo(invoice.engineNo);
       setChassisNo(invoice.chassisNo);
-      setBodyType(invoice.bodyType);
-      setFuelType(invoice.fuelType);
+      setBodyType(invoice.bodyType || "Saloon");
+      setFuelType(invoice.fuelType || "PETROL");
       setNetWeight(invoice.netWeight);
       setGrossWeight(invoice.grossWeight);
 
@@ -475,16 +1052,47 @@ function BookingDeskContent() {
       setCustomsNo("");
       setCustomsDate("");
 
-      setVrsSuccessMessage(`🎉 VRS Invoice ${invoice.invoiceNo} successfully fetched! Steps 1, 2, and 3 have been auto-populated. Please complete Step 4 (Audit & Payment) manually below.`);
-      setAuditHighlightActive(true);
+      setVrsSuccessMessage(`VRS Invoice #${invoice.invoiceNo} imported successfully.`);
+      setActiveTab(4); // navigate to customs & review
     } else {
-      alert("Invoice not found in VRS. Please check the 14-digit invoice number (e.g. 40726012083437).");
+      alert("Invoice not found in VRS. Please check the 14-character invoice number (e.g. 4N92P81C11VR7K).");
     }
     setIsFetchingVrs(false);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (alreadyBookedError) {
+      alert("⚠️ Booking Blocked: This VRS Invoice has already been booked in the system.");
+      return;
+    }
+
+    // Step-by-step verification: Tab 1 -> Tab 2 -> Tab 3 -> Tab 4
+    if (missingFieldsTab1.length > 0) {
+      focusField(missingFieldsTab1[0].id, 1);
+      alert(`⚠️ Step 1 Incomplete: Please enter "${missingFieldsTab1[0].label}" before certifying.`);
+      return;
+    }
+
+    if (missingFieldsTab2.length > 0) {
+      focusField(missingFieldsTab2[0].id, 2);
+      alert(`⚠️ Step 2 Incomplete: Please enter "${missingFieldsTab2[0].label}" before certifying.`);
+      return;
+    }
+
+    if (missingFieldsTab3.length > 0) {
+      focusField(missingFieldsTab3[0].id, 3);
+      alert(`⚠️ Step 3 Incomplete: Please enter "${missingFieldsTab3[0].label}" before certifying.`);
+      return;
+    }
+
+    if (missingFieldsTab4.length > 0) {
+      focusField(missingFieldsTab4[0].id, 4);
+      alert(`⚠️ Step 4 Incomplete: Please enter "${missingFieldsTab4[0].label}" before certifying.`);
+      return;
+    }
+
     const activeRes = checkPlateReservation(regNo, reservations);
     if (activeRes) {
       const updated = reservations.map(r => {
@@ -503,1172 +1111,1910 @@ function BookingDeskContent() {
     const fullPlate = regNo.trim();
 
     try {
-      await fetch("/api/bookings", {
+      const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: bookingType,
-          status: "approved",
+          status: "pending",
           owner: ownerName || "Unknown Owner",
           vehicle: `${make} ${model} (${year})`.trim() || "Vehicle",
           plate: fullPlate || undefined,
           date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
           classification: classification,
+          vrsInvoiceNo: vrsInvoiceNo.trim() || undefined,
+          make: make.trim() || undefined,
+          model: model.trim() || undefined,
+          yearModel: year.trim() || undefined,
+          bodyType: bodyType || undefined,
+          engineCC: engineCC.trim() || undefined,
+          cylinders: cylinders || undefined,
+          fuelType: fuelType || undefined,
+          netWeight: netWeight.trim() || undefined,
+          grossWeight: grossWeight.trim() || undefined,
+          tyreFW: tyreFW.trim() || undefined,
+          tyreFD: tyreFD.trim() || undefined,
+          createdById: sessionUser?.id || undefined,
+          userId: sessionUser?.id || undefined,
+          userName: sessionUser?.name || sessionUser?.username || "Officer",
+          branchId: sessionUser?.branchId || sessionUser?.branch?.id || undefined,
+          previousOwnerName: isTransfer ? oldOwnerName.trim() || undefined : undefined,
+          previousOwnerPhone: isTransfer ? oldOwnerPhone.trim() || undefined : undefined,
+          previousOwnerAddress: isTransfer ? oldOwnerAddr.trim() || undefined : undefined,
+          previousOwnerCustom: isTransfer ? oldOwnerCustom.trim() || undefined : undefined,
         }),
       });
 
-      // Log to audit trail
-      fetch("/api/audit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "PLATE_REGISTERED",
-          details: `VRS record filed for plate ${fullPlate || "N/A"} — Owner: ${ownerName || "Unknown"}, Vehicle: ${make} ${model} (${year}), Classification: ${classification}`,
-          performedBy: "admin",
-        }),
-      }).catch(() => { });
+      if (!res.ok) {
+        const errData = await res.json();
+        alert(`⚠️ Booking Error: ${errData.error || "Failed to create booking."}`);
+        return;
+      }
+
+      setIsSuccess(true);
     } catch (err) {
       console.error("Error creating booking in DB:", err);
+      alert("System error creating booking.");
     }
-
-    setIsSuccess(true);
   }
 
   /* ════════════════ RENDER ════════════════ */
   return (
-    <div className="space-y-5 pb-12">
+    <div className="space-y-4 max-w-6xl mx-auto pb-16">
 
-      {/* ── Hero Banner ── */}
-      <div className="relative rounded-2xl overflow-hidden"
-        style={{ background: "linear-gradient(115deg, #0d1a03 0%, #1a2e05 18%, #2d5009 48%, #4a7c10 74%, #81B71A 100%)" }}>
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.06 }} preserveAspectRatio="none">
-          <defs>
-            <pattern id="bookinggrid" width="38" height="38" patternUnits="userSpaceOnUse">
-              <path d="M 38 0 L 0 0 0 38" fill="none" stroke="white" strokeWidth="0.8" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#bookinggrid)" />
-        </svg>
-        <div className="relative px-6 py-6 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.55)" }} />
-              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 600 }}>
-                DVLA HQ Digitization Desk
-              </p>
-            </div>
-            <h2 className="text-white text-2xl font-extrabold tracking-tight">VRS Record Booking</h2>
-            <p style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.85rem", marginTop: "0.3rem" }}>
-              Pull completed records from the VRS system using invoice numbers and file them into the digital logbook.
-            </p>
+      {/* ── 1. Clean, Compact Top Header Bar ── */}
+      <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-bold text-slate-900 tracking-tight">
+              Vehicle Registration Desk
+            </h1>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              VRS Online
+            </span>
           </div>
-          <button type="button" onClick={handleAutofillSimulation} disabled={isSimulating}
-            className="px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition disabled:opacity-50 shrink-0"
-            style={{ background: "rgba(255,255,255,0.1)", borderColor: "rgba(255,255,255,0.22)", color: "white" }}>
-            {isSimulating ? <><SpinIcon /> Scanning document…</> : <><ScanIcon /> Simulate Document Scan</>}
+          <p className="text-xs text-slate-500">
+            Adenta Station Registry &bull; Enter registration details or import VRS invoice.
+          </p>
+        </div>
+
+        {/* Compact Quick Actions */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Inline VRS Invoice Search */}
+          <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
+            <input
+              type="text"
+              value={vrsInvoiceNo}
+              onChange={e => setVrsInvoiceNo(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 14))}
+              placeholder="VRS Invoice #"
+              className="px-2.5 py-1.5 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none w-32 md:w-36"
+            />
+            <button
+              type="button"
+              disabled={vrsInvoiceNo.length !== 14 || isFetchingVrs}
+              onClick={() => handleFetchVrs(vrsInvoiceNo)}
+              className="px-2.5 py-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+            >
+              {isFetchingVrs ? "..." : "Import"}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleAutofillSimulation}
+            disabled={isSimulating}
+            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+          >
+            {isSimulating ? "Scanning..." : "Simulate Scan"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleReset}
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-800 text-xs font-semibold transition cursor-pointer"
+          >
+            Reset
           </button>
         </div>
       </div>
 
-      {/* ── Success receipt ── */}
+      {/* Alerts */}
+      {vrsSuccessMessage && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-xs text-emerald-800 flex items-center justify-between">
+          <span>✓ {vrsSuccessMessage}</span>
+          <button type="button" onClick={() => setVrsSuccessMessage("")} className="font-bold cursor-pointer">✕</button>
+        </div>
+      )}
+
+      {alreadyBookedError && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800 flex items-center justify-between">
+          <span>{alreadyBookedError}</span>
+          <button type="button" onClick={() => setAlreadyBookedError(null)} className="font-bold cursor-pointer">✕</button>
+        </div>
+      )}
+
+      {/* ── 2. Success Receipt Slip ── */}
       {isSuccess ? (
-        <div className="bg-white rounded-2xl border border-[#e8edf5] p-8 max-w-2xl mx-auto space-y-6"
-          style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.07)" }}>
-
-          {/* Success header */}
-          <div className="flex flex-col items-center text-center gap-3">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-              style={{ background: "rgba(129,183,26,0.1)" }}>
-              <svg width={28} height={28} viewBox="0 0 24 24" fill="none" stroke="#81B71A" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
+        <div className="bg-white rounded-xl border border-slate-200 p-6 max-w-xl mx-auto space-y-5 shadow-sm">
+          <div className="text-center space-y-1">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center font-bold text-lg">
+              ✓
             </div>
-            <div>
-              <h3 className="font-bold text-lg" style={{ color: "#1a2e05" }}>Logbook Filing Complete</h3>
-              <p className="text-xs mt-1" style={{ color: "#6b7a99" }}>
-                Vehicle record digitally logged and matched to the physical register.
-              </p>
+            <h3 className="font-bold text-base text-slate-900">Registration Successfully Filed</h3>
+            <p className="text-xs text-slate-500">Official logbook record entered into DVLA database.</p>
+          </div>
+
+          <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 font-mono text-xs space-y-2 text-slate-700">
+            <div className="flex justify-between border-b border-slate-200 pb-2">
+              <span className="text-slate-400">PLATE NUMBER:</span>
+              <span className="font-bold text-slate-900">{regNo || "PENDING"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">OWNER:</span>
+              <span className="font-semibold text-slate-900">{ownerName}</span>
+            </div>
+            {isTransfer && oldOwnerName && (
+              <div className="flex justify-between border-t border-slate-200/80 pt-1.5">
+                <span className="text-amber-700 font-medium">PREV TITLE OWNER:</span>
+                <span className="font-semibold text-slate-800 text-right">
+                  {oldOwnerName}
+                  {oldOwnerPhone ? ` · ${oldOwnerPhone}` : ""}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-slate-400">VEHICLE:</span>
+              <span>{make} {model} {year && `(${year})`}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">CHASSIS / VIN:</span>
+              <span>{chassisNo || "—"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">RECEIPT NO:</span>
+              <span>{receiptNo || "—"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">CUSTOMS NO:</span>
+              <span>{customsNo || "—"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">CUSTOMS DATE:</span>
+              <span>{customsDate || "—"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">SUPERVISOR:</span>
+              <span className="font-semibold text-slate-900">{supervisor || "—"}</span>
             </div>
           </div>
 
-          {/* Receipt slip */}
-          <div className="rounded-xl border border-dashed p-5 space-y-3 font-mono text-[11px]"
-            style={{ borderColor: "#d1dae8", background: "#f8faff" }}>
-            <div className="text-center pb-3 border-b border-[#e8edf5]">
-              <p className="font-bold text-xs uppercase text-[#1a2e05]">Driver &amp; Vehicle Licensing Authority (DVLA)</p>
-              <p className="text-[10px] font-semibold mt-0.5" style={{ color: "#81B71A" }}>DVLA HQ — VRS Record Filing Confirmation</p>
-            </div>
-            <div className="grid grid-cols-2 gap-y-2 text-[#374167]">
-              <span className="text-[#9aa3be]">SERVICE TYPE:</span>
-              <span className="font-bold text-[#1a2e05]">{BOOKING_TYPES.find(b => b.id === bookingType)?.label}</span>
-              <span className="text-[#9aa3be]">CLASSIFICATION:</span>
-              <span className="font-bold">{CLASSIFICATIONS.find(c => c.id === classification)?.label}</span>
-              <span className="text-[#9aa3be]">PLATE ASSIGNED:</span>
-              <span className="font-bold font-mono tracking-wider">{regNo || "N/A"}</span>
-              {isTransfer ? (
-                <>
-                  <span className="text-[#9aa3be]">OLD OWNER:</span>
-                  <span className="font-bold" style={{ color: "#991b1b" }}>{oldOwnerName || "N/A"}</span>
-                  <span className="text-[#9aa3be]">NEW OWNER:</span>
-                  <span className="font-bold" style={{ color: "#3d6b08" }}>{ownerName || "N/A"}</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-[#9aa3be]">OWNER NAME:</span>
-                  <span className="font-bold">{ownerName || "N/A"}</span>
-                  <span className="text-[#9aa3be]">ADDRESS:</span>
-                  <span className="font-bold">{address || "N/A"}</span>
-                </>
-              )}
-              <span className="text-[#9aa3be]">VEHICLE:</span>
-              <span className="font-bold">{make} {model || "N/A"} {year && `(${year})`} ({fuelType})</span>
-              <span className="text-[#9aa3be]">CHASSIS NO:</span>
-              <span className="font-bold">{chassisNo || "N/A"}</span>
-              <span className="text-[#9aa3be]">RECEIPT NO:</span>
-              <span className="font-bold">{receiptNo || "N/A"}</span>
-              <span className="text-[#9aa3be]">CUSTOMS NO:</span>
-              <span className="font-bold">{customsNo || "N/A"}</span>
-              <span className="text-[#9aa3be]">CUSTOMS DATE:</span>
-              <span className="font-bold">{customsDate || "N/A"}</span>
-              <span className="text-[#9aa3be]">SUPERVISOR:</span>
-              <span className="font-bold" style={{ color: "#3d6b08" }}>{supervisor}</span>
-              <span className="text-[#9aa3be]">DATE FILED:</span>
-              <span className="font-bold">{regDate}</span>
-            </div>
-            <div className="border-t border-[#e8edf5] pt-2.5 text-center text-[10px]" style={{ color: "#9aa3be" }}>
-              DVLA HQ · Book ID: 11851-A &nbsp;|&nbsp; Authorized by: {regOfficer}
-            </div>
-          </div>
-
-          <div className="flex justify-center gap-3">
-            <button type="button" onClick={() => setIsSuccess(false)}
-              className="px-6 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(115deg, #2d5009, #81B71A)" }}>
-              File New Vehicle
+          <div className="flex justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="px-4 py-2 rounded-lg border border-slate-200 text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+            >
+              Print Receipt
             </button>
-            <button type="button" onClick={handleReset}
-              className="px-6 py-2.5 rounded-xl text-xs font-bold border border-[#e2e8f0] transition-all hover:bg-[#f4f6fb]"
-              style={{ color: "#374167" }}>
-              Reset Form
+            <button
+              type="button"
+              onClick={() => setIsSuccess(false)}
+              className="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 cursor-pointer"
+            >
+              Register Another Vehicle
             </button>
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* VRS Integration Terminal Success Alert */}
-          {vrsSuccessMessage && (
-            <div className="bg-emerald-50 border-2 border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3 shadow-lg shadow-emerald-500/5 animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">VRS Auto-Population Success</h4>
-                <p className="text-[11px] font-semibold text-emerald-800 mt-0.5 leading-relaxed">{vrsSuccessMessage}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setVrsSuccessMessage("")}
-                className="text-emerald-500 hover:text-emerald-700 transition"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+        /* ── 3. Main Two-Column Workstation ── */
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+
+          {/* ── Left Column (2/3): Simple, Well-Organized Form Card ── */}
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
+
+            {/* Clean Tab Header Strip with Live Requirement Status */}
+            <div className="flex border-b border-slate-200 bg-slate-50/50">
+              {([
+                { id: 1, label: "1. Owner & Filing", total: totalFieldsTab1, missing: missingFieldsTab1.length, attempted: attemptedTabs[1] },
+                { id: 2, label: "2. Vehicle Details", total: totalFieldsTab2, missing: missingFieldsTab2.length, attempted: attemptedTabs[2] },
+                { id: 3, label: "3. Axle & Tyres", total: totalFieldsTab3, missing: missingFieldsTab3.length, attempted: attemptedTabs[3] },
+                { id: 4, label: "4. Customs & Audit", total: totalFieldsTab4, missing: missingFieldsTab4.length, attempted: attemptedTabs[4] },
+              ] as const).map(tab => {
+                const active = activeTab === tab.id;
+                const isDone = tab.missing === 0;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id as 1 | 2 | 3 | 4)}
+                    className={`flex-1 py-3 px-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1.5 ${
+                      active
+                        ? "border-[#81B71A] text-slate-900 bg-white"
+                        : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/60"
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    {isDone ? (
+                      <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-0.5 border border-emerald-300">
+                        ✓ Done
+                      </span>
+                    ) : tab.attempted ? (
+                      <span className="px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold flex items-center gap-0.5 border border-rose-300 animate-pulse">
+                        ! {tab.missing} Missing
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-slate-400 font-normal">
+                        ({tab.total - tab.missing}/{tab.total})
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          )}
 
-          {/* VRS Integration Card */}
-          <div className="bg-white rounded-xl border border-[#e8edf5] p-6 space-y-4" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.045)" }}>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#f0f3f8]">
-              <div>
-                <h3 className="font-bold" style={{ color: "#1a2e05" }}>VRS Record Import — Invoice Auto-Fill</h3>
-                <p className="text-xs mt-1" style={{ color: "#9aa3be" }}>Enter the 14-digit VRS invoice number to pull the completed vehicle record for local filing</p>
-              </div>
-            </div>
+            {/* Form Body with Generous Padding and Clean Layout */}
+            <div className="p-5">
 
-            <div className="max-w-md">
-              <label className="text-xs font-bold text-[#9aa3be] uppercase block mb-2">Invoice Number ({vrsInvoiceNo.length}/14)</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  pattern="[0-9]*"
-                  inputMode="numeric"
-                  value={vrsInvoiceNo}
-                  onChange={e => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 14);
-                    setVrsInvoiceNo(val);
-                  }}
-                  placeholder="e.g. 40726012083437"
-                  className="w-full px-3 py-2.5 border border-[#e2e8f0] rounded-lg text-sm font-mono tracking-widest text-[#1a2e05] placeholder-[#c3ccd8] focus:outline-none focus:ring-2 focus:ring-[#81B71A]/20 focus:border-[#81B71A]"
-                />
-                <button
-                  type="button"
-                  disabled={vrsInvoiceNo.length !== 14 || isFetchingVrs}
-                  onClick={() => handleFetchVrs(vrsInvoiceNo)}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1.5 rounded text-xs font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-                  style={{ background: "#81B71A" }}
-                >
-                  {isFetchingVrs ? "..." : "Fetch"}
-                </button>
-              </div>
-            </div>
-          </div>
+              {/* ── TAB 1: OWNER & FILING ── */}
+              {activeTab === 1 && (
+                <div className="space-y-4">
+                  {/* Step 1 Requirements Callout Banner */}
+                  <div className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition ${
+                    missingFieldsTab1.length === 0
+                      ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
+                      : attemptedTabs[1]
+                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                      : "bg-slate-50 border-slate-200 text-slate-700"
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                        missingFieldsTab1.length === 0 ? "bg-emerald-500" : attemptedTabs[1] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
+                      }`} />
+                      <div>
+                        <p className="font-bold">
+                          {missingFieldsTab1.length === 0
+                            ? "✓ All required filing details completed"
+                            : attemptedTabs[1]
+                            ? `⚠️ Action Needed: ${missingFieldsTab1.length} required ${missingFieldsTab1.length === 1 ? "field is" : "fields are"} missing`
+                            : `Step 1 Requirements: ${totalFieldsTab1 - missingFieldsTab1.length} of ${totalFieldsTab1} completed`}
+                        </p>
+                        {missingFieldsTab1.length > 0 && (
+                          <p className="text-[11px] text-slate-500 font-normal">
+                            Required: {missingFieldsTab1.map(f => f.label).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0 self-start sm:self-auto">
+                      {totalFieldsTab1 - missingFieldsTab1.length}/{totalFieldsTab1} Ready
+                    </span>
+                  </div>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    <Field
+                      label="Filing Service Type"
+                      required
+                      isFilled={Boolean(bookingType.trim())}
+                      fieldId="bookingType"
+                      hint={displayBookingTypes.find(b => b.id === bookingType)?.sub}
+                    >
+                      <select
+                        id="input-bookingType"
+                        value={bookingType}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setBookingType(val);
+                          const matched = displayBookingTypes.find(b => b.id === val);
+                          if (matched && matched.category && matched.category !== "ALL") {
+                            setClassification(matched.category);
+                          }
+                        }}
+                        className={INPUT}
+                      >
+                        {displayBookingTypes.length === 0 ? (
+                          <option value="">Loading services from DVLA database...</option>
+                        ) : (
+                          displayBookingTypes.map(b => (
+                            <option key={b.id} value={b.id}>
+                              {b.label}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                      {/* Active Service DB Metadata Chip */}
+                      {(() => {
+                        const currentSvc = displayBookingTypes.find(b => b.id === bookingType);
+                        if (!currentSvc) return null;
+                        return (
+                          <div className="flex items-center justify-between text-[11px] px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-md text-slate-600 mt-1">
+                            <span className="flex items-center gap-1.5 font-medium">
+                              <span className={`w-1.5 h-1.5 rounded-full ${currentSvc.isGlobal ? "bg-emerald-500" : "bg-purple-500"}`}></span>
+                              <span>{currentSvc.isGlobal ? "Nationwide Global Service" : "Station-Specific Service"}</span>
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {currentSvc.id}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </Field>
 
-            {/* ── Left panel (2/3) ── */}
-            <div className="xl:col-span-2 space-y-5">
+                    <Field
+                      label="Plate Classification"
+                      required
+                      isFilled={Boolean(classification.trim())}
+                      fieldId="classification"
+                    >
+                      <select
+                        id="input-classification"
+                        value={classification}
+                        onChange={(e) => setClassification(e.target.value)}
+                        className={INPUT}
+                      >
+                        {CLASSIFICATIONS.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  </div>
 
-              {/* Selected Service Banner */}
-              {selectedService && (
-                <div className="bg-[#81B71A]/10 border border-[#81B71A]/30 rounded-lg p-4">
-                  <p className="text-sm font-bold" style={{ color: "#3d6b08" }}>
-                    ✓ Service Selected: <span className="font-bold text-base">{selectedService}</span>
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "#6b7a99" }}>
-                    You can change or refine this selection below
-                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    <Field
+                      label="Assigned Plate Number"
+                      required
+                      isFilled={Boolean(regNo.trim())}
+                      hasError={attemptedTabs[1] && !regNo.trim()}
+                      errorMessage="Please enter or generate an assigned plate number"
+                      fieldId="regNo"
+                      hint={isSpecialOrCustomized ? "Custom sequence" : "e.g. 1092-ADXY"}
+                    >
+                      <input
+                        id="input-regNo"
+                        value={regNo}
+                        onChange={e => setRegNo(e.target.value.toUpperCase())}
+                        required
+                        placeholder={isSpecialOrCustomized ? "e.g. KX 1111-AD" : "e.g. 1092-ADXY"}
+                        className={INPUT + " font-mono font-bold"}
+                      />
+                      {activeReservation && (
+                        <div className="mt-1 px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-medium">
+                          Reserved: {activeReservation.holder} ({activeReservation.authRef})
+                        </div>
+                      )}
+                    </Field>
+
+                    <Field
+                      label={isTransfer ? "New Owner Full Legal Name" : "Owner Full Legal Name"}
+                      required
+                      isFilled={Boolean(ownerName.trim())}
+                      hasError={attemptedTabs[1] && !ownerName.trim()}
+                      errorMessage="Owner full legal name is required"
+                      fieldId="ownerName"
+                    >
+                      <input
+                        id="input-ownerName"
+                        value={ownerName}
+                        onChange={e => setOwnerName(e.target.value)}
+                        required
+                        placeholder="Enter owner or corporate name"
+                        className={INPUT}
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                    <div className="md:col-span-2">
+                      <Field
+                        label="Residential / Business Address"
+                        optional
+                        isFilled={Boolean(address.trim())}
+                        fieldId="address"
+                      >
+                        <input
+                          id="input-address"
+                          value={address}
+                          onChange={e => setAddress(e.target.value)}
+                          placeholder="Street, Town/Sub-district, Region"
+                          className={INPUT}
+                        />
+                      </Field>
+                    </div>
+                    <Field
+                      label="Contact Phone Number"
+                      optional
+                      isFilled={Boolean(phone.trim())}
+                      fieldId="phone"
+                    >
+                      <input
+                        id="input-phone"
+                        value={phone}
+                        onChange={e => setPhone(e.target.value)}
+                        placeholder="e.g. 0241234567"
+                        className={INPUT}
+                      />
+                    </Field>
+                  </div>
+
+                  {/* Transfer specific fields - Strictly driven by Service Type definition from Service Page */}
+                  {isTransfer && (
+                    <div className="p-4 bg-gradient-to-r from-amber-50/40 via-slate-50 to-amber-50/20 border border-amber-200/90 rounded-xl space-y-3.5 shadow-2xs animate-in fade-in duration-150">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/70 pb-2.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span>Previous Title Owner &amp; Transfer Details</span>
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase tracking-wider">
+                            ⚡ Auto-Detected: Required by Service
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-500 font-medium">
+                            Configured Parameters: {[
+                              (activeServiceDef?.prevOwnerRequireName !== false) && "Name",
+                              activeServiceDef?.prevOwnerRequirePhone && "Phone",
+                              (activeServiceDef?.prevOwnerRequireAddress !== false) && "Address",
+                              activeServiceDef?.prevOwnerRequireCustom && (activeServiceDef.prevOwnerCustomLabel || "Custom Ref"),
+                            ].filter(Boolean).join(" • ")}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Configured Parameter Input Fields */}
+                      {(() => {
+                        const needName = activeServiceDef?.prevOwnerRequireName !== false;
+                        const needPhone = Boolean(activeServiceDef?.prevOwnerRequirePhone) || showExtraPhone;
+                        const needAddress = (activeServiceDef?.prevOwnerRequireAddress !== false) || showExtraAddr;
+                        const needCustom = Boolean(activeServiceDef?.prevOwnerRequireCustom) || showExtraCustom;
+                        const customLabel = activeServiceDef?.prevOwnerCustomLabel || "Transfer / Clearance Ref #";
+
+                        return (
+                          <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                              {needName && (
+                                <Field
+                                  label="Previous Owner Full Legal Name"
+                                  required={activeServiceDef?.prevOwnerRequireName !== false}
+                                  optional={activeServiceDef?.prevOwnerRequireName === false}
+                                  isFilled={Boolean(oldOwnerName.trim())}
+                                  hasError={attemptedTabs[1] && (activeServiceDef?.prevOwnerRequireName !== false) && !oldOwnerName.trim()}
+                                  errorMessage="Previous Owner Full Legal Name is required"
+                                  fieldId="oldOwnerName"
+                                  hint="As shown on existing logbook"
+                                >
+                                  <input
+                                    id="input-oldOwnerName"
+                                    value={oldOwnerName}
+                                    onChange={e => setOldOwnerName(e.target.value)}
+                                    required={activeServiceDef?.prevOwnerRequireName !== false}
+                                    placeholder="Full legal name of previous registered owner"
+                                    className={INPUT}
+                                  />
+                                </Field>
+                              )}
+
+                              {needPhone && (
+                                <Field
+                                  label="Previous Owner Contact Phone"
+                                  required={Boolean(activeServiceDef?.prevOwnerRequirePhone)}
+                                  optional={!Boolean(activeServiceDef?.prevOwnerRequirePhone)}
+                                  isFilled={Boolean(oldOwnerPhone.trim())}
+                                  hasError={attemptedTabs[1] && Boolean(activeServiceDef?.prevOwnerRequirePhone) && !oldOwnerPhone.trim()}
+                                  errorMessage="Previous Owner Contact Phone is required"
+                                  fieldId="oldOwnerPhone"
+                                  hint="Active contact phone"
+                                >
+                                  <input
+                                    id="input-oldOwnerPhone"
+                                    value={oldOwnerPhone}
+                                    onChange={e => setOldOwnerPhone(e.target.value)}
+                                    required={Boolean(activeServiceDef?.prevOwnerRequirePhone)}
+                                    placeholder="e.g. 0241234567 or international"
+                                    className={INPUT}
+                                  />
+                                </Field>
+                              )}
+
+                              {needAddress && (
+                                <div className={needPhone && needName && !needCustom ? "md:col-span-2" : ""}>
+                                  <Field
+                                    label="Previous Owner Residential / Registered Address"
+                                    required={activeServiceDef?.prevOwnerRequireAddress !== false}
+                                    optional={activeServiceDef?.prevOwnerRequireAddress === false}
+                                    isFilled={Boolean(oldOwnerAddr.trim())}
+                                    hasError={attemptedTabs[1] && (activeServiceDef?.prevOwnerRequireAddress !== false) && !oldOwnerAddr.trim()}
+                                    errorMessage="Previous Owner Address is required"
+                                    fieldId="oldOwnerAddr"
+                                    hint="Title address on record"
+                                  >
+                                    <input
+                                      id="input-oldOwnerAddr"
+                                      value={oldOwnerAddr}
+                                      onChange={e => setOldOwnerAddr(e.target.value)}
+                                      required={activeServiceDef?.prevOwnerRequireAddress !== false}
+                                      placeholder="Street, Town/Sub-district, Region"
+                                      className={INPUT}
+                                    />
+                                  </Field>
+                                </div>
+                              )}
+
+                              {needCustom && (
+                                <div className={!needAddress || (!needPhone && !needName) ? "md:col-span-2" : ""}>
+                                  <Field
+                                    label={customLabel}
+                                    required={Boolean(activeServiceDef?.prevOwnerRequireCustom)}
+                                    optional={!Boolean(activeServiceDef?.prevOwnerRequireCustom)}
+                                    isFilled={Boolean(oldOwnerCustom.trim())}
+                                    hasError={attemptedTabs[1] && Boolean(activeServiceDef?.prevOwnerRequireCustom) && !oldOwnerCustom.trim()}
+                                    errorMessage={`${customLabel} is required`}
+                                    fieldId="oldOwnerCustom"
+                                    hint="Transfer authorization reference"
+                                  >
+                                    <input
+                                      id="input-oldOwnerCustom"
+                                      value={oldOwnerCustom}
+                                      onChange={e => setOldOwnerCustom(e.target.value)}
+                                      required={Boolean(activeServiceDef?.prevOwnerRequireCustom)}
+                                      placeholder={`Enter ${customLabel}`}
+                                      className={INPUT}
+                                    />
+                                  </Field>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Optional expansion if some fields were not toggled on the service */}
+                            {(!needPhone || !needAddress || !needCustom) && (
+                              <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  Want to capture additional transfer parameters?
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  {!needPhone && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowExtraPhone(true)}
+                                      className="text-[10px] text-emerald-700 hover:text-emerald-900 font-semibold cursor-pointer underline"
+                                    >
+                                      + Add Phone
+                                    </button>
+                                  )}
+                                  {!needAddress && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowExtraAddr(true)}
+                                      className="text-[10px] text-emerald-700 hover:text-emerald-900 font-semibold cursor-pointer underline"
+                                    >
+                                      + Add Address
+                                    </button>
+                                  )}
+                                  {!needCustom && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowExtraCustom(true)}
+                                      className="text-[10px] text-emerald-700 hover:text-emerald-900 font-semibold cursor-pointer underline"
+                                    >
+                                      + Add Custom Reference
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Quick Vehicle Preset Shortcut on Tab 1 */}
+                  <div className="p-3 bg-gradient-to-r from-emerald-50/50 to-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+                        Fast-Track Vehicle Auto-Fill:
+                      </p>
+                      <p className="text-[10px] text-slate-500">
+                        Select a vehicle model now to prefill all specs and jump directly to chassis number:
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {["Toyota Corolla", "Toyota Camry", "Toyota Hilux", "Hyundai Elantra", "Benz C-Class"].map((name) => {
+                        const match = VEHICLE_CATALOG.find((v) => `${v.make} ${v.model}`.toLowerCase().includes(name.toLowerCase()));
+                        if (!match) return null;
+                        return (
+                          <button
+                            key={name}
+                            type="button"
+                            onClick={() => {
+                              handleSelectVehicle(match);
+                              setActiveTab(2);
+                            }}
+                            className="px-2.5 py-1 bg-white hover:bg-emerald-600 hover:text-white text-slate-700 border border-slate-200 hover:border-emerald-600 rounded text-[11px] font-semibold transition cursor-pointer shadow-2xs"
+                          >
+                            {name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleNextTab1}
+                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <span>Next: Vehicle Details →</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
-              {/* ══ Section 1: Booking Details ══ */}
-              <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-6"
-                style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
-                <SectionHead n={1} title="Record Type &amp; Owner Details" icon={<OwnerIcon />} />
-
-                {/* ── Booking Type — dropdown selector ── */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                  <Field label="Filing / Service Type" required>
-                    <select value={bookingType} onChange={(e) => setBookingType(e.target.value)} className={INPUT}>
-                      {BOOKING_TYPES.map(b => (
-                        <option key={b.id} value={b.id}>
-                          {b.label}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-
-                  {/* ── Classification — dropdown selector ── */}
-                  <Field label="Vehicle / Plate Classification" required>
-                    <select value={classification} onChange={(e) => setClassification(e.target.value)} className={INPUT}>
-                      {CLASSIFICATIONS.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                </div>
-
-                {/* ── Registration No + Owner Name ── */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Registration Number of Vehicle" required>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <PlateFieldIcon />
-                      </span>
-                      <input value={regNo} onChange={e => setRegNo(e.target.value.toUpperCase())}
-                        placeholder={isSpecialOrCustomized ? "KX 1111-AD or custom" : "KX 0001-AD"}
-                        className={INPUT + " pl-8 font-mono tracking-widest"} />
+              {/* ── TAB 2: VEHICLE DETAILS ── */}
+              {activeTab === 2 && (
+                <div className="space-y-4">
+                  {/* Step 2 Requirements Callout Banner */}
+                  <div className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition ${
+                    missingFieldsTab2.length === 0
+                      ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
+                      : attemptedTabs[2]
+                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                      : "bg-slate-50 border-slate-200 text-slate-700"
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                        missingFieldsTab2.length === 0 ? "bg-emerald-500" : attemptedTabs[2] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
+                      }`} />
+                      <div>
+                        <p className="font-bold">
+                          {missingFieldsTab2.length === 0
+                            ? "✓ All required vehicle specifications completed"
+                            : attemptedTabs[2]
+                            ? `⚠️ Action Needed: ${missingFieldsTab2.length} required ${missingFieldsTab2.length === 1 ? "spec is" : "specs are"} missing`
+                            : `Step 2 Requirements: ${totalFieldsTab2 - missingFieldsTab2.length} of ${totalFieldsTab2} completed`}
+                        </p>
+                        {missingFieldsTab2.length > 0 && (
+                          <p className="text-[11px] text-slate-500 font-normal">
+                            Required: {missingFieldsTab2.map(f => f.label).join(", ")}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    {activeReservation && (
-                      <div className="mt-3 p-3.5 rounded-xl border border-amber-200/80 bg-amber-50/60 text-amber-900 text-xs space-y-2 shadow-sm backdrop-blur-sm">
-                        <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded-lg bg-amber-100/80 text-amber-700 shrink-0">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0 self-start sm:self-auto">
+                      {totalFieldsTab2 - missingFieldsTab2.length}/{totalFieldsTab2} Ready
+                    </span>
+                  </div>
+                  {/* Central Vehicle Database Catalog & Auto-Fill Station */}
+                  <div className="p-4 bg-gradient-to-r from-emerald-50/80 via-slate-50 to-emerald-50/50 border border-emerald-300/80 rounded-xl space-y-3.5 shadow-2xs">
+                    {/* Header with DB Status */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+                            Central Vehicle Database Catalog
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-700 text-white uppercase tracking-wider shadow-2xs flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                            <span>{isDbLoading ? "Connecting..." : `${dbVehicles.length} Models in DB`}</span>
+                          </span>
+                          {dbVehicles.some((v: any) => v.isCustom) && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-600 text-white shadow-2xs">
+                              {dbVehicles.filter((v: any) => v.isCustom).length} Station-Added
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-600 font-normal mt-0.5">
+                          Search or select from database specifications to auto-fill technical specs. <strong>Officers only need to fill the physical Chassis Number.</strong> Engine number is optional. Unlisted vehicles are stored in the database automatically.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Make & Category Quick Tabs */}
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] font-medium text-slate-600">
+                      {[
+                        { id: "All", label: "All Vehicles" },
+                        { id: "Toyota", label: "Toyota" },
+                        { id: "Hyundai", label: "Hyundai" },
+                        { id: "Mercedes-Benz", label: "Mercedes" },
+                        { id: "Honda", label: "Honda" },
+                        { id: "Kia", label: "Kia" },
+                        { id: "Nissan", label: "Nissan" },
+                        { id: "SUV", label: "SUV / 4x4" },
+                        { id: "Commercial", label: "Pickups & Trucks" },
+                        { id: "EV", label: "Electric (EV)" },
+                        { id: "Custom", label: "Station Added" },
+                      ].map((tab) => {
+                        const count =
+                          tab.id === "All"
+                            ? dbVehicles.length
+                            : tab.id === "Custom"
+                            ? dbVehicles.filter((v: any) => v.isCustom).length
+                            : tab.id === "Commercial"
+                            ? dbVehicles.filter((v: any) => v.bodyType?.includes("Pickup") || v.bodyType?.includes("Truck") || v.bodyType?.includes("Van")).length
+                            : tab.id === "SUV"
+                            ? dbVehicles.filter((v: any) => v.bodyType?.includes("SUV")).length
+                            : tab.id === "EV"
+                            ? dbVehicles.filter((v: any) => v.fuelType === "ELECTRIC").length
+                            : dbVehicles.filter((v: any) => v.make?.toLowerCase() === tab.id.toLowerCase()).length;
+
+                        if (count === 0 && (tab.id === "Custom" || tab.id === "EV")) return null;
+
+                        const isTabActive = selectedMakeFilter === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => handleSelectBrandTab(tab.id)}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer whitespace-nowrap border ${
+                              isTabActive
+                                ? "bg-slate-900 text-white border-slate-900 shadow-2xs"
+                                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                            }`}
+                          >
+                            <span>{tab.label}</span>
+                            <span className={`ml-1 text-[10px] px-1 rounded ${isTabActive ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-500"}`}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Search & Year Selection Controls */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 relative" ref={vehicleSearchDropdownRef}>
+                      {/* Search Combobox Input */}
+                      <div className="sm:col-span-3 relative">
+                        <input
+                          type="text"
+                          value={vehicleSearchQuery}
+                          onChange={(e) => {
+                            setVehicleSearchQuery(e.target.value);
+                            setIsVehicleDropdownOpen(true);
+                          }}
+                          onFocus={() => setIsVehicleDropdownOpen(true)}
+                          placeholder="Search database vehicles (e.g. Corolla, Camry, Hilux, C300, Tucson, GLE, Tiggo 8, Howo...)"
+                          className="w-full pl-9 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-2xs transition"
+                        />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                        </span>
+                        {vehicleSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setVehicleSearchQuery("");
+                              setIsVehicleDropdownOpen(false);
+                            }}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700 cursor-pointer font-bold"
+                            title="Clear search"
+                          >
+                            ×
+                          </button>
+                        )}
+
+                        {/* Interactive Dropdown Results from Database */}
+                        {isVehicleDropdownOpen && (
+                          <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100">
+                            {filteredCatalogVehicles.length === 0 ? (
+                              <div className="p-4 space-y-2 text-center">
+                                <p className="text-xs text-slate-600">
+                                  No database match found for <strong>&quot;{vehicleSearchQuery}&quot;</strong>.
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={handleUseUnlistedFromSearch}
+                                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
+                                >
+                                  <span>Use &quot;{vehicleSearchQuery}&quot; &amp; Save to Database</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="px-3 py-1.5 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
+                                  <span>Database Models ({filteredCatalogVehicles.length} found)</span>
+                                  <span className="text-emerald-700 font-semibold">Select / Overwrite</span>
+                                </div>
+                                {filteredCatalogVehicles.slice(0, 30).map((v: any) => (
+                                  <button
+                                    key={v.id || `${v.make}-${v.model}`}
+                                    type="button"
+                                    onClick={() => handleSelectVehicle(v)}
+                                    className="w-full px-3.5 py-2.5 text-left hover:bg-emerald-50/70 transition flex items-center justify-between gap-2 cursor-pointer group"
+                                  >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 uppercase shrink-0">
+                                        {v.bodyType?.includes("Pickup") ? "Pickup" : v.bodyType?.includes("SUV") ? "SUV" : v.bodyType?.includes("Van") ? "Van" : "Saloon"}
+                                      </span>
+                                      <div className="min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                          <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-800 truncate">
+                                            {v.make} {v.model}
+                                          </p>
+                                          {v.isCustom && (
+                                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                                              Station Added
+                                            </span>
+                                          )}
+                                        </div>
+                                        <p className="text-[10px] text-slate-500 truncate">
+                                          {v.engineCC}cc &bull; {v.cylinders} Cyl &bull; {v.fuelType} &bull; {v.bodyType}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200 hidden sm:inline-block">
+                                        Tyres: {v.tyreW}/{v.tyreDia}
+                                      </span>
+                                      <span className="text-xs font-bold text-emerald-600 group-hover:translate-x-0.5 transition-transform">
+                                        Select &rarr;
+                                      </span>
+                                    </div>
+                                  </button>
+                                ))}
+                                {vehicleSearchQuery.trim() && (
+                                  <div className="p-2 bg-slate-50 border-t border-slate-100 text-center">
+                                    <button
+                                      type="button"
+                                      onClick={handleUseUnlistedFromSearch}
+                                      className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer"
+                                    >
+                                      Not listed? Register &quot;{vehicleSearchQuery}&quot; to Database
+                                    </button>
+                                  </div>
+                                )}
+                              </>
+                            )}
                           </div>
-                          <div className="flex-1 space-y-1">
-                            <p className="font-extrabold text-amber-800 tracking-wide text-xs">🛡️ Reserved Allocation Detected</p>
-                            <p className="text-[11px] text-amber-850 leading-relaxed font-medium">
-                              This registration number belongs to a reserved block held by <strong className="text-amber-950 font-bold bg-amber-100/60 px-1.5 py-0.5 rounded">{activeReservation.holder}</strong> under authorization reference <code className="bg-amber-100/80 px-1.5 py-0.5 rounded text-[10px] font-bold font-mono text-amber-900">{activeReservation.authRef}</code>.
-                            </p>
-                            <p className="text-[10px] text-amber-700 leading-relaxed font-semibold">
-                              ⚠️ This is an informational alert. Filing will proceed and automatically increment the claimed slot count for this reservation block.
-                            </p>
-                          </div>
+                        )}
+                      </div>
+
+                      {/* Year Selector */}
+                      <div className="relative">
+                        <select
+                          value={selectedCatalogYear}
+                          onChange={(e) => {
+                            const newYr = e.target.value;
+                            setSelectedCatalogYear(newYr);
+                            if (make && model) {
+                              setYear(newYr);
+                            }
+                          }}
+                          className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-2xs transition cursor-pointer"
+                        >
+                          {YEARS_LIST.map((yr) => (
+                            <option key={yr} value={yr}>
+                              Year: {yr}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Filtered Quick Fleet Chips & Clear/Overwrite Action */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                        <span>Quick Pick ({selectedMakeFilter}):</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-400 font-normal">Click any model to auto-fill</span>
+                          {(make || model) && (
+                            <button
+                              type="button"
+                              onClick={handleResetVehicle}
+                              className="text-[10px] text-red-600 hover:text-red-800 font-bold cursor-pointer underline flex items-center gap-0.5"
+                            >
+                              <span>Clear / Reset</span>
+                            </button>
+                          )}
                         </div>
                       </div>
-                    )}
-                  </Field>
-                  <Field label={isTransfer ? "New Owner Name (Transferee)" : "Name of Owner"} required>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <PersonFieldIcon />
-                      </span>
-                      <input value={ownerName} onChange={e => setOwnerName(e.target.value)}
-                        required placeholder="Enter full legal name"
-                        className={INPUT + " pl-8"} />
-                    </div>
-                  </Field>
-                </div>
-
-                {/* ── Address + Phone ── */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="md:col-span-2">
-                    <Field label={isTransfer ? "New Owner Address" : "Address of Owner"} required>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <LocationFieldIcon />
-                        </span>
-                        <input value={address} onChange={e => setAddress(e.target.value)}
-                          required placeholder="Street, City, Region"
-                          className={INPUT + " pl-8"} />
-                      </div>
-                    </Field>
-                  </div>
-                  <Field label={isTransfer ? "New Owner Phone" : "Phone Number"} required>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <PhoneFieldIcon />
-                      </span>
-                      <input value={phone} onChange={e => setPhone(e.target.value)}
-                        required placeholder="+233 24 123 4567"
-                        className={INPUT + " pl-8"} />
-                    </div>
-                  </Field>
-                </div>
-
-                {/* ── Transfer: Previous owner ── */}
-                {isTransfer && (
-                  <div className="rounded-xl border p-4 space-y-4"
-                    style={{ background: "rgba(59,130,246,0.03)", borderColor: "rgba(59,130,246,0.15)" }}>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-                        style={{ background: "rgba(59,130,246,0.12)", color: "#3b82f6" }}>
-                        <TransferIcon />
-                      </div>
-                      <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#1e40af" }}>
-                        Change of Ownership — Previous Owner
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Field label="Old Owner Name (Transferor)" required>
-                        <input value={oldOwnerName} onChange={e => setOldOwnerName(e.target.value)}
-                          required={isTransfer} placeholder="Previous owner's full name" className={INPUT} />
-                      </Field>
-                      <Field label="Old Owner Address" required>
-                        <input value={oldOwnerAddr} onChange={e => setOldOwnerAddr(e.target.value)}
-                          required={isTransfer} placeholder="Previous owner's address" className={INPUT} />
-                      </Field>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* ══ Section 2: Vehicle Description ══ */}
-              <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-6"
-                style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
-                <SectionHead n={2} title="Vehicle Description" icon={<VehicleIcon />} />
-
-                {/* ── Vehicle Presets (By Year Tabbed UI + Search) ── */}
-                <div className="rounded-xl border border-[#e8edf5] bg-white overflow-hidden" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
-                  <div className="px-5 py-4 border-b border-[#e8edf5] bg-[#f8faff] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-md flex items-center justify-center bg-[#81B71A]/10 text-[#3d6b08] font-bold">⚡</span>
-                      <div>
-                        <p className="text-xs font-bold text-[#1a2e05]">Vehicle Database Quick Fill</p>
-                        <p className="text-[10px] font-medium text-[#6b7a99]">Search or select a model year</p>
-                      </div>
-                    </div>
-
-                    {/* Search Input */}
-                    <div className="relative w-full md:w-64 shrink-0">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#9aa3be" }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                      </span>
-                      <input
-                        type="text"
-                        placeholder="Search make or model..."
-                        value={presetSearch}
-                        onChange={e => setPresetSearch(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-[#e2e8f0] text-xs focus:outline-none focus:border-[#81B71A] focus:ring-1 focus:ring-[#81B71A]"
-                      />
-                      {presetSearch && (
-                        <button onClick={() => setPresetSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9aa3be] hover:text-[#1a2e05]">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-5 space-y-5">
-                    {/* Year Tabs - Hide if searching */}
-                    {!presetSearch && (
-                      <div className="flex flex-wrap gap-2 pb-4 border-b border-[#f0f3f8]">
-                        {Object.keys(
-                          VEHICLE_PRESETS.reduce((acc, p) => {
-                            if (!acc[p.year]) acc[p.year] = [];
-                            acc[p.year].push(p);
-                            return acc;
-                          }, {} as Record<string, typeof VEHICLE_PRESETS>)
-                        ).sort((a, b) => b.localeCompare(a)).map(year => (
-                          <button
-                            key={year}
-                            type="button"
-                            onClick={() => setSelectedPresetYear(year)}
-                            className={`px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${selectedPresetYear === year
-                                ? "bg-[#81B71A] text-white shadow-md shadow-[#81B71A]/20"
-                                : "bg-[#f8faff] text-[#6b7a99] border border-[#e2e8f0] hover:border-[#81B71A]/40"
-                              }`}
-                          >
-                            {year} Models
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Preset Grid with Scroll */}
-                    <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                        {VEHICLE_PRESETS.filter(p => {
-                          if (presetSearch) {
-                            const s = presetSearch.toLowerCase();
-                            return p.make.toLowerCase().includes(s) || p.model.toLowerCase().includes(s) || p.year.includes(s);
-                          }
-                          return p.year === selectedPresetYear;
-                        }).map((p, index) => {
-                          const active = activePreset === p.label;
+                      <div className="flex flex-wrap gap-1.5">
+                        {tabVehicles.slice(0, 14).map((v: any) => {
+                          const isSelected = make.toLowerCase() === v.make.toLowerCase() && model.toLowerCase() === v.model.toLowerCase();
                           return (
                             <button
-                              key={`${p.label}-${index}`}
+                              key={v.id || `${v.make}-${v.model}`}
                               type="button"
-                              onClick={() => applyPreset(p)}
-                              className="flex flex-col text-left px-4 py-3 rounded-xl border transition-all"
-                              style={{
-                                background: active ? "rgba(129,183,26,0.06)" : "white",
-                                borderColor: active ? "#81B71A" : "#e2e8f0",
-                                boxShadow: active ? "0 2px 10px rgba(129,183,26,0.12)" : "0 1px 3px rgba(0,0,0,0.02)",
-                              }}
+                              onClick={() => handleSelectVehicle(v)}
+                              className={`px-2.5 py-1 rounded-md text-[11px] transition cursor-pointer flex items-center gap-1.5 border ${
+                                isSelected
+                                  ? "bg-emerald-700 text-white border-emerald-800 font-bold shadow-2xs"
+                                  : "bg-white hover:bg-emerald-50 text-slate-700 border-slate-200 hover:border-emerald-300 font-medium"
+                              }`}
                             >
-                              <div className="flex justify-between items-center w-full mb-0.5">
-                                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active ? "#81B71A" : "#9aa3be" }}>
-                                  {p.make}
+                              <span className="font-semibold">{v.make}</span>
+                              <span>{v.model}</span>
+                              {v.isCustom && (
+                                <span className={`text-[9px] font-bold px-1 py-0.2 rounded ${isSelected ? "bg-white/20 text-white" : "bg-purple-100 text-purple-700"}`}>
+                                  Custom
                                 </span>
-                                {presetSearch && (
-                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#f0f3f8] text-[#6b7a99]">
-                                    {p.year}
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-sm font-bold truncate w-full" style={{ color: active ? "#1a2e05" : "#374167" }}>
-                                {p.model}
-                              </span>
+                              )}
                             </button>
                           );
                         })}
-
-                        {presetSearch && VEHICLE_PRESETS.filter(p => {
-                          const s = presetSearch.toLowerCase();
-                          return p.make.toLowerCase().includes(s) || p.model.toLowerCase().includes(s) || p.year.includes(s);
-                        }).length === 0 && (
-                            <div className="col-span-full py-8 text-center text-sm font-medium text-[#6b7a99]">
-                              No vehicles found matching "{presetSearch}"
-                            </div>
-                          )}
                       </div>
                     </div>
+
+                    {/* Auto-filled banner */}
+                    {autoFilledNotice && (
+                      <div className="p-2.5 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-between text-xs text-emerald-900 font-medium">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-emerald-700 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>{autoFilledNotice}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setAutoFilledNotice(null)}
+                          className="text-emerald-700 hover:text-emerald-950 text-sm font-bold cursor-pointer ml-2"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Saved to database success notice */}
+                    {saveModelSuccess && (
+                      <div className="p-2.5 rounded-lg bg-purple-100 border border-purple-300 flex items-center justify-between text-xs text-purple-950 font-medium">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-purple-700 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>{saveModelSuccess}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSaveModelSuccess(null)}
+                          className="text-purple-700 hover:text-purple-950 text-sm font-bold cursor-pointer ml-2"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                {/* ── Make / Year / Model / Engine ── */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Field label="Make of Vehicle" required>
-                    <input value={make} onChange={e => { setMake(e.target.value); setActivePreset(null); }}
-                      required placeholder="e.g. Toyota" className={INPUT} />
-                  </Field>
-                  <Field label="Year" required>
-                    <input value={year} onChange={e => { setYear(e.target.value); setActivePreset(null); }}
-                      required placeholder="e.g. 2024" className={INPUT} />
-                  </Field>
-                  <Field label="Model" required>
-                    <input value={model} onChange={e => { setModel(e.target.value); setActivePreset(null); }}
-                      required placeholder="e.g. Land Cruiser" className={INPUT} />
-                  </Field>
-                  <Field label="Engine Capacity (CC)" required>
-                    <input value={engineCC} onChange={e => setEngineCC(e.target.value)}
-                      required placeholder="e.g. 4500" className={INPUT} />
-                  </Field>
-                </div>
-
-                {/* ── Cylinders / Engine No / Chassis ── */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <Field label="No. of Cylinders">
-                    <select value={cylinders} onChange={e => setCylinders(e.target.value)} className={INPUT}>
-                      {["N/A", "2", "4", "6", "8", "12"].map(n => <option key={n}>{n}</option>)}
-                    </select>
-                  </Field>
-                  <Field label="Engine Number">
-                    <input value={engineNo} onChange={e => setEngineNo(e.target.value)}
-                      placeholder="e.g. 1VD-FTV8912" className={INPUT} />
-                  </Field>
-                  <Field label={`Chassis / VIN${vinLen > 0 ? ` (${vinLen}/17)` : ""}`} required>
-                    <div className="relative">
-                      <input value={chassisNo} onChange={e => setChassisNo(e.target.value)}
-                        required placeholder="17-character VIN"
-                        className={INPUT + " pr-9"}
-                        maxLength={17}
-                        style={{ borderColor: vinLen > 0 ? (vinValid ? "#81B71A" : "#ef4444") : undefined }} />
-                      {vinLen > 0 && (
-                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                          {vinValid
-                            ? <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#81B71A" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                            : <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                          }
-                        </span>
+                  {/* Unlisted Vehicle Database Persistence Action Banner */}
+                  {make.trim() && model.trim() && (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
+                      <div className="flex items-center gap-2">
+                        {isCurrentModelInDb ? (
+                          <>
+                            <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span className="text-slate-700 font-medium">
+                              <strong>{make} {model}</strong> is registered in the central database catalog.
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                            <span className="text-slate-700">
+                              <strong>{make} {model}</strong> is not yet in the central database catalog.
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {!isCurrentModelInDb && (
+                        <button
+                          type="button"
+                          disabled={isSavingCustomModel}
+                          onClick={handleSaveCurrentModelToDb}
+                          className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-[11px] font-bold transition cursor-pointer shadow-2xs flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+                        >
+                          <span>{isSavingCustomModel ? "Saving..." : `Save "${make} ${model}" to Database`}</span>
+                        </button>
                       )}
                     </div>
-                  </Field>
-                </div>
+                  )}
 
-                {/* ── Body Type ── */}
-                <div>
-                  <p className={LABEL + " mb-2.5"}>Type of Body</p>
-                  <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-                    {BODY_TYPES.map(bt => {
-                      const active = bodyType === bt.id;
-                      const Icon = bt.icon;
-                      return (
-                        <button key={bt.id} type="button" onClick={() => setBodyType(bt.id)}
-                          className="flex flex-col items-center gap-1.5 py-3 px-1.5 rounded-xl border transition-all"
-                          style={{
-                            background: active ? "rgba(129,183,26,0.08)" : "#fafbfe",
-                            borderColor: active ? "#81B71A" : "#e8edf5",
-                            boxShadow: active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
-                            color: active ? "#2d5009" : "#6b7a99",
-                          }}>
-                          <Icon />
-                          <span className="text-[9px] font-bold text-center leading-tight"
-                            style={{ color: active ? "#1a2e05" : "#6b7a99" }}>
-                            {bt.label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* ── Fuel Type ── */}
-                <div>
-                  <p className={LABEL + " mb-2.5"}>Fuel Type</p>
-                  <div className="flex flex-wrap gap-2.5">
-                    {FUEL_TYPES.map(f => {
-                      const active = fuelType === f.id;
-                      const Icon = f.icon;
-                      return (
-                        <button key={f.id} type="button" onClick={() => setFuelType(f.id)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-xs font-semibold transition-all"
-                          style={{
-                            background: active ? "rgba(129,183,26,0.08)" : "#fafbfe",
-                            borderColor: active ? "#81B71A" : "#e8edf5",
-                            color: active ? "#2d5009" : "#374167",
-                            boxShadow: active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
-                          }}>
-                          <span style={{ color: active ? "#81B71A" : "#9aa3be" }}><Icon /></span>
-                          {f.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* ── Net / Gross weight ── */}
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Net Weight (kg)" required>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                        <WeightIcon />
+                  {/* ── SECTION 1: VEHICLE IDENTITY (Inline Row: Make, Model, Year, Body Type, Fuel Type) ── */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-2xs">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                        1. Vehicle Identity &amp; Classification
                       </span>
-                      <input value={netWeight} onChange={e => setNetWeight(e.target.value)}
-                        required placeholder="e.g. 2630" className={INPUT + " pl-8"} />
-                    </div>
-                  </Field>
-                  <Field label="Gross Weight (kg)" required>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                        <WeightIcon />
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        Auto-fills from catalog or editable
                       </span>
-                      <input value={grossWeight} onChange={e => setGrossWeight(e.target.value)}
-                        required placeholder="e.g. 3300" className={INPUT + " pl-8"} />
                     </div>
-                  </Field>
-                </div>
-              </div>
 
-              {/* ══ Section 3: Tyre Specifications ══ */}
-              <div className="bg-white rounded-2xl border border-[#e8edf5] p-6 space-y-5"
-                style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.045)" }}>
-                <SectionHead n={3} title="Tyre Size Specifications" icon={<TyreIcon />} />
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                      <Field
+                        label="Make"
+                        required
+                        isFilled={Boolean(make.trim())}
+                        hasError={attemptedTabs[2] && !make.trim()}
+                        errorMessage="Vehicle Make is required"
+                        fieldId="make"
+                      >
+                        <input
+                          id="input-make"
+                          value={make}
+                          onChange={e => setMake(e.target.value)}
+                          required
+                          placeholder="e.g. Toyota"
+                          className={INPUT}
+                        />
+                      </Field>
 
-                {/* Quick-fill tyre presets */}
-                <div className="rounded-xl border border-[#e8edf5] p-4 space-y-3 bg-[#f8faff]">
-                  <div className="flex items-center gap-2">
-                    <BoltIcon />
-                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#6b7a99" }}>
-                      Quick Fill — Standard Tyre Sizes
-                    </p>
+                      <Field
+                        label="Model"
+                        required
+                        isFilled={Boolean(model.trim())}
+                        hasError={attemptedTabs[2] && !model.trim()}
+                        errorMessage="Vehicle Model is required"
+                        fieldId="model"
+                      >
+                        <input
+                          id="input-model"
+                          value={model}
+                          onChange={e => setModel(e.target.value)}
+                          required
+                          placeholder="e.g. Camry"
+                          className={INPUT}
+                        />
+                      </Field>
+
+                      <Field
+                        label="Model Year"
+                        required
+                        isFilled={Boolean(year.trim())}
+                        hasError={attemptedTabs[2] && !year.trim()}
+                        errorMessage="Model Year is required"
+                        fieldId="year"
+                      >
+                        <input
+                          id="input-year"
+                          value={year}
+                          onChange={e => setYear(e.target.value)}
+                          required
+                          placeholder="2025"
+                          className={INPUT + " font-mono"}
+                        />
+                      </Field>
+
+                      <Field
+                        label="Body Type"
+                        required
+                        isFilled={Boolean(bodyType.trim())}
+                        fieldId="bodyType"
+                      >
+                        <select
+                          id="input-bodyType"
+                          value={bodyType}
+                          onChange={e => setBodyType(e.target.value)}
+                          className={INPUT}
+                        >
+                          {BODY_TYPES.map(bt => (
+                            <option key={bt} value={bt}>{bt}</option>
+                          ))}
+                        </select>
+                      </Field>
+
+                      <Field
+                        label="Fuel Type"
+                        required
+                        isFilled={Boolean(fuelType.trim())}
+                        fieldId="fuelType"
+                      >
+                        <select
+                          id="input-fuelType"
+                          value={fuelType}
+                          onChange={e => setFuelType(e.target.value)}
+                          className={INPUT}
+                        >
+                          {FUEL_TYPES.map(f => (
+                            <option key={f.id} value={f.id}>{f.label}</option>
+                          ))}
+                        </select>
+                      </Field>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {TYRE_PRESETS.map(t => {
-                      const active = tyreFW === t.w && tyreFD === t.d;
-                      return (
-                        <button key={t.label} type="button" onClick={() => applyTyre(t.w, t.d, "FR")}
-                          className="px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all"
-                          style={{
-                            background: active ? "rgba(129,183,26,0.1)" : "white",
-                            borderColor: active ? "#81B71A" : "#e2e8f0",
-                            color: active ? "#2d5009" : "#374167",
-                            boxShadow: active ? "0 0 0 2px rgba(129,183,26,0.15)" : "none",
-                          }}>
+
+                  {/* ── SECTION 2: PHYSICAL SERIAL IDENTIFIERS (Inline Row: Chassis & Optional Engine No) ── */}
+                  <div className="bg-slate-50/80 border border-slate-200 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                        2. Physical Vehicle Identifiers
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        VIN is mandatory &bull; Engine number is optional
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Chassis / VIN: Required, primary field */}
+                      <Field 
+                        label="Chassis / VIN Number (17 Characters)" 
+                        required 
+                        isFilled={Boolean(chassisNo.trim())}
+                        hasError={attemptedTabs[2] && !chassisNo.trim()}
+                        errorMessage="Chassis / VIN Number is required"
+                        fieldId="chassisNo"
+                        hint="Stamped on vehicle chassis"
+                      >
+                        <div className="relative">
+                          <input
+                            id="input-chassisNo"
+                            ref={chassisInputRef}
+                            value={chassisNo}
+                            onChange={e => setChassisNo(e.target.value.toUpperCase())}
+                            required
+                            placeholder="e.g. JTEBU5JR8P2091837"
+                            className={`${INPUT} font-mono font-bold text-sm tracking-wider uppercase ${
+                              make && model && !chassisNo
+                                ? "ring-2 ring-emerald-500 border-emerald-500 bg-emerald-50/20"
+                                : ""
+                            }`}
+                          />
+                          {make && model && !chassisNo && (
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                              Enter VIN
+                            </span>
+                          )}
+                        </div>
+                      </Field>
+
+                      {/* Engine Number: OPTIONAL, not required */}
+                      <Field 
+                        label="Engine Serial Number" 
+                        optional
+                        isFilled={Boolean(engineNo.trim())}
+                        fieldId="engineNo"
+                        hint="Optional — Stamped on engine block if available"
+                      >
+                        <input
+                          id="input-engineNo"
+                          value={engineNo}
+                          onChange={e => setEngineNo(e.target.value.toUpperCase())}
+                          placeholder="e.g. 1UR-894012 (Optional)"
+                          className={`${INPUT} font-mono uppercase text-sm`}
+                        />
+                      </Field>
+                    </div>
+                  </div>
+
+                  {/* ── SECTION 3: TECHNICAL & WEIGHT SPECIFICATIONS (Inline Row: CC, Cylinders, Net, Gross) ── */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-2xs">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                        3. Technical &amp; Weight Specifications
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        Engine rating and certified weight specs
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <Field
+                        label="Engine Displacement (CC)"
+                        required
+                        isFilled={Boolean(engineCC.trim())}
+                        hasError={attemptedTabs[2] && !engineCC.trim()}
+                        errorMessage="Engine Displacement is required"
+                        fieldId="engineCC"
+                      >
+                        <input
+                          id="input-engineCC"
+                          value={engineCC}
+                          onChange={e => setEngineCC(e.target.value)}
+                          required
+                          placeholder="2400"
+                          className={INPUT + " font-mono"}
+                        />
+                      </Field>
+
+                      <Field
+                        label="Cylinders"
+                        isFilled={Boolean(cylinders.trim())}
+                        fieldId="cylinders"
+                      >
+                        <select
+                          id="input-cylinders"
+                          value={cylinders}
+                          onChange={e => setCylinders(e.target.value)}
+                          className={INPUT + " font-mono"}
+                        >
+                          <option value="3">3 Cylinders</option>
+                          <option value="4">4 Cylinders</option>
+                          <option value="6">6 Cylinders</option>
+                          <option value="8">8 Cylinders</option>
+                          <option value="N/A">N/A (Electric / EV)</option>
+                        </select>
+                      </Field>
+
+                      <Field
+                        label="Net Weight (kg)"
+                        optional
+                        isFilled={Boolean(netWeight.trim())}
+                        fieldId="netWeight"
+                      >
+                        <input
+                          id="input-netWeight"
+                          value={netWeight}
+                          onChange={e => setNetWeight(e.target.value)}
+                          placeholder="1650"
+                          className={INPUT + " font-mono"}
+                        />
+                      </Field>
+
+                      <Field
+                        label="Gross Weight (kg)"
+                        optional
+                        isFilled={Boolean(grossWeight.trim())}
+                        fieldId="grossWeight"
+                      >
+                        <input
+                          id="input-grossWeight"
+                          value={grossWeight}
+                          onChange={e => setGrossWeight(e.target.value)}
+                          placeholder="2150"
+                          className={INPUT + " font-mono"}
+                        />
+                      </Field>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(1)}
+                      className="px-3.5 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer w-full sm:w-auto"
+                    >
+                      ← Back to Owner Details
+                    </button>
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                      <button
+                        type="button"
+                        onClick={() => handleNextTab2(3)}
+                        className="px-3.5 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                      >
+                        Axle &amp; Tyres →
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleNextTab2(4)}
+                        className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-2xs transition cursor-pointer flex items-center gap-1.5"
+                      >
+                        <span>Review &amp; Submit (Tyres Auto-Filled) →</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── TAB 3: AXLE & TYRES ── */}
+              {activeTab === 3 && (
+                <div className="space-y-4">
+                  {/* Step 3 Requirements Callout Banner */}
+                  <div className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition ${
+                    missingFieldsTab3.length === 0
+                      ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
+                      : attemptedTabs[3]
+                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                      : "bg-slate-50 border-slate-200 text-slate-700"
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                        missingFieldsTab3.length === 0 ? "bg-emerald-500" : attemptedTabs[3] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
+                      }`} />
+                      <div>
+                        <p className="font-bold">
+                          {missingFieldsTab3.length === 0
+                            ? "✓ All required axle & tyre dimensions completed"
+                            : attemptedTabs[3]
+                            ? `⚠️ Action Needed: ${missingFieldsTab3.length} required ${missingFieldsTab3.length === 1 ? "dimension is" : "dimensions are"} missing`
+                            : `Step 3 Requirements: ${totalFieldsTab3 - missingFieldsTab3.length} of ${totalFieldsTab3} completed`}
+                        </p>
+                        {missingFieldsTab3.length > 0 && (
+                          <p className="text-[11px] text-slate-500 font-normal">
+                            Required: {missingFieldsTab3.map(f => f.label).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0 self-start sm:self-auto">
+                      {totalFieldsTab3 - missingFieldsTab3.length}/{totalFieldsTab3} Ready
+                    </span>
+                  </div>
+
+                  {/* Quick-select common tyre sizes */}
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                    <span className="text-xs font-semibold text-slate-700 block">
+                      Standard Tyre Presets (Front &amp; Rear):
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {TYRE_PRESETS.map(t => (
+                        <button
+                          key={t.label}
+                          type="button"
+                          onClick={() => applyTyre(t.w, t.d)}
+                          className="px-2.5 py-1 rounded bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-medium transition cursor-pointer shadow-2xs"
+                        >
                           {t.label}
                         </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[10px]" style={{ color: "#b0bbd6" }}>
-                    Selecting a size fills Front &amp; Rear automatically. Override individually below.
-                  </p>
-                </div>
-
-                {/* Tyre inputs */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {([
-                    { label: "Front Tyre", icon: <TyreFrontIcon />, w: tyreFW, setW: setTyreFW, d: tyreFD, setD: setTyreFD },
-                    { label: "Middle Tyre (opt.)", icon: <TyreMidIcon />, w: tyreMW, setW: setTyreMW, d: tyreMD, setD: setTyreMD },
-                    { label: "Rear Tyre", icon: <TyreRearIcon />, w: tyreRW, setW: setTyreRW, d: tyreRD, setD: setTyreRD },
-                  ] as const).map(tyre => (
-                    <div key={tyre.label} className="rounded-xl border border-[#e8edf5] p-4 space-y-3"
-                      style={{ background: "#fafbfe" }}>
-                      <div className="flex items-center gap-2">
-                        <span style={{ color: "#81B71A" }}>{tyre.icon}</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#6b7a99" }}>
-                          {tyre.label}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <p className="text-[9px] font-bold uppercase text-[#b0bbd6] mb-1">Width (mm)</p>
-                          <input value={tyre.w} onChange={e => (tyre.setW as (v: string) => void)(e.target.value)}
-                            placeholder="e.g. 225"
-                            className="px-2.5 py-2 bg-white border border-[#e2e8f0] rounded-lg text-xs font-semibold text-[#1a2e05] placeholder-[#c3ccd8] focus:outline-none focus:ring-1 focus:ring-[#81B71A]/30 w-full" />
-                        </div>
-                        <div>
-                          <p className="text-[9px] font-bold uppercase text-[#b0bbd6] mb-1">Rim Dia</p>
-                          <input value={tyre.d} onChange={e => (tyre.setD as (v: string) => void)(e.target.value)}
-                            placeholder="e.g. 17"
-                            className="px-2.5 py-2 bg-white border border-[#e2e8f0] rounded-lg text-xs font-semibold text-[#1a2e05] placeholder-[#c3ccd8] focus:outline-none focus:ring-1 focus:ring-[#81B71A]/30 w-full" />
-                        </div>
-                      </div>
-                      {tyre.w && tyre.d && (
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold font-mono"
-                          style={{ color: "#81B71A" }}>
-                          <svg width={9} height={9} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M20 6L9 17l-5-5" />
-                          </svg>
-                          {tyre.w}/65 R{tyre.d}
-                        </div>
-                      )}
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Axle Inputs */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 space-y-2">
+                      <span className="text-xs font-bold text-slate-800 block">Front Axle</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Field
+                          label="Width (mm)"
+                          required
+                          isFilled={Boolean(tyreFW.trim())}
+                          hasError={attemptedTabs[3] && !tyreFW.trim()}
+                          errorMessage="Width required"
+                          fieldId="tyreFW"
+                        >
+                          <input
+                            id="input-tyreFW"
+                            value={tyreFW}
+                            onChange={e => setTyreFW(e.target.value)}
+                            placeholder="235"
+                            className={INPUT + " font-mono"}
+                          />
+                        </Field>
+                        <Field
+                          label="Rim (in)"
+                          required
+                          isFilled={Boolean(tyreFD.trim())}
+                          hasError={attemptedTabs[3] && !tyreFD.trim()}
+                          errorMessage="Rim required"
+                          fieldId="tyreFD"
+                        >
+                          <input
+                            id="input-tyreFD"
+                            value={tyreFD}
+                            onChange={e => setTyreFD(e.target.value)}
+                            placeholder="18"
+                            className={INPUT + " font-mono"}
+                          />
+                        </Field>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 space-y-2">
+                      <span className="text-xs font-bold text-slate-800 block">Middle Axle (Opt.)</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Field
+                          label="Width (mm)"
+                          optional
+                          isFilled={Boolean(tyreMW.trim())}
+                          fieldId="tyreMW"
+                        >
+                          <input
+                            id="input-tyreMW"
+                            value={tyreMW}
+                            onChange={e => setTyreMW(e.target.value)}
+                            placeholder="—"
+                            className={INPUT + " font-mono"}
+                          />
+                        </Field>
+                        <Field
+                          label="Rim (in)"
+                          optional
+                          isFilled={Boolean(tyreMD.trim())}
+                          fieldId="tyreMD"
+                        >
+                          <input
+                            id="input-tyreMD"
+                            value={tyreMD}
+                            onChange={e => setTyreMD(e.target.value)}
+                            placeholder="—"
+                            className={INPUT + " font-mono"}
+                          />
+                        </Field>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/50 space-y-2">
+                      <span className="text-xs font-bold text-slate-800 block">Rear Axle</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Field
+                          label="Width (mm)"
+                          required
+                          isFilled={Boolean(tyreRW.trim())}
+                          hasError={attemptedTabs[3] && !tyreRW.trim()}
+                          errorMessage="Width required"
+                          fieldId="tyreRW"
+                        >
+                          <input
+                            id="input-tyreRW"
+                            value={tyreRW}
+                            onChange={e => setTyreRW(e.target.value)}
+                            placeholder="235"
+                            className={INPUT + " font-mono"}
+                          />
+                        </Field>
+                        <Field
+                          label="Rim (in)"
+                          required
+                          isFilled={Boolean(tyreRD.trim())}
+                          hasError={attemptedTabs[3] && !tyreRD.trim()}
+                          errorMessage="Rim required"
+                          fieldId="tyreRD"
+                        >
+                          <input
+                            id="input-tyreRD"
+                            value={tyreRD}
+                            onChange={e => setTyreRD(e.target.value)}
+                            placeholder="18"
+                            className={INPUT + " font-mono"}
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(2)}
+                      className="px-3.5 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNextTab3}
+                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition cursor-pointer shadow-2xs flex items-center gap-1.5"
+                    >
+                      <span>Next: Customs &amp; Audit →</span>
+                    </button>
+                  </div>
                 </div>
+              )}
+
+              {/* ── TAB 4: CUSTOMS & AUDIT ── */}
+              {activeTab === 4 && (
+                <div className="space-y-4">
+                  {/* Step 4 Requirements Callout Banner */}
+                  <div className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition ${
+                    missingFieldsTab4.length === 0
+                      ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
+                      : attemptedTabs[4]
+                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                      : "bg-slate-50 border-slate-200 text-slate-700"
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                        missingFieldsTab4.length === 0 ? "bg-emerald-500" : attemptedTabs[4] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
+                      }`} />
+                      <div>
+                        <p className="font-bold">
+                          {missingFieldsTab4.length === 0
+                            ? "✓ All required customs & certification entries completed"
+                            : attemptedTabs[4]
+                            ? `⚠️ Action Needed: ${missingFieldsTab4.length} required ${missingFieldsTab4.length === 1 ? "entry is" : "entries are"} missing`
+                            : `Step 4 Requirements: ${totalFieldsTab4 - missingFieldsTab4.length} of ${totalFieldsTab4} completed`}
+                        </p>
+                        {missingFieldsTab4.length > 0 && (
+                          <p className="text-[11px] text-slate-500 font-normal">
+                            Required: {missingFieldsTab4.map(f => f.label).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0 self-start sm:self-auto">
+                      {totalFieldsTab4 - missingFieldsTab4.length}/{totalFieldsTab4} Ready
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <Field
+                      label="Official Revenue Receipt Number"
+                      required
+                      isFilled={Boolean(receiptNo.trim())}
+                      hasError={attemptedTabs[4] && !receiptNo.trim()}
+                      errorMessage="Revenue Receipt Number is required"
+                      fieldId="receiptNo"
+                    >
+                      <input
+                        id="input-receiptNo"
+                        value={receiptNo}
+                        onChange={e => setReceiptNo(e.target.value)}
+                        required
+                        placeholder="e.g. 4702604819"
+                        className={INPUT + " font-mono font-bold"}
+                      />
+                    </Field>
+
+                    <Field
+                      label="Customs Declaration Number"
+                      required
+                      isFilled={Boolean(customsNo.trim())}
+                      hasError={attemptedTabs[4] && !customsNo.trim()}
+                      errorMessage="Customs Declaration Number is required"
+                      fieldId="customsNo"
+                    >
+                      <input
+                        id="input-customsNo"
+                        value={customsNo}
+                        onChange={e => setCustomsNo(e.target.value)}
+                        required
+                        placeholder="e.g. 4708912/26"
+                        className={INPUT + " font-mono font-bold"}
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <Field
+                      label="Customs Clearance Date"
+                      required
+                      isFilled={Boolean(customsDate.trim())}
+                      hasError={attemptedTabs[4] && !customsDate.trim()}
+                      errorMessage="Customs Clearance Date is required"
+                      fieldId="customsDate"
+                      hint="Empty until verified"
+                    >
+                      <input
+                        id="input-customsDate"
+                        type="date"
+                        value={customsDate}
+                        onChange={e => setCustomsDate(e.target.value)}
+                        required
+                        className={INPUT}
+                      />
+                    </Field>
+
+                    <Field
+                      label="Supervising Certification Officer"
+                      required
+                      isFilled={Boolean(supervisor.trim())}
+                      hasError={attemptedTabs[4] && !supervisor.trim()}
+                      errorMessage="Supervising Certification Officer is required"
+                      fieldId="supervisor"
+                      hint="Type officer name / badge"
+                    >
+                      <input
+                        id="input-supervisor"
+                        value={supervisor}
+                        onChange={e => setSupervisor(e.target.value)}
+                        required
+                        placeholder="e.g. Eric Ansah (Officer ID: DVLA-402)"
+                        className={INPUT}
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                      Summary Verification
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Plate:</span>
+                        <span className="font-bold text-slate-900 font-mono">{regNo || "Pending"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Owner:</span>
+                        <span className="font-semibold text-slate-900 truncate block">{ownerName || "Pending"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Vehicle:</span>
+                        <span className="font-semibold text-slate-900 truncate block">{make || "—"} {model}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">VIN:</span>
+                        <span className="font-mono text-slate-900 truncate block">{chassisNo || "—"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      className={`w-full py-3 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer flex items-center justify-center gap-1.5 ${
+                        overallCompletionPercent === 100
+                          ? "bg-[#103014] hover:bg-[#18481e] text-white"
+                          : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-400/40"
+                      }`}
+                    >
+                      {overallCompletionPercent === 100 ? (
+                        <>
+                          <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          <span>Certify &amp; Submit Registration to Logbook</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                          <span>Certify &amp; Submit ({totalRequiredFields - totalCompletedFields} Required Fields Left)</span>
+                        </>
+                      )}
+                    </button>
+                    <p className="text-[10px] text-center text-slate-400 mt-1.5">
+                      DVLA Adenta Station Registry &bull; Certified under Road Traffic Act 683
+                    </p>
+                  </div>
+
+                  <div className="pt-1 flex justify-start">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(3)}
+                      className="px-3.5 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                    >
+                      ← Back to Tyres
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+
+          {/* ── Right Column (1/3): Clean Live Plate Inspector & Interactive Filing Checklist ── */}
+          <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden lg:sticky lg:top-20 space-y-3.5 p-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <span className="text-xs font-bold text-slate-800">
+                Plate Inspection
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-700">
+                {CLASSIFICATIONS.find(c => c.id === classification)?.badge}
+              </span>
+            </div>
+
+            {/* Ghana Digital Plate */}
+            <div className="w-full flex justify-center py-1">
+              <div className="w-full max-w-[320px]">
+                <DigitalPlate 
+                  plateNumber={regNo || "PENDING"} 
+                  category={classification as PlateCategory}
+                  region="GREATER ACCRA"
+                  slogan="GREATER ACCRA"
+                  vin={chassisNo || "PENDING"}
+                  make={make || "VEHICLE"}
+                />
               </div>
             </div>
 
-            {/* ── Right panel (1/3) ── */}
-            <div className="space-y-4 xl:sticky xl:top-20">
+            {/* Quick Category Preview Buttons */}
+            <div className="flex items-center justify-center gap-1 pb-1.5 border-b border-slate-100 flex-wrap">
+              {(["PRIVATE", "COMMERCIAL", "ELECTRIC", "GOVERNMENT"] as const).map(catKey => {
+                const active = classification === catKey;
+                const conf = CLASSIFICATIONS.find(c => c.id === catKey);
+                return (
+                  <button
+                    key={catKey}
+                    type="button"
+                    onClick={() => setClassification(catKey)}
+                    className={`px-2 py-1 rounded text-[10px] font-medium transition cursor-pointer ${
+                      active
+                        ? "bg-slate-900 text-white font-bold"
+                        : "bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {conf?.badge}
+                  </button>
+                );
+              })}
+            </div>
 
-              {/* ══ Section 4: Audit & Payment ══ */}
-              <div
-                className={`rounded-2xl border p-5 space-y-4 transition-all duration-500 ${auditHighlightActive
-                    ? "bg-emerald-50/20 border-emerald-400 ring-4 ring-emerald-500/15 shadow-xl shadow-emerald-500/10 animate-[pulse_2s_infinite]"
-                    : "bg-white border-[#e8edf5]"
-                  }`}
-                style={{ boxShadow: auditHighlightActive ? undefined : "0 2px 16px rgba(0,0,0,0.045)" }}
-              >
-                <SectionHead n={4} title="Audit &amp; Payment Verification" icon={<AuditIcon />} />
-
-                <Field label="Receipt Number" required>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                      <ReceiptFieldIcon />
-                    </span>
-                    <input value={receiptNo} onChange={e => { setReceiptNo(e.target.value); setAuditHighlightActive(false); }}
-                      required placeholder="470260*****" className={INPUT + " pl-8"} />
-                  </div>
-                </Field>
-
-                <Field label="Registration Date">
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                      <CalendarFieldIcon />
-                    </span>
-                    <input type="date" value={regDate} onChange={e => { setRegDate(e.target.value); setAuditHighlightActive(false); }}
-                      className={INPUT + " pl-8"} />
-                  </div>
-                </Field>
-
-                <div className="h-px bg-[#f0f3f8]" />
-
-                <Field label="Customs Number" required>
-                  <input value={customsNo} onChange={e => { setCustomsNo(e.target.value); setAuditHighlightActive(false); }}
-                    required placeholder="470260*****/**" className={INPUT} />
-                </Field>
-
-                <Field label="Customs Date" required>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                      <CalendarFieldIcon />
-                    </span>
-                    <input type="date" value={customsDate} onChange={e => { setCustomsDate(e.target.value); setAuditHighlightActive(false); }}
-                      required className={INPUT + " pl-8"} />
-                  </div>
-                </Field>
-
-                <div className="h-px bg-[#f0f3f8]" />
-
-                <Field label="Supervising Officer">
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#c3ccd8" }}>
-                      <PersonFieldIcon />
-                    </span>
-                    <select value={supervisor} onChange={e => { setSupervisor(e.target.value); setAuditHighlightActive(false); }}
-                      className={INPUT + " pl-8"}>
-                      <option value="Eric">Eric</option>
-                      <option value="Saviour">Saviour</option>
-                      <option value="Godson">Godson</option>
-                    </select>
-                  </div>
-                </Field>
-
-                <button type="submit"
-                  className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all flex items-center justify-center gap-2 hover:opacity-95"
-                  style={{ background: "linear-gradient(115deg, #2d5009, #81B71A)", boxShadow: "0 4px 18px rgba(129,183,26,0.35)" }}>
-                  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 6L9 17l-5-5" />
-                  </svg>
-                  File VRS Record to Logbook
-                </button>
-              </div>
-
-              {/* ── Live register preview ── */}
-              <div className="rounded-2xl border overflow-hidden"
-                style={{ background: "#0a150a", borderColor: "rgba(129,183,26,0.15)" }}>
-
-                {/* Preview header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b"
-                  style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.03)" }}>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ background: "#81B71A" }} />
-                    <span className="text-[9px] font-bold tracking-widest uppercase"
-                      style={{ color: "rgba(255,255,255,0.45)" }}>Live Preview — Sheet 11851</span>
-                  </div>
-                  <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider"
-                    style={{ background: "rgba(129,183,26,0.15)", color: "#81B71A", border: "1px solid rgba(129,183,26,0.2)" }}>
-                    {CLASSIFICATIONS.find(c => c.id === classification)?.label}
+            {/* ── Live Interactive Filing Checklist ── */}
+            <div className="bg-slate-50/80 border border-slate-200 rounded-xl p-3 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${overallCompletionPercent === 100 ? "bg-emerald-500" : "bg-amber-500 animate-pulse"}`} />
+                  <span className="text-xs font-bold text-slate-800">
+                    Filing Requirements
                   </span>
                 </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                  overallCompletionPercent === 100
+                    ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                    : "bg-amber-100 text-amber-800 border-amber-300"
+                }`}>
+                  {totalCompletedFields}/{totalRequiredFields} Complete
+                </span>
+              </div>
 
-                {/* Plate visual */}
-                <div className="px-4 pt-4 pb-2 flex flex-col items-center justify-center">
-                  <DigitalPlate 
-                    plateNumber={regNo || "PENDING"} 
-                    category={classification as PlateCategory}
-                    region="GREATER ACCRA"
-                    slogan="GREATER ACCRA"
-                    vin={chassisNo || "PENDING"}
-                  />
+              {/* Progress Bar */}
+              <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-300 rounded-full ${
+                    overallCompletionPercent === 100
+                      ? "bg-emerald-600"
+                      : overallCompletionPercent >= 50
+                      ? "bg-amber-500"
+                      : "bg-rose-500"
+                  }`}
+                  style={{ width: `${overallCompletionPercent}%` }}
+                />
+              </div>
+
+              {/* Checklist Sections */}
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-0.5 text-xs">
+                {/* Step 1 Items */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <span>1. Owner &amp; Filing</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(1)}
+                      className="text-emerald-700 hover:underline cursor-pointer"
+                    >
+                      Tab 1
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1">
+                    <ChecklistItem
+                      label="Plate Number"
+                      value={regNo}
+                      isDone={Boolean(regNo.trim())}
+                      onClick={() => focusField("input-regNo", 1)}
+                    />
+                    <ChecklistItem
+                      label="Owner Legal Name"
+                      value={ownerName}
+                      isDone={Boolean(ownerName.trim())}
+                      onClick={() => focusField("input-ownerName", 1)}
+                    />
+                    {isTransfer && activeServiceDef?.prevOwnerRequireName !== false && (
+                      <ChecklistItem
+                        label="Prev Owner Name"
+                        value={oldOwnerName}
+                        isDone={Boolean(oldOwnerName.trim())}
+                        onClick={() => focusField("input-oldOwnerName", 1)}
+                      />
+                    )}
+                  </div>
                 </div>
 
-                <div className="p-4 space-y-3 font-mono text-[10px]" style={{ color: "#c5d9a8" }}>
-                  <Row label="TRANSACTION" value={BOOKING_TYPES.find(b => b.id === bookingType)?.label.split(" ")[0] ?? "—"} />
-                  <Row label="PLATE NO" value={regNo || "PENDING"} highlight />
-
-                  {isTransfer && (
-                    <div className="rounded-lg p-2.5 space-y-1 border"
-                      style={{ background: "rgba(59,130,246,0.07)", borderColor: "rgba(59,130,246,0.18)" }}>
-                      <span className="text-[8px] font-black uppercase block" style={{ color: "#93c5fd" }}>TRANSFER FROM</span>
-                      <p className="text-white font-bold truncate">{oldOwnerName || "—"}</p>
-                    </div>
-                  )}
-
-                  <Row label={isTransfer ? "NEW OWNER" : "OWNER"} value={ownerName || "Awaiting…"} />
-                  {address && <Row label="ADDRESS" value={address} />}
-                  {phone && <Row label="TEL" value={phone} highlight />}
-
-                  <div className="border-t pt-3 space-y-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                    <Row label="MAKE" value={make || "—"} />
-                    <Row label="YEAR" value={year || "—"} />
-                    <Row label="MODEL" value={model || "—"} />
-                    <Row label="CHASSIS" value={chassisNo || "—"} />
-                    <Row label="ENGINE" value={engineNo ? `${engineNo} (${engineCC}cc)` : "—"} />
-                    {fuelType && <Row label="FUEL" value={fuelType} />}
-                    {bodyType && <Row label="BODY" value={bodyType} />}
+                {/* Step 2 Items */}
+                <div className="space-y-1 pt-1 border-t border-slate-200/60">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <span>2. Vehicle Details</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(2)}
+                      className="text-emerald-700 hover:underline cursor-pointer"
+                    >
+                      Tab 2
+                    </button>
                   </div>
+                  <div className="grid grid-cols-1 gap-1">
+                    <ChecklistItem
+                      label="Make &amp; Model"
+                      value={make && model ? `${make} ${model} (${year || "—"})` : ""}
+                      isDone={Boolean(make.trim() && model.trim() && year.trim())}
+                      onClick={() => focusField("input-make", 2)}
+                    />
+                    <ChecklistItem
+                      label="Chassis / VIN"
+                      value={chassisNo}
+                      isDone={Boolean(chassisNo.trim())}
+                      onClick={() => focusField("input-chassisNo", 2)}
+                    />
+                    <ChecklistItem
+                      label="Engine Displacement"
+                      value={engineCC ? `${engineCC} cc` : ""}
+                      isDone={Boolean(engineCC.trim())}
+                      onClick={() => focusField("input-engineCC", 2)}
+                    />
+                  </div>
+                </div>
 
-                  {(tyreFW || tyreRW) && (
-                    <div className="border-t pt-3 grid grid-cols-3 gap-2"
-                      style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                      <MiniRow label="FRONT" value={tyreFW && tyreFD ? `${tyreFW}/${tyreFD}` : "—"} />
-                      <MiniRow label="MID" value={tyreMW && tyreMD ? `${tyreMW}/${tyreMD}` : "—"} />
-                      <MiniRow label="REAR" value={tyreRW && tyreRD ? `${tyreRW}/${tyreRD}` : "—"} />
-                    </div>
-                  )}
+                {/* Step 3 Items */}
+                <div className="space-y-1 pt-1 border-t border-slate-200/60">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <span>3. Axle &amp; Tyres</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(3)}
+                      className="text-emerald-700 hover:underline cursor-pointer"
+                    >
+                      Tab 3
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1">
+                    <ChecklistItem
+                      label="Front Tyres"
+                      value={tyreFW && tyreFD ? `${tyreFW}/${tyreFD}` : ""}
+                      isDone={Boolean(tyreFW.trim() && tyreFD.trim())}
+                      onClick={() => focusField("input-tyreFW", 3)}
+                    />
+                    <ChecklistItem
+                      label="Rear Tyres"
+                      value={tyreRW && tyreRD ? `${tyreRW}/${tyreRD}` : ""}
+                      isDone={Boolean(tyreRW.trim() && tyreRD.trim())}
+                      onClick={() => focusField("input-tyreRW", 3)}
+                    />
+                  </div>
+                </div>
 
-                  {receiptNo && (
-                    <div className="border-t pt-3 space-y-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                      <Row label="RECEIPT" value={receiptNo} />
-                      <Row label="CUSTOMS NO" value={customsNo || "—"} />
-                      <Row label="CUSTOMS DATE" value={customsDate || "—"} />
-                      <Row label="SUPERVISOR" value={supervisor} highlight />
-                    </div>
-                  )}
+                {/* Step 4 Items */}
+                <div className="space-y-1 pt-1 border-t border-slate-200/60">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <span>4. Customs &amp; Audit</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(4)}
+                      className="text-emerald-700 hover:underline cursor-pointer"
+                    >
+                      Tab 4
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1">
+                    <ChecklistItem
+                      label="Revenue Receipt"
+                      value={receiptNo}
+                      isDone={Boolean(receiptNo.trim())}
+                      onClick={() => focusField("input-receiptNo", 4)}
+                    />
+                    <ChecklistItem
+                      label="Customs Declaration"
+                      value={customsNo}
+                      isDone={Boolean(customsNo.trim())}
+                      onClick={() => focusField("input-customsNo", 4)}
+                    />
+                    <ChecklistItem
+                      label="Clearance Date"
+                      value={customsDate}
+                      isDone={Boolean(customsDate.trim())}
+                      onClick={() => focusField("input-customsDate", 4)}
+                    />
+                    <ChecklistItem
+                      label="Supervising Officer"
+                      value={supervisor}
+                      isDone={Boolean(supervisor.trim())}
+                      onClick={() => focusField("input-supervisor", 4)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </form>
-        </div>
+
+            {/* Direct Submit shortcut */}
+            <button
+              type="submit"
+              className={`w-full py-2.5 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer mt-2 flex items-center justify-center gap-1.5 ${
+                overallCompletionPercent === 100
+                  ? "bg-[#103014] hover:bg-[#18481e] text-white"
+                  : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30"
+              }`}
+            >
+              {overallCompletionPercent === 100 ? (
+                <>
+                  <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Submit to Logbook</span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  <span>Submit ({totalRequiredFields - totalCompletedFields} Required Left)</span>
+                </>
+              )}
+            </button>
+          </div>
+
+        </form>
       )}
 
-
     </div>
-  );
-}
-
-/* ── Register preview helpers ── */
-function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div>
-      <span className="text-[8px] font-black uppercase block mb-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</span>
-      <p className="font-bold truncate text-[11px]" style={{ color: highlight ? "#81B71A" : "rgba(255,255,255,0.9)" }}>{value}</p>
-    </div>
-  );
-}
-function MiniRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <span className="text-[8px] font-black uppercase block mb-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</span>
-      <p className="font-semibold text-[10px]" style={{ color: "#c5d9a8" }}>{value}</p>
-    </div>
-  );
-}
-
-/* ════════════════ ICON LIBRARY ════════════════ */
-
-function BoltIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#81B71A" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
-  );
-}
-function ScanIcon() {
-  return (
-    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-      <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
-      <line x1="3" y1="12" x2="21" y2="12" strokeWidth={2.5} />
-    </svg>
-  );
-}
-function SpinIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"
-      style={{ animation: "spin 1s linear infinite" }}>
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </svg>
-  );
-}
-
-/* Section icons */
-function OwnerIcon() {
-  return (
-    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-function VehicleIcon() {
-  return (
-    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3" />
-      <circle cx="7.5" cy="17.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" />
-    </svg>
-  );
-}
-function TyreIcon() {
-  return (
-    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" />
-      <line x1="12" y1="2" x2="12" y2="8" /><line x1="12" y1="16" x2="12" y2="22" />
-      <line x1="2" y1="12" x2="8" y2="12" /><line x1="16" y1="12" x2="22" y2="12" />
-    </svg>
-  );
-}
-function AuditIcon() {
-  return (
-    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
-    </svg>
-  );
-}
-function TransferIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
-      <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
-    </svg>
-  );
-}
-
-/* Field prefix icons */
-function PlateFieldIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#9aa3be" strokeWidth={2} strokeLinecap="round">
-      <rect x="2" y="7" width="20" height="10" rx="2" /><line x1="6" y1="12" x2="18" y2="12" strokeWidth={2.5} />
-    </svg>
-  );
-}
-function PersonFieldIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#9aa3be" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-function LocationFieldIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#9aa3be" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
-    </svg>
-  );
-}
-function PhoneFieldIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#9aa3be" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.9a16 16 0 0 0 6.18 6.18l1.16-.85a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-    </svg>
-  );
-}
-function ReceiptFieldIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#9aa3be" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-    </svg>
-  );
-}
-function CalendarFieldIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#9aa3be" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
-}
-function WeightIcon() {
-  return (
-    <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="2" x2="12" y2="6" />
-      <path d="M5 10l7-4 7 4v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
-    </svg>
-  );
-}
-
-/* Booking type icons */
-function BookingNewIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
-    </svg>
-  );
-}
-function BookingStarIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  );
-}
-function BookingTransferIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
-      <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
-    </svg>
-  );
-}
-function BookingComboIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17 5.8 21.3l2.4-7.4L2 9.4h7.6z" />
-    </svg>
-  );
-}
-
-/* Classification icons */
-function ClassPrivateIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
-  );
-}
-function ClassCommercialIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="3" width="15" height="13" rx="1" />
-      <path d="M16 8h4l3 5v3h-7V8z" />
-      <circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
-    </svg>
-  );
-}
-function ClassEquipmentIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z" />
-    </svg>
-  );
-}
-function ClassGovIcon() {
-  return (
-    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <line x1="3" y1="22" x2="21" y2="22" /><line x1="6" y1="18" x2="6" y2="11" />
-      <line x1="10" y1="18" x2="10" y2="11" /><line x1="14" y1="18" x2="14" y2="11" />
-      <line x1="18" y1="18" x2="18" y2="11" />
-      <polygon points="12 2 20 7 4 7" />
-    </svg>
-  );
-}
-
-/* Body type icons */
-function BodySaloonIcon() {
-  return (
-    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 17H3a2 2 0 0 1-2-2v-3l3-5h13l3 5v3a2 2 0 0 1-2 2h-2" />
-      <path d="M7 9l2-4h6l2 4" />
-      <circle cx="7.5" cy="17.5" r="2.5" /><circle cx="16.5" cy="17.5" r="2.5" />
-    </svg>
-  );
-}
-function BodyHatchIcon() {
-  return (
-    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 17H2a2 2 0 0 1-2-2v-3l2-5h16l2 5v3a2 2 0 0 1-2 2h-2" />
-      <path d="M5 7l3-5h8l3 5" />
-      <circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" />
-    </svg>
-  );
-}
-function BodySUVIcon() {
-  return (
-    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 17H1v-5l4-6h14l4 6v5h-2" />
-      <path d="M5 6V4h14v2" />
-      <circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" />
-    </svg>
-  );
-}
-function BodyPickupIcon() {
-  return (
-    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1 10h10V6l3-3h6v11H1z" />
-      <path d="M13 6l2-3" /><line x1="1" y1="14" x2="20" y2="14" />
-      <circle cx="5" cy="17" r="2" /><circle cx="17" cy="17" r="2" />
-    </svg>
-  );
-}
-function BodyMinibusIcon() {
-  return (
-    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="6" width="22" height="11" rx="2" />
-      <path d="M7 6V4h10v2" />
-      <circle cx="6" cy="17" r="1.5" /><circle cx="18" cy="17" r="1.5" />
-      <line x1="1" y1="11" x2="23" y2="11" />
-    </svg>
-  );
-}
-function BodyBusIcon() {
-  return (
-    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M8 6H2v9.5" /><path d="M22 6H8v10h14V6z" />
-      <circle cx="5.5" cy="17.5" r="1.5" /><circle cx="18.5" cy="17.5" r="1.5" />
-      <line x1="8" y1="10" x2="22" y2="10" />
-    </svg>
-  );
-}
-function BodyEquipIcon() {
-  return (
-    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="12" width="14" height="8" rx="1" />
-      <path d="M16 14h2l4-6V6h-6v8z" />
-      <circle cx="6" cy="20" r="2" /><circle cx="12" cy="20" r="2" />
-      <line x1="2" y1="16" x2="16" y2="16" />
-    </svg>
-  );
-}
-
-/* Fuel type icons */
-function FuelPetrolIcon() {
-  return (
-    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 22V8l7-6 7 6v14H3z" />
-      <path d="M17 8l3-3 1 1-3 3" />
-      <line x1="9" y1="14" x2="15" y2="14" />
-    </svg>
-  );
-}
-function FuelDieselIcon() {
-  return (
-    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <ellipse cx="12" cy="5" rx="7" ry="3" />
-      <path d="M5 5v10a7 3 0 0 0 14 0V5" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-function FuelElectricIcon() {
-  return (
-    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
-  );
-}
-
-/* Tyre position icons */
-function TyreFrontIcon() {
-  return (
-    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" />
-      <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
-    </svg>
-  );
-}
-function TyreMidIcon() {
-  return (
-    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" />
-      <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
-    </svg>
-  );
-}
-function TyreRearIcon() {
-  return (
-    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" />
-      <line x1="4.93" y1="4.93" x2="7.05" y2="7.05" /><line x1="16.95" y1="16.95" x2="19.07" y2="19.07" />
-    </svg>
   );
 }
 
 export default function BookingPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-100 text-slate-500 font-semibold text-xs bg-slate-900/10 backdrop-blur-md rounded-2xl border border-slate-200/50">
+      <div className="flex items-center justify-center min-h-[300px] text-slate-500 font-medium text-xs bg-white rounded-xl border border-slate-200">
         Loading Booking Desk Registry...
       </div>
     }>

@@ -1,21 +1,76 @@
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
 }
 
-model Organization {
+// ─────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────
+
+enum UserRole {
+  SUPERADMIN
+  SUPERVISOR
+  DATA_ENTRY
+}
+
+enum BranchType {
+  HEADQUARTERS
+  REGIONAL
+  DISTRICT
+  SATELLITE
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PICKED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  ALERT
+  EXPIRED
+}
+
+enum PickupStatus {
+  PENDING
+  COMPLETED
+}
+
+// ─────────────────────────────────────────────────────────
+// REGION & BRANCH (DVLA Hierarchical Structure)
+// ─────────────────────────────────────────────────────────
+
+model Region {
   id          String   @id @default(cuid())
-  name        String   // e.g. "DVLA Adenta HQ", "State House Fleet", "Ghana Police Service"
-  slug        String   @unique // e.g. "dvla-adenta", "state-house", "gps"
-  code        String   @unique // e.g. "DVLA-HQ", "STH-FLEET", "GPS-OPS"
+  name        String   @unique // e.g. "Greater Accra Region", "Ashanti Region", "Western Region"
+  code        String   @unique // e.g. "GAR", "AR", "WR", "CR", "VR", "NR"
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  branches    Branch[]
+}
+
+model Branch {
+  id          String     @id @default(cuid())
+  name        String     // e.g. "DVLA Adenta HQ", "DVLA Tema Branch", "DVLA Kumasi Regional"
+  slug        String     @unique // e.g. "dvla-adenta", "dvla-tema", "dvla-kumasi"
+  code        String     @unique // e.g. "DVLA-ADENTA", "DVLA-TEMA", "DVLA-KUMASI"
+  type        BranchType @default(REGIONAL)
+  address     String?
+  phone       String?
+
+  regionId    String
+  region      Region     @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   users               User[]
   reservations        Reservation[]
@@ -23,57 +78,94 @@ model Organization {
   bookings            Booking[]
   pickupRegistrations PickupRegistration[]
   auditLogs           AuditLog[]
+  serviceTypes        ServiceType[]
+
+  @@index([regionId])
 }
-enum UserRole {
-  SUPERADMIN
-  SUPERVISOR
-  DATA_ENTRY
-}
+
+// ─────────────────────────────────────────────────────────
+// USER — central actor with branch association
+// ─────────────────────────────────────────────────────────
 
 model User {
-  id             String        @id @default(cuid())
-  username       String        @unique
-  email          String?       @unique
-  password       String
-  name           String
-  role           UserRole      @default(DATA_ENTRY)
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String?  @unique
+  password  String
+  name      String
+  firstName  String?
+  lastName   String?
+  middleName String?
+  role      UserRole @default(DATA_ENTRY)
 
-  @@index([organizationId])
+  // ── Password Reset & Onboarding Activation ──
+  resetToken          String?
+  resetTokenExpiry    DateTime?
+  mustResetPassword   Boolean   @default(true)
+
+  branchId  String?
+  branch    Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Relations: things this user created / acted on ──
+  createdReservations  Reservation[]        @relation("ReservationCreatedBy")
+  createdVrsInvoices   VrsInvoice[]         @relation("VrsInvoiceCreatedBy")
+  createdBookings      Booking[]            @relation("BookingCreatedBy")
+  reviewedBookings     Booking[]            @relation("BookingReviewedBy")
+  registeredPickups    PickupRegistration[] @relation("PickupRegisteredBy")
+  handedOverPickups    PickupRegistration[] @relation("PickupHandedOverBy")
+  auditLogs            AuditLog[]           @relation("AuditPerformedBy")
+  createdServiceTypes  ServiceType[]        @relation("ServiceTypeCreatedBy")
+
+  @@index([branchId])
+  @@index([resetToken])
 }
 
+// ─────────────────────────────────────────────────────────
+// RESERVATION — plate number reservations
+// ─────────────────────────────────────────────────────────
+
 model Reservation {
-  id             String        @id @default(cuid())
-  type           String        // "Single" | "Range"
-  platePattern   String?
-  rangeStart     Int?
-  rangeEnd       Int?
-  prefix         String
-  year           String
-  holder         String
-  authRef        String
-  expiryDate     String
-  status         String        // "Active" | "Alert" | "Expired"
-  claimedCount   Int           @default(0)
-  totalCount     Int           @default(1)
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id           String            @id @default(cuid())
+  type         String            // "Single" | "Range"
+  platePattern String?
+  rangeStart   Int?
+  rangeEnd     Int?
+  prefix       String
+  year         String
+  holder       String
+  authRef      String
+  expiryDate   String
+  status       ReservationStatus @default(ACTIVE)
+  claimedCount Int               @default(0)
+  totalCount   Int               @default(1)
 
-  bookings       Booking[]
+  branchId     String?
+  branch       Branch?           @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
-  @@index([organizationId])
+  createdById  String?
+  createdBy    User?             @relation("ReservationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  bookings     Booking[]
+
+  @@index([branchId])
+  @@index([createdById])
   @@index([authRef])
   @@index([status])
 }
 
+// ─────────────────────────────────────────────────────────
+// VRS INVOICE — vehicle registration invoice from VRS
+// ─────────────────────────────────────────────────────────
+
 model VrsInvoice {
-  id             String        @id @default(cuid())
-  invoiceNo      String        @unique
+  id             String   @id @default(cuid())
+  invoiceNo      String   @unique
   bookingType    String
   classification String
   regNo          String
@@ -96,73 +188,210 @@ model VrsInvoice {
   tyreMD         String
   tyreRW         String
   tyreRD         String
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  createdAt      DateTime      @default(now())
+
+  // ── Live External DVLA VRS System Integration & Sync Metadata ──
+  externalSyncAt DateTime?
+  rawPayload     String?
+  isVerified     Boolean   @default(true)
+
+  branchId       String?
+  branch         Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  createdById    String?
+  createdBy      User?    @relation("VrsInvoiceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt      DateTime @default(now())
 
   bookings       Booking[]
 
-  @@index([organizationId])
+  @@index([branchId])
+  @@index([createdById])
   @@index([regNo])
   @@index([chassisNo])
   @@index([invoiceNo])
 }
 
+// ─────────────────────────────────────────────────────────
+// BOOKING — plate booking request with approval workflow
+// ─────────────────────────────────────────────────────────
+
 model Booking {
   id             String        @id @default(cuid())
   type           String
-  status         String        // "pending" | "approved" | "rejected"
+  status         BookingStatus @default(PENDING)
   owner          String
   vehicle        String
   plate          String?
   date           String
   classification String
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  
+
+  // ── Previous Title Owner Details (for transfers / change of ownership) ──
+  previousOwnerName    String?
+  previousOwnerPhone   String?
+  previousOwnerAddress String?
+  previousOwnerCustom  String?
+
+  branchId       String?
+  branch         Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
   vrsInvoiceId   String?
   vrsInvoice     VrsInvoice?   @relation(fields: [vrsInvoiceId], references: [id], onDelete: SetNull)
-  
-  reservationId String?
-  reservation   Reservation?  @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+
+  reservationId  String?
+  reservation    Reservation?  @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+
+  // ── Who created this booking ──
+  createdById    String?
+  createdBy      User?         @relation("BookingCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  // ── Who approved / rejected this booking ──
+  reviewedById   String?
+  reviewedBy     User?         @relation("BookingReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt     DateTime?
+  reviewNote     String?       // optional reason for rejection
 
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
-  @@index([organizationId])
+  pickups        PickupRegistration[]
+
+  @@index([branchId])
+  @@index([createdById])
+  @@index([reviewedById])
   @@index([status])
   @@index([plate])
   @@index([createdAt])
 }
 
+// ─────────────────────────────────────────────────────────
+// PICKUP REGISTRATION — plate handover / collection record
+// ─────────────────────────────────────────────────────────
+
 model PickupRegistration {
-  id             String        @id @default(cuid())
-  name           String
-  phone          String
+  id             String       @id @default(cuid())
+  name           String       // collector name
+  phone          String       // collector phone
   plateNumber    String?
   timestamp      String
-  status         String        // "pending" | "completed"
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  status         PickupStatus @default(PENDING)
 
-  @@index([organizationId])
+  branchId       String?
+  branch         Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  // ── Link to the original booking ──
+  bookingId      String?
+  booking        Booking?     @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  // ── Who registered this pickup ──
+  registeredById String?
+  registeredBy   User?        @relation("PickupRegisteredBy", fields: [registeredById], references: [id], onDelete: SetNull)
+
+  // ── Who physically handed over the plates ──
+  handedOverById String?
+  handedOverBy   User?        @relation("PickupHandedOverBy", fields: [handedOverById], references: [id], onDelete: SetNull)
+  handedOverAt   DateTime?
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([branchId])
+  @@index([bookingId])
+  @@index([registeredById])
+  @@index([handedOverById])
   @@index([plateNumber])
   @@index([phone])
 }
 
-model AuditLog {
-  id             String        @id @default(cuid())
-  action         String        // "PLATE_REGISTERED" | "RESERVATION_LOCKED" | "USER_LOGIN" | "SYSTEM_AUDIT"
-  details        String        // Detailed JSON or text description of change
-  performedBy    String        // User ID or username
-  ipAddress      String?
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  createdAt      DateTime      @default(now())
+// ─────────────────────────────────────────────────────────
+// AUDIT LOG — immutable trail of every user action
+// ─────────────────────────────────────────────────────────
 
-  @@index([organizationId])
+model AuditLog {
+  id            String   @id @default(cuid())
+  action        String   // "USER_LOGIN" | "BOOKING_CREATED" | "BOOKING_APPROVED" | "PLATE_HANDED_OVER" | etc.
+  entity        String?  // e.g. "Booking", "Reservation", "PickupRegistration"
+  entityId      String?  // ID of the affected record
+  details       String   // JSON description of the change
+  ipAddress     String?
+
+  branchId      String?
+  branch        Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  // ── Who performed this action ──
+  performedById String?
+  performedBy   User?    @relation("AuditPerformedBy", fields: [performedById], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime @default(now())
+
+  @@index([branchId])
+  @@index([performedById])
   @@index([action])
+  @@index([entity, entityId])
   @@index([createdAt])
 }
+
+// ─────────────────────────────────────────────────────────
+// SERVICE TYPE — manageable filing service types for bookings
+// ─────────────────────────────────────────────────────────
+
+model ServiceType {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g. "REGISTRATION", "REG_SPECIAL", "REG_TRANSFER", etc.
+  name        String   // e.g. "Standard Registration", "Registration + Special Number"
+  description String?  // e.g. "New standard plate issuance"
+  category    String?  // Optional plate category hint: "PRIVATE", "COMMERCIAL", "GOVERNMENT", "ELECTRIC", "ALL"
+  isGlobal              Boolean  @default(true) // If true, available across all branches nationwide
+  isActive              Boolean  @default(true) // If false, hidden from active selection
+  requiresPreviousOwner   Boolean  @default(false) // If true, new bookings with this service require previous title owner details
+  prevOwnerRequireName    Boolean  @default(true)  // Require previous owner full legal name
+  prevOwnerRequirePhone   Boolean  @default(false) // Require previous owner phone number
+  prevOwnerRequireAddress Boolean  @default(true)  // Require previous owner address
+  prevOwnerRequireCustom  Boolean  @default(false) // Require custom transfer documentation reference
+  prevOwnerCustomLabel    String?  // Label for custom document field, e.g. "Deed of Transfer #"
+  
+  branchId    String?
+  branch      Branch?  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  createdById String?
+  createdBy   User?    @relation("ServiceTypeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([branchId])
+  @@index([isGlobal])
+  @@index([isActive])
+}
+
+// ─────────────────────────────────────────────────────────
+// VEHICLE MODEL — persistent catalog of known vehicle specifications
+// ─────────────────────────────────────────────────────────
+
+model VehicleModel {
+  id                  String   @id @default(cuid())
+  make                String   // e.g. "Toyota", "Jetour", "Chery"
+  model               String   // e.g. "Hilux", "Dashing", "Tiggo 8"
+  year                String?  // Reference default model year
+  bodyType            String   @default("Saloon") // e.g. "Saloon", "SUV / Station Wagon", "Pickup / Truck"
+  engineCC            String   @default("2000")
+  cylinders           String   @default("4")
+  fuelType            String   @default("PETROL") // "PETROL" | "DIESEL" | "ELECTRIC" | "HYBRID"
+  netWeight           String   @default("1500")
+  grossWeight         String   @default("2000")
+  tyreW               String   @default("215")
+  tyreDia             String   @default("16")
+  defaultEnginePrefix String?  // e.g. "2ZR-FE", "2GD-FTV"
+  category            String?  // e.g. "Sedan", "SUV", "Pickup", "Truck", "EV"
+  isCustom            Boolean  @default(false) // True if added on-the-fly by officer
+  usageCount          Int      @default(1) // Increments whenever selected or booked
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([make, model])
+  @@index([make])
+  @@index([model])
+  @@index([category])
+  @@index([usageCount])
+}
+

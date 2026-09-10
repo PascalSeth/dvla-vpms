@@ -1,15 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("dvla_session");
+      if (stored) {
+        const user = JSON.parse(stored);
+        if (user.mustResetPassword) {
+          router.replace(`/reset-password?required=true&username=${encodeURIComponent(user.username || "")}`);
+        }
+      }
+    } catch (e) {}
+  }, [router]);
+
   return (
-    <div className="flex h-screen bg-[#f4f6fb] overflow-hidden">
+    <div className="flex h-screen bg-[#f8fafc] overflow-hidden">
       <Sidebar
         collapsed={collapsed}
         mobileOpen={mobileOpen}
