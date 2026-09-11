@@ -23,6 +23,8 @@ interface ServiceType {
   prevOwnerRequireAddress?: boolean;
   prevOwnerRequireCustom?: boolean;
   prevOwnerCustomLabel?: string | null;
+  requiresCustoms: boolean;
+  customFields?: Array<{ fieldKey: string; label: string; type: "text" | "date" | "number"; required: boolean }> | null;
   branchId: string | null;
   branch?: {
     id: string;
@@ -68,7 +70,11 @@ export default function ServiceTypesPage() {
     prevOwnerRequireAddress: true,
     prevOwnerRequireCustom: false,
     prevOwnerCustomLabel: "",
+    requiresCustoms: true,
   });
+
+  // Custom Fields Builder State
+  const [customFields, setCustomFields] = useState<Array<{ fieldKey: string; label: string; type: "text" | "date" | "number"; required: boolean }>>([])
 
   // Delete State
   const [deleteTarget, setDeleteTarget] = useState<ServiceType | null>(null);
@@ -186,7 +192,9 @@ export default function ServiceTypesPage() {
       prevOwnerRequireAddress: true,
       prevOwnerRequireCustom: false,
       prevOwnerCustomLabel: "",
+      requiresCustoms: true,
     });
+    setCustomFields([]);
     setFormError(null);
     setModalOpen(true);
   };
@@ -216,7 +224,9 @@ export default function ServiceTypesPage() {
       prevOwnerRequireAddress: svc.prevOwnerRequireAddress !== undefined ? Boolean(svc.prevOwnerRequireAddress) : true,
       prevOwnerRequireCustom: Boolean(svc.prevOwnerRequireCustom),
       prevOwnerCustomLabel: svc.prevOwnerCustomLabel || "",
+      requiresCustoms: svc.requiresCustoms !== false,
     });
+    setCustomFields(Array.isArray(svc.customFields) ? svc.customFields : []);
     setFormError(null);
     setModalOpen(true);
   };
@@ -254,6 +264,8 @@ export default function ServiceTypesPage() {
         prevOwnerRequireAddress: Boolean(formData.prevOwnerRequireAddress),
         prevOwnerRequireCustom: Boolean(formData.prevOwnerRequireCustom),
         prevOwnerCustomLabel: formData.prevOwnerCustomLabel?.trim() || null,
+        requiresCustoms: Boolean(formData.requiresCustoms),
+        customFields: customFields.length > 0 ? customFields : null,
         userId: sessionUser?.id || undefined,
         userRole: sessionUser?.role || undefined,
       };
@@ -689,6 +701,16 @@ export default function ServiceTypesPage() {
                             </span>
                           </div>
                         )}
+                        {svc.requiresCustoms === false && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-100 text-sky-800 border border-sky-200 uppercase tracking-wider">
+                            No Customs
+                          </span>
+                        )}
+                        {Array.isArray(svc.customFields) && svc.customFields.length > 0 && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-violet-100 text-violet-800 border border-violet-200 uppercase tracking-wider">
+                            +{svc.customFields.length} Custom {svc.customFields.length === 1 ? 'Field' : 'Fields'}
+                          </span>
+                        )}
                       </div>
                       {svc.description && (
                         <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
@@ -995,6 +1017,118 @@ export default function ServiceTypesPage() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Requires Customs Documentation Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-sky-50/50">
+                <div>
+                  <div className="text-xs font-semibold text-slate-800 flex items-center gap-2">
+                    <span>Requires Customs Documentation</span>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 uppercase">Step 3</span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    When enabled (default), the booking form Step 3 requires a Customs Declaration Number and Clearance Date. Disable for service types that don&apos;t involve imported vehicles.
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={formData.requiresCustoms}
+                    onChange={(e) => setFormData({ ...formData, requiresCustoms: e.target.checked })}
+                    className="w-4 h-4 rounded text-[#81B71A] focus:ring-[#81B71A] border-slate-300 cursor-pointer"
+                  />
+                  <span className="text-xs font-semibold text-slate-800">
+                    Customs Required
+                  </span>
+                </label>
+              </div>
+
+              {/* Custom Fields Builder */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-violet-50/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-semibold text-slate-800 flex items-center gap-2">
+                      <span>Custom Input Fields</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-violet-100 text-violet-800 border border-violet-200 uppercase">New</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      Define extra input fields that appear only when this service type is selected at the booking desk. Values are saved with the booking.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomFields(prev => [...prev, { fieldKey: `field_${prev.length + 1}`, label: "", type: "text", required: false }])}
+                    className="ml-4 px-3 py-1.5 text-xs font-bold text-violet-800 bg-white border border-violet-300 rounded-lg hover:bg-violet-100 transition cursor-pointer shrink-0"
+                  >
+                    + Add Field
+                  </button>
+                </div>
+
+                {customFields.length === 0 && (
+                  <div className="text-[11px] text-slate-400 text-center py-2 bg-white rounded-lg border border-dashed border-slate-200">
+                    No custom fields defined. Click &ldquo;+ Add Field&rdquo; to create one.
+                  </div>
+                )}
+
+                {customFields.map((field, idx) => (
+                  <div key={idx} className="bg-white border border-violet-200 rounded-lg p-3 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-violet-700 uppercase">Field #{idx + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => setCustomFields(prev => prev.filter((_, i) => i !== idx))}
+                        className="text-[10px] font-bold text-red-500 hover:text-red-700 cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-semibold text-slate-600">Field Key (internal)</label>
+                        <input
+                          type="text"
+                          value={field.fieldKey}
+                          onChange={e => setCustomFields(prev => prev.map((f, i) => i === idx ? { ...f, fieldKey: e.target.value.toLowerCase().replace(/\s+/g, '_') } : f))}
+                          placeholder="e.g. permit_no"
+                          className="px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-violet-400"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-semibold text-slate-600">Display Label</label>
+                        <input
+                          type="text"
+                          value={field.label}
+                          onChange={e => setCustomFields(prev => prev.map((f, i) => i === idx ? { ...f, label: e.target.value } : f))}
+                          placeholder="e.g. Import Permit Number"
+                          className="px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-1 focus:ring-violet-400"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col gap-1 flex-1">
+                        <label className="text-[10px] font-semibold text-slate-600">Input Type</label>
+                        <select
+                          value={field.type}
+                          onChange={e => setCustomFields(prev => prev.map((f, i) => i === idx ? { ...f, type: e.target.value as "text" | "date" | "number" } : f))}
+                          className="px-2 py-1.5 text-[11px] border border-slate-200 rounded-lg text-slate-800 bg-white focus:outline-none focus:ring-1 focus:ring-violet-400"
+                        >
+                          <option value="text">Text</option>
+                          <option value="date">Date</option>
+                          <option value="number">Number</option>
+                        </select>
+                      </div>
+                      <label className="flex items-center gap-1.5 cursor-pointer pt-4">
+                        <input
+                          type="checkbox"
+                          checked={field.required}
+                          onChange={e => setCustomFields(prev => prev.map((f, i) => i === idx ? { ...f, required: e.target.checked } : f))}
+                          className="w-3.5 h-3.5 rounded text-violet-600 border-slate-300 cursor-pointer"
+                        />
+                        <span className="text-[11px] font-semibold text-slate-700">Required</span>
+                      </label>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Scope Selection */}

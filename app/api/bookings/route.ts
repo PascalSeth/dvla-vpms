@@ -198,6 +198,7 @@ export async function POST(request: Request) {
         previousOwnerPhone: body.previousOwnerPhone || body.oldOwnerPhone || null,
         previousOwnerAddress: body.previousOwnerAddress || body.oldOwnerAddr || null,
         previousOwnerCustom: body.previousOwnerCustom || body.oldOwnerCustom || null,
+        customFieldData: body.customFieldData ? body.customFieldData : undefined,
       },
       include: {
         vrsInvoice: true,

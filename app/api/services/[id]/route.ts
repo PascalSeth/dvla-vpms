@@ -49,6 +49,8 @@ export async function PATCH(
       prevOwnerRequireAddress,
       prevOwnerRequireCustom,
       prevOwnerCustomLabel,
+      requiresCustoms,
+      customFields,
       userId,
     } = body;
 
@@ -129,6 +131,8 @@ export async function PATCH(
     if (prevOwnerRequireAddress !== undefined) updateData.prevOwnerRequireAddress = Boolean(prevOwnerRequireAddress);
     if (prevOwnerRequireCustom !== undefined) updateData.prevOwnerRequireCustom = Boolean(prevOwnerRequireCustom);
     if (prevOwnerCustomLabel !== undefined) updateData.prevOwnerCustomLabel = prevOwnerCustomLabel?.trim() || null;
+    if (requiresCustoms !== undefined) updateData.requiresCustoms = Boolean(requiresCustoms);
+    if (customFields !== undefined) updateData.customFields = customFields ?? null;
 
     if (isActorSuperAdmin && isGlobal !== undefined) {
       updateData.isGlobal = Boolean(isGlobal);

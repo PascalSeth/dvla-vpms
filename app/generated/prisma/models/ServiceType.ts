@@ -38,6 +38,7 @@ export type ServiceTypeMinAggregateOutputType = {
   prevOwnerRequireAddress: boolean | null
   prevOwnerRequireCustom: boolean | null
   prevOwnerCustomLabel: string | null
+  requiresCustoms: boolean | null
   branchId: string | null
   createdById: string | null
   createdAt: Date | null
@@ -58,6 +59,7 @@ export type ServiceTypeMaxAggregateOutputType = {
   prevOwnerRequireAddress: boolean | null
   prevOwnerRequireCustom: boolean | null
   prevOwnerCustomLabel: string | null
+  requiresCustoms: boolean | null
   branchId: string | null
   createdById: string | null
   createdAt: Date | null
@@ -78,6 +80,8 @@ export type ServiceTypeCountAggregateOutputType = {
   prevOwnerRequireAddress: number
   prevOwnerRequireCustom: number
   prevOwnerCustomLabel: number
+  requiresCustoms: number
+  customFields: number
   branchId: number
   createdById: number
   createdAt: number
@@ -100,6 +104,7 @@ export type ServiceTypeMinAggregateInputType = {
   prevOwnerRequireAddress?: true
   prevOwnerRequireCustom?: true
   prevOwnerCustomLabel?: true
+  requiresCustoms?: true
   branchId?: true
   createdById?: true
   createdAt?: true
@@ -120,6 +125,7 @@ export type ServiceTypeMaxAggregateInputType = {
   prevOwnerRequireAddress?: true
   prevOwnerRequireCustom?: true
   prevOwnerCustomLabel?: true
+  requiresCustoms?: true
   branchId?: true
   createdById?: true
   createdAt?: true
@@ -140,6 +146,8 @@ export type ServiceTypeCountAggregateInputType = {
   prevOwnerRequireAddress?: true
   prevOwnerRequireCustom?: true
   prevOwnerCustomLabel?: true
+  requiresCustoms?: true
+  customFields?: true
   branchId?: true
   createdById?: true
   createdAt?: true
@@ -233,6 +241,8 @@ export type ServiceTypeGroupByOutputType = {
   prevOwnerRequireAddress: boolean
   prevOwnerRequireCustom: boolean
   prevOwnerCustomLabel: string | null
+  requiresCustoms: boolean
+  customFields: runtime.JsonValue | null
   branchId: string | null
   createdById: string | null
   createdAt: Date
@@ -274,6 +284,8 @@ export type ServiceTypeWhereInput = {
   prevOwnerRequireAddress?: Prisma.BoolFilter<"ServiceType"> | boolean
   prevOwnerRequireCustom?: Prisma.BoolFilter<"ServiceType"> | boolean
   prevOwnerCustomLabel?: Prisma.StringNullableFilter<"ServiceType"> | string | null
+  requiresCustoms?: Prisma.BoolFilter<"ServiceType"> | boolean
+  customFields?: Prisma.JsonNullableFilter<"ServiceType">
   branchId?: Prisma.StringNullableFilter<"ServiceType"> | string | null
   createdById?: Prisma.StringNullableFilter<"ServiceType"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ServiceType"> | Date | string
@@ -296,6 +308,8 @@ export type ServiceTypeOrderByWithRelationInput = {
   prevOwnerRequireAddress?: Prisma.SortOrder
   prevOwnerRequireCustom?: Prisma.SortOrder
   prevOwnerCustomLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  requiresCustoms?: Prisma.SortOrder
+  customFields?: Prisma.SortOrderInput | Prisma.SortOrder
   branchId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -321,6 +335,8 @@ export type ServiceTypeWhereUniqueInput = Prisma.AtLeast<{
   prevOwnerRequireAddress?: Prisma.BoolFilter<"ServiceType"> | boolean
   prevOwnerRequireCustom?: Prisma.BoolFilter<"ServiceType"> | boolean
   prevOwnerCustomLabel?: Prisma.StringNullableFilter<"ServiceType"> | string | null
+  requiresCustoms?: Prisma.BoolFilter<"ServiceType"> | boolean
+  customFields?: Prisma.JsonNullableFilter<"ServiceType">
   branchId?: Prisma.StringNullableFilter<"ServiceType"> | string | null
   createdById?: Prisma.StringNullableFilter<"ServiceType"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ServiceType"> | Date | string
@@ -343,6 +359,8 @@ export type ServiceTypeOrderByWithAggregationInput = {
   prevOwnerRequireAddress?: Prisma.SortOrder
   prevOwnerRequireCustom?: Prisma.SortOrder
   prevOwnerCustomLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  requiresCustoms?: Prisma.SortOrder
+  customFields?: Prisma.SortOrderInput | Prisma.SortOrder
   branchId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -369,6 +387,8 @@ export type ServiceTypeScalarWhereWithAggregatesInput = {
   prevOwnerRequireAddress?: Prisma.BoolWithAggregatesFilter<"ServiceType"> | boolean
   prevOwnerRequireCustom?: Prisma.BoolWithAggregatesFilter<"ServiceType"> | boolean
   prevOwnerCustomLabel?: Prisma.StringNullableWithAggregatesFilter<"ServiceType"> | string | null
+  requiresCustoms?: Prisma.BoolWithAggregatesFilter<"ServiceType"> | boolean
+  customFields?: Prisma.JsonNullableWithAggregatesFilter<"ServiceType">
   branchId?: Prisma.StringNullableWithAggregatesFilter<"ServiceType"> | string | null
   createdById?: Prisma.StringNullableWithAggregatesFilter<"ServiceType"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ServiceType"> | Date | string
@@ -389,6 +409,8 @@ export type ServiceTypeCreateInput = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: string | null
+  requiresCustoms?: boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   branch?: Prisma.BranchCreateNestedOneWithoutServiceTypesInput
@@ -409,6 +431,8 @@ export type ServiceTypeUncheckedCreateInput = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: string | null
+  requiresCustoms?: boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   branchId?: string | null
   createdById?: string | null
   createdAt?: Date | string
@@ -429,6 +453,8 @@ export type ServiceTypeUpdateInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   branch?: Prisma.BranchUpdateOneWithoutServiceTypesNestedInput
@@ -449,6 +475,8 @@ export type ServiceTypeUncheckedUpdateInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -469,6 +497,8 @@ export type ServiceTypeCreateManyInput = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: string | null
+  requiresCustoms?: boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   branchId?: string | null
   createdById?: string | null
   createdAt?: Date | string
@@ -489,6 +519,8 @@ export type ServiceTypeUpdateManyMutationInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -507,6 +539,8 @@ export type ServiceTypeUncheckedUpdateManyInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -537,6 +571,8 @@ export type ServiceTypeCountOrderByAggregateInput = {
   prevOwnerRequireAddress?: Prisma.SortOrder
   prevOwnerRequireCustom?: Prisma.SortOrder
   prevOwnerCustomLabel?: Prisma.SortOrder
+  requiresCustoms?: Prisma.SortOrder
+  customFields?: Prisma.SortOrder
   branchId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -557,6 +593,7 @@ export type ServiceTypeMaxOrderByAggregateInput = {
   prevOwnerRequireAddress?: Prisma.SortOrder
   prevOwnerRequireCustom?: Prisma.SortOrder
   prevOwnerCustomLabel?: Prisma.SortOrder
+  requiresCustoms?: Prisma.SortOrder
   branchId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -577,6 +614,7 @@ export type ServiceTypeMinOrderByAggregateInput = {
   prevOwnerRequireAddress?: Prisma.SortOrder
   prevOwnerRequireCustom?: Prisma.SortOrder
   prevOwnerCustomLabel?: Prisma.SortOrder
+  requiresCustoms?: Prisma.SortOrder
   branchId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -681,6 +719,8 @@ export type ServiceTypeCreateWithoutBranchInput = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: string | null
+  requiresCustoms?: boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy?: Prisma.UserCreateNestedOneWithoutCreatedServiceTypesInput
@@ -700,6 +740,8 @@ export type ServiceTypeUncheckedCreateWithoutBranchInput = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: string | null
+  requiresCustoms?: boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdById?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -748,6 +790,8 @@ export type ServiceTypeScalarWhereInput = {
   prevOwnerRequireAddress?: Prisma.BoolFilter<"ServiceType"> | boolean
   prevOwnerRequireCustom?: Prisma.BoolFilter<"ServiceType"> | boolean
   prevOwnerCustomLabel?: Prisma.StringNullableFilter<"ServiceType"> | string | null
+  requiresCustoms?: Prisma.BoolFilter<"ServiceType"> | boolean
+  customFields?: Prisma.JsonNullableFilter<"ServiceType">
   branchId?: Prisma.StringNullableFilter<"ServiceType"> | string | null
   createdById?: Prisma.StringNullableFilter<"ServiceType"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ServiceType"> | Date | string
@@ -768,6 +812,8 @@ export type ServiceTypeCreateWithoutCreatedByInput = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: string | null
+  requiresCustoms?: boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   branch?: Prisma.BranchCreateNestedOneWithoutServiceTypesInput
@@ -787,6 +833,8 @@ export type ServiceTypeUncheckedCreateWithoutCreatedByInput = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: string | null
+  requiresCustoms?: boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   branchId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -832,6 +880,8 @@ export type ServiceTypeCreateManyBranchInput = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: string | null
+  requiresCustoms?: boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdById?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -851,6 +901,8 @@ export type ServiceTypeUpdateWithoutBranchInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.UserUpdateOneWithoutCreatedServiceTypesNestedInput
@@ -870,6 +922,8 @@ export type ServiceTypeUncheckedUpdateWithoutBranchInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -889,6 +943,8 @@ export type ServiceTypeUncheckedUpdateManyWithoutBranchInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -908,6 +964,8 @@ export type ServiceTypeCreateManyCreatedByInput = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: string | null
+  requiresCustoms?: boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   branchId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -927,6 +985,8 @@ export type ServiceTypeUpdateWithoutCreatedByInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   branch?: Prisma.BranchUpdateOneWithoutServiceTypesNestedInput
@@ -946,6 +1006,8 @@ export type ServiceTypeUncheckedUpdateWithoutCreatedByInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -965,6 +1027,8 @@ export type ServiceTypeUncheckedUpdateManyWithoutCreatedByInput = {
   prevOwnerRequireAddress?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerRequireCustom?: Prisma.BoolFieldUpdateOperationsInput | boolean
   prevOwnerCustomLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requiresCustoms?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -986,6 +1050,8 @@ export type ServiceTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: boolean
+  requiresCustoms?: boolean
+  customFields?: boolean
   branchId?: boolean
   createdById?: boolean
   createdAt?: boolean
@@ -1008,6 +1074,8 @@ export type ServiceTypeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: boolean
+  requiresCustoms?: boolean
+  customFields?: boolean
   branchId?: boolean
   createdById?: boolean
   createdAt?: boolean
@@ -1030,6 +1098,8 @@ export type ServiceTypeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: boolean
+  requiresCustoms?: boolean
+  customFields?: boolean
   branchId?: boolean
   createdById?: boolean
   createdAt?: boolean
@@ -1052,13 +1122,15 @@ export type ServiceTypeSelectScalar = {
   prevOwnerRequireAddress?: boolean
   prevOwnerRequireCustom?: boolean
   prevOwnerCustomLabel?: boolean
+  requiresCustoms?: boolean
+  customFields?: boolean
   branchId?: boolean
   createdById?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ServiceTypeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "name" | "description" | "category" | "isGlobal" | "isActive" | "requiresPreviousOwner" | "prevOwnerRequireName" | "prevOwnerRequirePhone" | "prevOwnerRequireAddress" | "prevOwnerRequireCustom" | "prevOwnerCustomLabel" | "branchId" | "createdById" | "createdAt" | "updatedAt", ExtArgs["result"]["serviceType"]>
+export type ServiceTypeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "name" | "description" | "category" | "isGlobal" | "isActive" | "requiresPreviousOwner" | "prevOwnerRequireName" | "prevOwnerRequirePhone" | "prevOwnerRequireAddress" | "prevOwnerRequireCustom" | "prevOwnerCustomLabel" | "requiresCustoms" | "customFields" | "branchId" | "createdById" | "createdAt" | "updatedAt", ExtArgs["result"]["serviceType"]>
 export type ServiceTypeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   branch?: boolean | Prisma.ServiceType$branchArgs<ExtArgs>
   createdBy?: boolean | Prisma.ServiceType$createdByArgs<ExtArgs>
@@ -1092,6 +1164,8 @@ export type $ServiceTypePayload<ExtArgs extends runtime.Types.Extensions.Interna
     prevOwnerRequireAddress: boolean
     prevOwnerRequireCustom: boolean
     prevOwnerCustomLabel: string | null
+    requiresCustoms: boolean
+    customFields: runtime.JsonValue | null
     branchId: string | null
     createdById: string | null
     createdAt: Date
@@ -1534,6 +1608,8 @@ export interface ServiceTypeFieldRefs {
   readonly prevOwnerRequireAddress: Prisma.FieldRef<"ServiceType", 'Boolean'>
   readonly prevOwnerRequireCustom: Prisma.FieldRef<"ServiceType", 'Boolean'>
   readonly prevOwnerCustomLabel: Prisma.FieldRef<"ServiceType", 'String'>
+  readonly requiresCustoms: Prisma.FieldRef<"ServiceType", 'Boolean'>
+  readonly customFields: Prisma.FieldRef<"ServiceType", 'Json'>
   readonly branchId: Prisma.FieldRef<"ServiceType", 'String'>
   readonly createdById: Prisma.FieldRef<"ServiceType", 'String'>
   readonly createdAt: Prisma.FieldRef<"ServiceType", 'DateTime'>

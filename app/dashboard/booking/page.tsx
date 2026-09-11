@@ -129,11 +129,10 @@ function Field({
                 FILLED
               </span>
             ) : (
-              <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase tracking-wider ${
-                hasError
+              <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase tracking-wider ${hasError
                   ? "bg-rose-600 text-white shadow-xs animate-bounce"
                   : "bg-rose-100 text-rose-700 border border-rose-300"
-              }`}>
+                }`}>
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                 REQUIRED
               </span>
@@ -152,11 +151,10 @@ function Field({
         )}
       </label>
 
-      <div className={`transition-all duration-200 rounded-lg ${
-        hasError
+      <div className={`transition-all duration-200 rounded-lg ${hasError
           ? "ring-2 ring-rose-400 border border-rose-500 bg-rose-50/20"
           : ""
-      }`}>
+        }`}>
         {children}
       </div>
 
@@ -189,19 +187,17 @@ function ChecklistItem({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between text-left transition cursor-pointer border ${
-        isDone
+      className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between text-left transition cursor-pointer border ${isDone
           ? "bg-emerald-50/70 border-emerald-200/80 text-emerald-950 hover:bg-emerald-100/70"
           : "bg-white border-slate-200 hover:border-rose-300 hover:bg-rose-50/30 text-slate-700"
-      }`}
+        }`}
     >
       <div className="flex items-center gap-2 min-w-0">
         <span
-          className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
-            isDone
+          className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${isDone
               ? "bg-emerald-600 text-white"
               : "border-2 border-dashed border-rose-400 text-rose-500 bg-rose-50"
-          }`}
+            }`}
         >
           {isDone ? "✓" : "!"}
         </span>
@@ -353,9 +349,6 @@ function BookingDeskContent() {
   // Database Vehicles state
   const [dbVehicles, setDbVehicles] = useState<VehicleModel[]>([]);
   const [isDbLoading, setIsDbLoading] = useState(true);
-  const [selectedMakeFilter, setSelectedMakeFilter] = useState("All");
-  const [isSavingCustomModel, setIsSavingCustomModel] = useState(false);
-  const [saveModelSuccess, setSaveModelSuccess] = useState<string | null>(null);
 
   // Fetch vehicles from central database
   async function fetchDbVehicles() {
@@ -396,32 +389,13 @@ function BookingDeskContent() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Vehicles filtered strictly by active category
-  const tabVehicles = useMemo(() => {
-    const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
-    if (selectedMakeFilter === "Custom") {
-      return list.filter((v: any) => v.isCustom);
-    } else if (selectedMakeFilter === "Commercial") {
-      return list.filter((v: any) =>
-        v.bodyType?.includes("Pickup") || v.bodyType?.includes("Truck") || v.bodyType?.includes("Van") || v.bodyType?.includes("Bus")
-      );
-    } else if (selectedMakeFilter === "SUV") {
-      return list.filter((v: any) => v.bodyType?.includes("SUV"));
-    } else if (selectedMakeFilter === "EV") {
-      return list.filter((v: any) => v.fuelType === "ELECTRIC");
-    } else if (selectedMakeFilter !== "All") {
-      return list.filter((v: any) => v.make?.toLowerCase() === selectedMakeFilter.toLowerCase());
-    }
-    return list;
-  }, [dbVehicles, selectedMakeFilter]);
-
-  // Dropdown search results across ALL vehicles globally
+  // Dropdown search results across ALL vehicles globally (shows only when typed)
   const filteredCatalogVehicles = useMemo(() => {
     const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
     const q = vehicleSearchQuery.toLowerCase().trim();
 
     if (!q) {
-      return tabVehicles;
+      return [];
     }
 
     return list.filter((v: any) => {
@@ -432,16 +406,7 @@ function BookingDeskContent() {
       const category = (v.category || "").toLowerCase();
       return full.includes(q) || m.includes(q) || mdl.includes(q) || body.includes(q) || category.includes(q);
     });
-  }, [dbVehicles, tabVehicles, vehicleSearchQuery]);
-
-  function handleSelectBrandTab(tabId: string) {
-    setSelectedMakeFilter(tabId);
-    setVehicleSearchQuery("");
-    setIsVehicleDropdownOpen(false);
-    if (!["All", "Custom", "Commercial", "SUV", "EV"].includes(tabId)) {
-      setMake(tabId.toUpperCase());
-    }
-  }
+  }, [dbVehicles, vehicleSearchQuery]);
 
   function handleResetVehicle() {
     setMake("");
@@ -463,64 +428,7 @@ function BookingDeskContent() {
     setChassisNo("");
     setVehicleSearchQuery("");
     setAutoFilledNotice(null);
-    setSelectedMakeFilter("All");
     setIsVehicleDropdownOpen(false);
-  }
-
-  const isCurrentModelInDb = useMemo(() => {
-    if (!make.trim() || !model.trim()) return true;
-    const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
-    return list.some(
-      (v) =>
-        v.make.toLowerCase() === make.trim().toLowerCase() &&
-        v.model.toLowerCase() === model.trim().toLowerCase()
-    );
-  }, [make, model, dbVehicles]);
-
-  async function handleSaveCurrentModelToDb() {
-    if (!make.trim() || !model.trim()) {
-      alert("Please enter both Make and Model before saving to catalog.");
-      return;
-    }
-    try {
-      setIsSavingCustomModel(true);
-      const payload = {
-        make: make.trim().toUpperCase(),
-        model: model.trim().toUpperCase(),
-        year: year.trim() || selectedCatalogYear || "2024",
-        bodyType: bodyType || "Saloon",
-        engineCC: engineCC.trim() || "2000",
-        cylinders: cylinders || "4",
-        fuelType: fuelType || "PETROL",
-        netWeight: netWeight.trim() || "1500",
-        grossWeight: grossWeight.trim() || "2000",
-        tyreW: tyreFW.trim() || "215",
-        tyreDia: tyreFD.trim() || "16",
-        userId: sessionUser?.id || undefined,
-      };
-
-      const res = await fetch("/api/vehicles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        const result = await res.json();
-        if (result.vehicle) {
-          setDbVehicles((prev) => [result.vehicle, ...prev.filter((x) => x.id !== result.vehicle.id)]);
-        }
-        setSaveModelSuccess(`"${make.trim().toUpperCase()} ${model.trim().toUpperCase()}" saved to Database Catalog!`);
-        setTimeout(() => setSaveModelSuccess(null), 5000);
-      } else {
-        const err = await res.json();
-        alert(err.error || "Failed to save vehicle model to database.");
-      }
-    } catch (e: any) {
-      alert("Error saving vehicle model: " + e.message);
-    } finally {
-      setIsSavingCustomModel(false);
-    }
   }
 
   function handleSelectVehicle(v: VehicleModel | any, customYear?: string) {
@@ -545,7 +453,7 @@ function BookingDeskContent() {
     setVehicleSearchQuery("");
     setIsVehicleDropdownOpen(false);
     setAutoFilledNotice(
-      `✓ Specifications auto-filled: ${v.make.toUpperCase()} ${v.model.toUpperCase()} (${yr}) — ${v.engineCC} CC • ${v.cylinders} Cylinders. Please enter the physical VIN below.`
+      `Specifications auto-filled for ${v.make.toUpperCase()} ${v.model.toUpperCase()} (${yr}).`
     );
 
     setTimeout(() => {
@@ -564,7 +472,7 @@ function BookingDeskContent() {
     setVehicleSearchQuery("");
     setIsVehicleDropdownOpen(false);
     setAutoFilledNotice(
-      `Unlisted vehicle initialized: "${newMake.toUpperCase()} ${newModel.toUpperCase()}". Specifications can be saved to catalog.`
+      `Vehicle initialized: "${newMake.toUpperCase()} ${newModel.toUpperCase()}".`
     );
   }
 
@@ -751,6 +659,8 @@ function BookingDeskContent() {
     prevOwnerRequireAddress?: boolean;
     prevOwnerRequireCustom?: boolean;
     prevOwnerCustomLabel?: string | null;
+    requiresCustoms?: boolean;
+    customFields?: Array<{ fieldKey: string; label: string; type: "text" | "date" | "number"; required: boolean }> | null;
   }
   const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([]);
   const [sessionUser, setSessionUser] = useState<{ id?: string; name?: string; username?: string; role?: string; branchId?: string; branch?: any } | null>(null);
@@ -779,7 +689,7 @@ function BookingDeskContent() {
                 if (match) activeBranchId = match.id;
               }
             }
-          } catch {}
+          } catch { }
         }
 
         const url = activeBranchId
@@ -822,6 +732,8 @@ function BookingDeskContent() {
       prevOwnerRequireAddress: s.prevOwnerRequireAddress !== undefined ? Boolean(s.prevOwnerRequireAddress) : true,
       prevOwnerRequireCustom: Boolean(s.prevOwnerRequireCustom),
       prevOwnerCustomLabel: s.prevOwnerCustomLabel || null,
+      requiresCustoms: s.requiresCustoms !== false,
+      customFields: Array.isArray(s.customFields) ? s.customFields : [],
     }));
   }, [serviceOptions]);
 
@@ -834,6 +746,12 @@ function BookingDeskContent() {
       : (bookingType === "REG_TRANSFER" || bookingType === "REG_TRANSFER_SPECIAL")
   );
 
+  // Whether the selected service requires customs documentation
+  const requiresCustomsStep = activeServiceDef ? activeServiceDef.requiresCustoms !== false : true;
+
+  // Custom fields for the selected service
+  const activeCustomFields = activeServiceDef?.customFields || [];
+
   useEffect(() => {
     setShowExtraPhone(false);
     setShowExtraAddr(false);
@@ -844,7 +762,12 @@ function BookingDeskContent() {
       setOldOwnerAddr("");
       setOldOwnerCustom("");
     }
+    // Reset custom field values when service type changes
+    setCustomFieldValues({});
   }, [bookingType, isTransfer]);
+
+  // Custom field values state
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
 
   const isSpecialOrCustomized =
     bookingType === "REG_SPECIAL" ||
@@ -914,13 +837,21 @@ function BookingDeskContent() {
   // Step 3: Customs & Certification
   const missingFieldsTab3 = useMemo(() => {
     const missing: { id: string; label: string }[] = [];
-    if (!customsNo.trim()) missing.push({ id: "input-customsNo", label: "Customs Declaration Number" });
-    if (!customsDate.trim()) missing.push({ id: "input-customsDate", label: "Customs Clearance Date" });
-    if (!supervisor.trim()) missing.push({ id: "input-supervisor", label: "Supervising Certification Officer" });
+    if (requiresCustomsStep) {
+      if (!customsNo.trim()) missing.push({ id: "input-customsNo", label: "Customs Declaration Number" });
+      if (!customsDate.trim()) missing.push({ id: "input-customsDate", label: "Customs Clearance Date" });
+    }
+    if (!supervisor.trim()) missing.push({ id: "input-supervisor", label: "Approving Officer" });
+    // Required custom fields validation
+    activeCustomFields.filter(f => f.required).forEach(f => {
+      if (!customFieldValues[f.fieldKey]?.trim()) {
+        missing.push({ id: `input-custom-${f.fieldKey}`, label: f.label || f.fieldKey });
+      }
+    });
     return missing;
-  }, [customsNo, customsDate, supervisor]);
+  }, [requiresCustomsStep, customsNo, customsDate, supervisor, activeCustomFields, customFieldValues]);
 
-  const totalFieldsTab3 = 3;
+  const totalFieldsTab3 = (requiresCustomsStep ? 2 : 0) + 1 + activeCustomFields.filter(f => f.required).length;
 
   const totalRequiredFields = totalFieldsTab1 + totalFieldsTab2 + totalFieldsTab3;
   const totalCompletedFields =
@@ -1251,6 +1182,7 @@ function BookingDeskContent() {
           previousOwnerPhone: isTransfer ? oldOwnerPhone.trim().toUpperCase() || undefined : undefined,
           previousOwnerAddress: isTransfer ? oldOwnerAddr.trim().toUpperCase() || undefined : undefined,
           previousOwnerCustom: isTransfer ? oldOwnerCustom.trim().toUpperCase() || undefined : undefined,
+          customFieldData: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
         }),
       });
 
@@ -1322,7 +1254,7 @@ function BookingDeskContent() {
             disabled={isSimulating}
             className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
           >
-            <span>⚡ Demo Auto-Fill</span>
+            <span>Demo Auto-Fill</span>
           </button>
 
           {/* Quick Mobile Review Shortcut */}
@@ -1332,7 +1264,7 @@ function BookingDeskContent() {
             className="lg:hidden px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold transition cursor-pointer flex items-center gap-1"
             title="Preview plate and review"
           >
-            <span>🔍 Plate</span>
+            <span>Plate</span>
           </button>
 
           <button
@@ -1414,7 +1346,7 @@ function BookingDeskContent() {
               <span>{customsDate || "—"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">SUPERVISOR:</span>
+              <span className="text-slate-400">APPROVING OFFICER:</span>
               <span className="font-semibold text-slate-900">{supervisor || "—"}</span>
             </div>
           </div>
@@ -1458,19 +1390,17 @@ function BookingDeskContent() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id as 1 | 2 | 3 | 4)}
-                    className={`flex-1 py-3 px-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 ${
-                      active
+                    className={`flex-1 py-3 px-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 ${active
                         ? "border-[#81B71A] text-slate-900 bg-white font-bold shadow-2xs"
                         : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/60"
-                    }`}
+                      }`}
                   >
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
-                      active
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${active
                         ? "bg-[#103014] text-white"
                         : isDone
-                        ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                        : "bg-slate-200 text-slate-600"
-                    }`}>
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                          : "bg-slate-200 text-slate-600"
+                      }`}>
                       {isDone && !active ? "✓" : tab.stepNum}
                     </span>
                     <span className="hidden md:inline">{tab.label}</span>
@@ -1490,23 +1420,21 @@ function BookingDeskContent() {
               {activeTab === 1 && (
                 <div className="space-y-4">
                   {/* Step 1 Compact Status Bar */}
-                  <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${
-                    missingFieldsTab1.length === 0
+                  <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${missingFieldsTab1.length === 0
                       ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
                       : attemptedTabs[1]
-                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
-                      : "bg-slate-50 border-slate-200 text-slate-700"
-                  }`}>
+                        ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                        : "bg-slate-50 border-slate-200 text-slate-700"
+                    }`}>
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${
-                        missingFieldsTab1.length === 0 ? "bg-emerald-500" : attemptedTabs[1] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
-                      }`} />
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${missingFieldsTab1.length === 0 ? "bg-emerald-500" : attemptedTabs[1] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
+                        }`} />
                       <span className="font-semibold text-[11px] uppercase">
                         {missingFieldsTab1.length === 0
                           ? "Step 1: All required filing details completed"
                           : attemptedTabs[1]
-                          ? `Action Needed: ${missingFieldsTab1.length} required field${missingFieldsTab1.length === 1 ? " is" : "s are"} missing`
-                          : `Step 1: Filing & Owner Details (${totalFieldsTab1 - missingFieldsTab1.length}/${totalFieldsTab1} Completed)`}
+                            ? `Action Needed: ${missingFieldsTab1.length} required field${missingFieldsTab1.length === 1 ? " is" : "s are"} missing`
+                            : `Step 1: Filing & Owner Details (${totalFieldsTab1 - missingFieldsTab1.length}/${totalFieldsTab1} Completed)`}
                       </span>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0">
@@ -1582,6 +1510,42 @@ function BookingDeskContent() {
                       </select>
                     </Field>
                   </div>
+
+                  {/* ── Dynamic Custom Fields (from Service Type config) ── */}
+                  {activeCustomFields.length > 0 && (
+                    <div className="p-4 bg-violet-50/60 border border-violet-200 rounded-xl space-y-3 animate-in fade-in duration-150">
+                      <div className="flex items-center gap-2 border-b border-violet-200/60 pb-2">
+                        <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0" />
+                        <span className="text-xs font-bold text-violet-900 uppercase tracking-wide">
+                          Additional Fields — {activeServiceDef?.name}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {activeCustomFields.map(f => (
+                          <Field
+                            key={f.fieldKey}
+                            label={f.label || f.fieldKey}
+                            required={f.required}
+                            optional={!f.required}
+                            isFilled={Boolean(customFieldValues[f.fieldKey]?.trim())}
+                            hasError={attemptedTabs[1] && f.required && !customFieldValues[f.fieldKey]?.trim()}
+                            errorMessage={`${f.label || f.fieldKey} is required`}
+                            fieldId={`custom-${f.fieldKey}`}
+                          >
+                            <input
+                              id={`input-custom-${f.fieldKey}`}
+                              type={f.type === "date" ? "date" : f.type === "number" ? "number" : "text"}
+                              value={customFieldValues[f.fieldKey] || ""}
+                              onChange={e => setCustomFieldValues(prev => ({ ...prev, [f.fieldKey]: f.type === "text" ? e.target.value.toUpperCase() : e.target.value }))}
+                              required={f.required}
+                              placeholder={`Enter ${f.label || f.fieldKey}`}
+                              className={INPUT + (f.type === "text" ? " uppercase" : "")}
+                            />
+                          </Field>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                     <Field
@@ -1670,7 +1634,7 @@ function BookingDeskContent() {
                             <span>Previous Title Owner &amp; Transfer Details</span>
                           </span>
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase tracking-wider">
-                            ⚡ Required by Service
+                            Required by Service
                           </span>
                         </div>
                       </div>
@@ -1885,27 +1849,25 @@ function BookingDeskContent() {
                 </div>
               )}
 
-              {/* ── STEP 2: VEHICLE DETAILS (HIGH-VISIBILITY VEHICLE SELECTION + CC + CYLINDERS) ── */}
+              {/* ── STEP 2: VEHICLE DETAILS (CORPORATE AUTO-FILL SEARCH + SPECS) ── */}
               {activeTab === 2 && (
                 <div className="space-y-4">
                   {/* Step 2 Compact Status Bar */}
-                  <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${
-                    missingFieldsTab2.length === 0
+                  <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${missingFieldsTab2.length === 0
                       ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
                       : attemptedTabs[2]
-                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
-                      : "bg-slate-50 border-slate-200 text-slate-700"
-                  }`}>
+                        ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                        : "bg-slate-50 border-slate-200 text-slate-700"
+                    }`}>
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${
-                        missingFieldsTab2.length === 0 ? "bg-emerald-500" : attemptedTabs[2] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
-                      }`} />
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${missingFieldsTab2.length === 0 ? "bg-emerald-500" : attemptedTabs[2] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
+                        }`} />
                       <span className="font-semibold text-[11px] uppercase">
                         {missingFieldsTab2.length === 0
                           ? "Step 2: All required vehicle specifications completed"
                           : attemptedTabs[2]
-                          ? `Action Needed: ${missingFieldsTab2.length} required spec${missingFieldsTab2.length === 1 ? " is" : "s are"} missing`
-                          : `Step 2: Vehicle Specifications (${totalFieldsTab2 - missingFieldsTab2.length}/${totalFieldsTab2} Completed)`}
+                            ? `Action Needed: ${missingFieldsTab2.length} required spec${missingFieldsTab2.length === 1 ? " is" : "s are"} missing`
+                            : `Step 2: Vehicle Specifications (${totalFieldsTab2 - missingFieldsTab2.length}/${totalFieldsTab2} Completed)`}
                       </span>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0">
@@ -1914,32 +1876,22 @@ function BookingDeskContent() {
                   </div>
 
                   {/* ══════════════════════════════════════════════════════════════
-                      HERO VEHICLE SELECTION & SPECIFICATION AUTO-FILL STATION
-                      (High-Visibility, Vibrant, Impossible to Miss)
+                      CORPORATE VEHICLE CATALOG SEARCH STATION
                   ══════════════════════════════════════════════════════════════ */}
-                  <div className="p-4 sm:p-5 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/70 border-2 border-emerald-500/80 rounded-2xl space-y-4 shadow-sm">
-                    {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="p-4 sm:p-5 bg-white border border-slate-200 rounded-xl space-y-4 shadow-2xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                       <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black bg-emerald-700 text-white uppercase tracking-wider shadow-2xs">
-                            <span>🚘 VEHICLE SELECTION</span>
-                          </span>
-                          <span className="text-xs font-black text-slate-900 uppercase">
-                            Instant Specification Auto-Fill
-                          </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                            {isDbLoading ? "Connecting..." : `${dbVehicles.length} Verified Models`}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-600 mt-1">
-                          Click any popular model below or search by name. Technical specs (CC, Cylinders, Body Type) are filled automatically!
+                        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                          Vehicle Catalog Search
+                        </h3>
+                        <p className="text-[10px] text-slate-500 mt-0.5">
+                          Search by make or model to auto-fill specifications.
                         </p>
                       </div>
 
                       {/* Year Selector */}
                       <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
-                        <span className="text-[11px] font-bold text-slate-600 uppercase">Model Year:</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">Year:</span>
                         <select
                           value={selectedCatalogYear}
                           onChange={(e) => {
@@ -1949,7 +1901,7 @@ function BookingDeskContent() {
                               setYear(newYr);
                             }
                           }}
-                          className="px-2.5 py-1.5 bg-white border-2 border-emerald-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs transition cursor-pointer"
+                          className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#81B71A] shadow-sm transition cursor-pointer"
                         >
                           {YEARS_LIST.map((yr) => (
                             <option key={yr} value={yr}>
@@ -1959,43 +1911,6 @@ function BookingDeskContent() {
                         </select>
                       </div>
                     </div>
-
-                    {/* Active Selected Vehicle Highlight Banner */}
-                    {make.trim() && model.trim() && (
-                      <div className="p-3.5 bg-gradient-to-r from-emerald-800 to-teal-900 text-white rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/40 flex items-center justify-center font-bold text-lg shrink-0">
-                            ✓
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
-                                ACTIVE VEHICLE SELECTION
-                              </span>
-                              <span className="text-xs text-emerald-200 font-mono">
-                                Year: {year || selectedCatalogYear}
-                              </span>
-                            </div>
-                            <h3 className="text-sm sm:text-base font-extrabold tracking-wide text-white uppercase mt-0.5">
-                              {make} {model}
-                            </h3>
-                            <p className="text-[11px] text-emerald-200/90 font-medium">
-                              Engine: <strong>{engineCC} CC</strong> &bull; <strong>{cylinders} Cylinders</strong> &bull; {fuelType} &bull; {bodyType}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                          <button
-                            type="button"
-                            onClick={handleResetVehicle}
-                            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-xs font-bold text-white transition cursor-pointer flex items-center gap-1"
-                          >
-                            <span>✕ Clear / Change</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
 
                     {/* Search Bar with Autocomplete Dropdown */}
                     <div className="relative" ref={vehicleSearchDropdownRef}>
@@ -2008,10 +1923,10 @@ function BookingDeskContent() {
                             setIsVehicleDropdownOpen(true);
                           }}
                           onFocus={() => setIsVehicleDropdownOpen(true)}
-                          placeholder="SEARCH VEHICLE CATALOG (E.G. COROLLA, CAMRY, HILUX, TUCSON, BENZ, PRADO...)"
-                          className="w-full pl-10 pr-9 py-2.5 bg-white border-2 border-emerald-300 focus:border-emerald-600 rounded-xl text-xs font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 shadow-xs transition uppercase"
+                          placeholder="SEARCH VEHICLE CATALOG (E.G. COROLLA, CAMRY, HILUX, TUCSON...)"
+                          className="w-full pl-9 pr-9 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#81B71A] rounded-lg text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#81B71A]/20 transition uppercase"
                         />
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-600 pointer-events-none">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                           </svg>
@@ -2031,9 +1946,9 @@ function BookingDeskContent() {
                         )}
                       </div>
 
-                      {/* Search Results Dropdown */}
-                      {isVehicleDropdownOpen && (
-                        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100">
+                      {/* Search Results Dropdown - only displays when typing */}
+                      {isVehicleDropdownOpen && vehicleSearchQuery.trim().length > 0 && (
+                        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-100">
                           {filteredCatalogVehicles.length === 0 ? (
                             <div className="p-4 space-y-2 text-center">
                               <p className="text-xs text-slate-600 uppercase">
@@ -2042,7 +1957,7 @@ function BookingDeskContent() {
                               <button
                                 type="button"
                                 onClick={handleUseUnlistedFromSearch}
-                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-2xs inline-flex items-center gap-1.5 uppercase"
+                                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition cursor-pointer inline-flex items-center gap-1.5 uppercase"
                               >
                                 <span>Use &quot;{vehicleSearchQuery}&quot; &amp; Register specs</span>
                               </button>
@@ -2051,21 +1966,20 @@ function BookingDeskContent() {
                             <>
                               <div className="px-3 py-1.5 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
                                 <span>Matching Models ({filteredCatalogVehicles.length})</span>
-                                <span className="text-emerald-700 font-semibold">Click to Auto-Fill</span>
                               </div>
                               {filteredCatalogVehicles.slice(0, 30).map((v: any) => (
                                 <button
                                   key={v.id || `${v.make}-${v.model}`}
                                   type="button"
                                   onClick={() => handleSelectVehicle(v)}
-                                  className="w-full px-3.5 py-2.5 text-left hover:bg-emerald-50 transition flex items-center justify-between gap-2 cursor-pointer group"
+                                  className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 transition flex items-center justify-between gap-2 cursor-pointer group"
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
                                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 uppercase shrink-0">
                                       {v.bodyType?.includes("Pickup") ? "Pickup" : v.bodyType?.includes("SUV") ? "SUV" : "Saloon"}
                                     </span>
                                     <div className="min-w-0">
-                                      <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-800 truncate uppercase">
+                                      <p className="text-xs font-bold text-slate-900 group-hover:text-[#81B71A] truncate uppercase">
                                         {v.make} {v.model}
                                       </p>
                                       <p className="text-[10px] text-slate-500 truncate uppercase">
@@ -2073,7 +1987,7 @@ function BookingDeskContent() {
                                       </p>
                                     </div>
                                   </div>
-                                  <span className="text-xs font-bold text-emerald-600 group-hover:translate-x-0.5 transition-transform shrink-0">
+                                  <span className="text-xs font-bold text-[#81B71A] group-hover:translate-x-0.5 transition-transform shrink-0">
                                     Select &rarr;
                                   </span>
                                 </button>
@@ -2084,114 +1998,30 @@ function BookingDeskContent() {
                       )}
                     </div>
 
-                    {/* Popular Ghanaian Fleet Tiles (High-Visibility Grid) */}
-                    <div className="space-y-2 pt-1">
-                      <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                        <span className="flex items-center gap-1.5">
-                          <span className="text-amber-500">★</span>
-                          <span>Popular Fleet Quick-Pick:</span>
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-normal">Click any tile to auto-fill specs</span>
+                    {/* Active Selected Vehicle Highlight Banner */}
+                    {make.trim() && model.trim() && (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+                        <div>
+                          <p className="text-xs font-bold text-slate-800 uppercase">
+                            {make} {model} <span className="text-slate-500 font-mono">({year || selectedCatalogYear})</span>
+                          </p>
+                          <p className="text-[10px] text-slate-500 uppercase mt-0.5">
+                            Engine: {engineCC} CC • {cylinders} Cylinders • {fuelType}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleResetVehicle}
+                          className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-100 transition cursor-pointer shrink-0"
+                        >
+                          Clear Selection
+                        </button>
                       </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                        {[
-                          { name: "Corolla", make: "Toyota", icon: "🚗", cc: "2000", cyl: "4" },
-                          { name: "Camry", make: "Toyota", icon: "🚘", cc: "2500", cyl: "4" },
-                          { name: "Hilux", make: "Toyota", icon: "🛻", cc: "2800", cyl: "4" },
-                          { name: "Land Cruiser", make: "Toyota", icon: "🚙", cc: "2400", cyl: "4" },
-                          { name: "Tucson", make: "Hyundai", icon: "🚙", cc: "2000", cyl: "4" },
-                          { name: "Civic", make: "Honda", icon: "🚗", cc: "1500", cyl: "4" },
-                          { name: "Navara", make: "Nissan", icon: "🛻", cc: "2500", cyl: "4" },
-                          { name: "C-Class", make: "Mercedes-Benz", icon: "🏎️", cc: "2000", cyl: "4" },
-                          { name: "Model Y", make: "Tesla", icon: "⚡", cc: "EV", cyl: "N/A" },
-                          { name: "Dashing", make: "Jetour", icon: "🚙", cc: "1500", cyl: "4" },
-                        ].map((item) => {
-                          const isSelected = make.toUpperCase() === item.make.toUpperCase() && model.toUpperCase() === item.name.toUpperCase();
-                          return (
-                            <button
-                              key={item.name}
-                              type="button"
-                              onClick={() => {
-                                const match = (dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG).find(
-                                  v => v.make.toLowerCase() === item.make.toLowerCase() && v.model.toLowerCase().includes(item.name.toLowerCase())
-                                );
-                                if (match) {
-                                  handleSelectVehicle(match);
-                                } else {
-                                  setMake(item.make.toUpperCase());
-                                  setModel(item.name.toUpperCase());
-                                  setYear(selectedCatalogYear);
-                                  setEngineCC(item.cc);
-                                  setCylinders(item.cyl);
-                                  setChassisNo("");
-                                  setTimeout(() => chassisInputRef.current?.focus(), 150);
-                                }
-                              }}
-                              className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between gap-1 shadow-2xs ${
-                                isSelected
-                                  ? "bg-emerald-700 text-white border-emerald-800 ring-2 ring-emerald-500"
-                                  : "bg-white hover:bg-emerald-50/80 text-slate-800 border-slate-200 hover:border-emerald-400"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-base">{item.icon}</span>
-                                <span className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded ${
-                                  isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
-                                }`}>
-                                  {item.cc === "EV" ? "EV" : `${item.cc}cc`}
-                                </span>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-semibold text-slate-400 uppercase leading-none">
-                                  {item.make}
-                                </p>
-                                <p className={`text-xs font-extrabold uppercase truncate leading-tight mt-0.5 ${
-                                  isSelected ? "text-white" : "text-slate-900"
-                                }`}>
-                                  {item.name}
-                                </p>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Brand Filter Pills */}
-                    <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] font-medium text-slate-600 pt-1 border-t border-emerald-100">
-                      {[
-                        { id: "All", label: "All Makes" },
-                        { id: "Toyota", label: "Toyota" },
-                        { id: "Hyundai", label: "Hyundai" },
-                        { id: "Mercedes-Benz", label: "Mercedes" },
-                        { id: "Honda", label: "Honda" },
-                        { id: "Nissan", label: "Nissan" },
-                        { id: "SUV", label: "SUV / 4x4" },
-                        { id: "Commercial", label: "Pickups & Trucks" },
-                        { id: "EV", label: "Electric (EV)" },
-                      ].map((tab) => {
-                        const isTabActive = selectedMakeFilter === tab.id;
-                        return (
-                          <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => handleSelectBrandTab(tab.id)}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer whitespace-nowrap border uppercase ${
-                              isTabActive
-                                ? "bg-slate-900 text-white border-slate-900 shadow-2xs"
-                                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
-                            }`}
-                          >
-                            {tab.label}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    )}
 
                     {/* Auto-filled notice */}
                     {autoFilledNotice && (
-                      <div className="p-2.5 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-between text-xs text-emerald-900 font-bold uppercase">
+                      <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-[11px] text-emerald-800 font-bold uppercase">
                         <span>{autoFilledNotice}</span>
                         <button
                           type="button"
@@ -2284,11 +2114,11 @@ function BookingDeskContent() {
                         >
                           {(dbBodyTypes.length > 0
                             ? dbBodyTypes.map(bt => (
-                                <option key={bt.code} value={bt.name}>{bt.name.toUpperCase()}</option>
-                              ))
+                              <option key={bt.code} value={bt.name}>{bt.name.toUpperCase()}</option>
+                            ))
                             : BODY_TYPES.map(bt => (
-                                <option key={bt} value={bt}>{bt.toUpperCase()}</option>
-                              ))
+                              <option key={bt} value={bt}>{bt.toUpperCase()}</option>
+                            ))
                           )}
                         </select>
                       </Field>
@@ -2325,9 +2155,9 @@ function BookingDeskContent() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Field 
-                        label="Chassis / VIN Number (17 Characters)" 
-                        required 
+                      <Field
+                        label="Chassis / VIN Number (17 Characters)"
+                        required
                         isFilled={Boolean(chassisNo.trim())}
                         hasError={attemptedTabs[2] && !chassisNo.trim()}
                         errorMessage="Chassis / VIN Number is required"
@@ -2342,11 +2172,10 @@ function BookingDeskContent() {
                             onChange={e => setChassisNo(e.target.value.toUpperCase())}
                             required
                             placeholder="E.G. JTEBU5JR8P2091837"
-                            className={`${INPUT} font-mono font-bold text-sm tracking-wider uppercase ${
-                              make && model && !chassisNo
+                            className={`${INPUT} font-mono font-bold text-sm tracking-wider uppercase ${make && model && !chassisNo
                                 ? "ring-2 ring-emerald-500 border-emerald-500 bg-emerald-50/20"
                                 : ""
-                            }`}
+                              }`}
                           />
                           {make && model && !chassisNo && (
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
@@ -2356,8 +2185,8 @@ function BookingDeskContent() {
                         </div>
                       </Field>
 
-                      <Field 
-                        label="Engine Serial Number" 
+                      <Field
+                        label="Engine Serial Number"
                         optional
                         isFilled={Boolean(engineNo.trim())}
                         fieldId="engineNo"
@@ -2379,9 +2208,6 @@ function BookingDeskContent() {
                     <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                       <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                         3. Engine Specifications
-                      </span>
-                      <span className="text-[10px] text-emerald-700 font-semibold uppercase">
-                        ⚡ Axles &amp; tyres simplified
                       </span>
                     </div>
 
@@ -2452,23 +2278,21 @@ function BookingDeskContent() {
               {activeTab === 3 && (
                 <div className="space-y-4">
                   {/* Step 3 Compact Status Bar */}
-                  <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${
-                    missingFieldsTab3.length === 0
+                  <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${missingFieldsTab3.length === 0
                       ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
                       : attemptedTabs[3]
-                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
-                      : "bg-slate-50 border-slate-200 text-slate-700"
-                  }`}>
+                        ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                        : "bg-slate-50 border-slate-200 text-slate-700"
+                    }`}>
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${
-                        missingFieldsTab3.length === 0 ? "bg-emerald-500" : attemptedTabs[3] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
-                      }`} />
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${missingFieldsTab3.length === 0 ? "bg-emerald-500" : attemptedTabs[3] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
+                        }`} />
                       <span className="font-semibold text-[11px] uppercase">
                         {missingFieldsTab3.length === 0
                           ? "Step 3: Customs clearance & certifying officer verified"
                           : attemptedTabs[3]
-                          ? `Action Needed: ${missingFieldsTab3.length} required field${missingFieldsTab3.length === 1 ? " is" : "s are"} missing`
-                          : `Step 3: Customs & Certification (${totalFieldsTab3 - missingFieldsTab3.length}/${totalFieldsTab3} Completed)`}
+                            ? `Action Needed: ${missingFieldsTab3.length} required field${missingFieldsTab3.length === 1 ? " is" : "s are"} missing`
+                            : `Step 3: Customs & Certification (${totalFieldsTab3 - missingFieldsTab3.length}/${totalFieldsTab3} Completed)`}
                       </span>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-2xs shrink-0">
@@ -2477,53 +2301,63 @@ function BookingDeskContent() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <Field
-                      label="Customs Declaration Number"
-                      required
-                      isFilled={Boolean(customsNo.trim())}
-                      hasError={attemptedTabs[3] && !customsNo.trim()}
-                      errorMessage="Customs Declaration Number is required"
-                      fieldId="customsNo"
-                    >
-                      <input
-                        id="input-customsNo"
-                        value={customsNo}
-                        onChange={e => setCustomsNo(e.target.value.toUpperCase())}
-                        required
-                        placeholder="E.G. 4708912/26"
-                        className={INPUT + " font-mono font-bold"}
-                      />
-                    </Field>
+                    {requiresCustomsStep && (
+                      <>
+                        <Field
+                          label="Customs Declaration Number"
+                          required
+                          isFilled={Boolean(customsNo.trim())}
+                          hasError={attemptedTabs[3] && !customsNo.trim()}
+                          errorMessage="Customs Declaration Number is required"
+                          fieldId="customsNo"
+                        >
+                          <input
+                            id="input-customsNo"
+                            value={customsNo}
+                            onChange={e => setCustomsNo(e.target.value.toUpperCase())}
+                            required
+                            placeholder="E.G. 4708912/26"
+                            className={INPUT + " font-mono font-bold"}
+                          />
+                        </Field>
 
-                    <Field
-                      label="Customs Clearance Date"
-                      required
-                      isFilled={Boolean(customsDate.trim())}
-                      hasError={attemptedTabs[3] && !customsDate.trim()}
-                      errorMessage="Customs Clearance Date is required"
-                      fieldId="customsDate"
-                      hint="Clearance stamp date"
-                    >
-                      <input
-                        id="input-customsDate"
-                        type="date"
-                        value={customsDate}
-                        onChange={e => setCustomsDate(e.target.value)}
-                        required
-                        className={INPUT}
-                      />
-                    </Field>
+                        <Field
+                          label="Customs Clearance Date"
+                          required
+                          isFilled={Boolean(customsDate.trim())}
+                          hasError={attemptedTabs[3] && !customsDate.trim()}
+                          errorMessage="Customs Clearance Date is required"
+                          fieldId="customsDate"
+                          hint="Clearance stamp date"
+                        >
+                          <input
+                            id="input-customsDate"
+                            type="date"
+                            value={customsDate}
+                            onChange={e => setCustomsDate(e.target.value)}
+                            required
+                            className={INPUT}
+                          />
+                        </Field>
+                      </>
+                    )}
+                    {!requiresCustomsStep && (
+                      <div className="col-span-2 p-3 rounded-lg bg-sky-50 border border-sky-200 text-xs text-sky-800 font-semibold flex items-center gap-2">
+                        <span>ℹ️</span>
+                        <span>Customs documentation is not required for <strong>{activeServiceDef?.name || bookingType}</strong>. Customs fields are skipped for this service type.</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 gap-3.5">
                     <Field
-                      label="Supervising Certification Officer"
+                      label="Approving Officer"
                       required
                       isFilled={Boolean(supervisor.trim())}
                       hasError={attemptedTabs[3] && !supervisor.trim()}
-                      errorMessage="Supervising Certification Officer must be selected"
+                      errorMessage="Approving Officer must be selected"
                       fieldId="supervisor"
-                      hint="Select certified inspecting officer from database"
+                      hint="Select certified approving officer from database"
                     >
                       <div className="flex gap-2">
                         <select
@@ -2538,7 +2372,7 @@ function BookingDeskContent() {
                           required
                           className={`${INPUT} flex-1`}
                         >
-                          <option value="">-- SELECT CERTIFIED OFFICER --</option>
+                          <option value="">-- SELECT APPROVING OFFICER --</option>
                           {dbSupervisors
                             .filter(s => s.isActive !== false)
                             .map(s => {
@@ -2554,7 +2388,7 @@ function BookingDeskContent() {
                           type="button"
                           onClick={() => setIsQuickAddSupervisorOpen(true)}
                           className="px-3.5 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg whitespace-nowrap transition cursor-pointer flex items-center gap-1.5"
-                          title="Register a new certified supervisor to database"
+                          title="Register a new certified approving officer to database"
                         >
                           <span>+ Add</span>
                         </button>
@@ -2595,6 +2429,21 @@ function BookingDeskContent() {
                     </div>
                   </div>
 
+                  {/* Custom Fields Summary (if any filled) */}
+                  {activeCustomFields.length > 0 && (
+                    <div className="p-3 rounded-lg bg-violet-50 border border-violet-200 space-y-1.5">
+                      <span className="text-[10px] font-bold text-violet-800 uppercase block">Service-Specific Fields</span>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                        {activeCustomFields.map(f => (
+                          <div key={f.fieldKey}>
+                            <span className="text-violet-500 block text-[10px]">{f.label.toUpperCase()}:</span>
+                            <span className="font-mono text-slate-900 truncate block">{customFieldValues[f.fieldKey] || "—"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <button
                       type="button"
@@ -2613,11 +2462,10 @@ function BookingDeskContent() {
                       </button>
                       <button
                         type="submit"
-                        className={`hidden lg:flex px-5 py-2.5 rounded-lg text-xs font-black uppercase transition shadow-2xs cursor-pointer items-center justify-center gap-1.5 ${
-                          overallCompletionPercent === 100
+                        className={`hidden lg:flex px-5 py-2.5 rounded-lg text-xs font-black uppercase transition shadow-2xs cursor-pointer items-center justify-center gap-1.5 ${overallCompletionPercent === 100
                             ? "bg-[#103014] hover:bg-[#18481e] text-white"
                             : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30"
-                        }`}
+                          }`}
                       >
                         <span>Certify &amp; Submit</span>
                       </button>
@@ -2639,11 +2487,10 @@ function BookingDeskContent() {
                         Plate Inspection &amp; Final Review
                       </h3>
                     </div>
-                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                      overallCompletionPercent === 100
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${overallCompletionPercent === 100
                         ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                         : "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                    }`}>
+                      }`}>
                       {totalCompletedFields}/{totalRequiredFields} Ready ({overallCompletionPercent}%)
                     </span>
                   </div>
@@ -2660,8 +2507,8 @@ function BookingDeskContent() {
                     </div>
 
                     <div className="w-full max-w-[340px] py-1">
-                      <DigitalPlate 
-                        plateNumber={regNo || "PENDING"} 
+                      <DigitalPlate
+                        plateNumber={regNo || "PENDING"}
                         category={classification as PlateCategory}
                         region="GREATER ACCRA"
                         slogan="GREATER ACCRA"
@@ -2680,11 +2527,10 @@ function BookingDeskContent() {
                             key={cat.id}
                             type="button"
                             onClick={() => setClassification(cat.id)}
-                            className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition cursor-pointer ${
-                              active
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition cursor-pointer ${active
                                 ? "bg-slate-900 text-white font-bold shadow-xs"
                                 : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
-                            }`}
+                              }`}
                           >
                             {cat.badge}
                           </button>
@@ -2744,11 +2590,10 @@ function BookingDeskContent() {
                   <div className="pt-2 space-y-2.5">
                     <button
                       type="submit"
-                      className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-2 ${
-                        overallCompletionPercent === 100
+                      className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-2 ${overallCompletionPercent === 100
                           ? "bg-[#103014] hover:bg-[#18481e] text-white ring-2 ring-emerald-400/50"
                           : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-400/40"
-                      }`}
+                        }`}
                     >
                       {overallCompletionPercent === 100 ? (
                         <>
@@ -2802,8 +2647,8 @@ function BookingDeskContent() {
             {/* Ghana Digital Plate */}
             <div className="w-full flex justify-center py-1">
               <div className="w-full max-w-[320px]">
-                <DigitalPlate 
-                  plateNumber={regNo || "PENDING"} 
+                <DigitalPlate
+                  plateNumber={regNo || "PENDING"}
                   category={classification as PlateCategory}
                   region="GREATER ACCRA"
                   slogan="GREATER ACCRA"
@@ -2822,11 +2667,10 @@ function BookingDeskContent() {
                     key={cat.id}
                     type="button"
                     onClick={() => setClassification(cat.id)}
-                    className={`px-2 py-1 rounded text-[10px] font-medium transition cursor-pointer ${
-                      active
+                    className={`px-2 py-1 rounded text-[10px] font-medium transition cursor-pointer ${active
                         ? "bg-slate-900 text-white font-bold"
                         : "bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100"
-                    }`}
+                      }`}
                   >
                     {cat.badge}
                   </button>
@@ -2843,11 +2687,10 @@ function BookingDeskContent() {
                     Filing Requirements
                   </span>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                  overallCompletionPercent === 100
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${overallCompletionPercent === 100
                     ? "bg-emerald-100 text-emerald-800 border-emerald-300"
                     : "bg-amber-100 text-amber-800 border-amber-300"
-                }`}>
+                  }`}>
                   {totalCompletedFields}/{totalRequiredFields} Complete
                 </span>
               </div>
@@ -2855,13 +2698,12 @@ function BookingDeskContent() {
               {/* Progress Bar */}
               <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className={`h-full transition-all duration-300 rounded-full ${
-                    overallCompletionPercent === 100
+                  className={`h-full transition-all duration-300 rounded-full ${overallCompletionPercent === 100
                       ? "bg-emerald-600"
                       : overallCompletionPercent >= 50
-                      ? "bg-amber-500"
-                      : "bg-rose-500"
-                  }`}
+                        ? "bg-amber-500"
+                        : "bg-rose-500"
+                    }`}
                   style={{ width: `${overallCompletionPercent}%` }}
                 />
               </div>
@@ -2995,11 +2837,10 @@ function BookingDeskContent() {
             {/* Desktop-only secondary submit shortcut (Hidden on mobile to eliminate clumped double-button!) */}
             <button
               type="submit"
-              className={`hidden lg:flex w-full py-2.5 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer mt-2 items-center justify-center gap-1.5 uppercase ${
-                overallCompletionPercent === 100
+              className={`hidden lg:flex w-full py-2.5 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer mt-2 items-center justify-center gap-1.5 uppercase ${overallCompletionPercent === 100
                   ? "bg-[#103014] hover:bg-[#18481e] text-white"
                   : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30"
-              }`}
+                }`}
             >
               {overallCompletionPercent === 100 ? (
                 <>
@@ -3084,11 +2925,10 @@ function BookingDeskContent() {
                     const form = document.querySelector("form");
                     if (form) form.requestSubmit();
                   }}
-                  className={`px-3.5 py-2 text-xs font-black uppercase rounded-lg shadow-sm transition cursor-pointer ${
-                    overallCompletionPercent === 100
+                  className={`px-3.5 py-2 text-xs font-black uppercase rounded-lg shadow-sm transition cursor-pointer ${overallCompletionPercent === 100
                       ? "bg-[#103014] text-white ring-1 ring-emerald-400"
                       : "bg-slate-900 text-amber-300 border border-amber-500/40"
-                  }`}
+                    }`}
                 >
                   Certify &amp; Submit
                 </button>

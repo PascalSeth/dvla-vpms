@@ -183,6 +183,8 @@ export async function POST(request: Request) {
       prevOwnerRequireAddress = true,
       prevOwnerRequireCustom = false,
       prevOwnerCustomLabel,
+      requiresCustoms = true,
+      customFields,
       userId,
     } = body;
 
@@ -264,6 +266,8 @@ export async function POST(request: Request) {
         prevOwnerRequireAddress: Boolean(prevOwnerRequireAddress),
         prevOwnerRequireCustom: Boolean(prevOwnerRequireCustom),
         prevOwnerCustomLabel: prevOwnerCustomLabel?.trim() || null,
+        requiresCustoms: Boolean(requiresCustoms),
+        customFields: customFields ? customFields : undefined,
         createdById: userId || null,
       },
       include: {

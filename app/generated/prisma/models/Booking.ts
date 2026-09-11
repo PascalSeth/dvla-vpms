@@ -159,6 +159,7 @@ export type BookingCountAggregateOutputType = {
   customsDate: number
   supervisor: number
   supervisorId: number
+  customFieldData: number
   previousOwnerName: number
   previousOwnerPhone: number
   previousOwnerAddress: number
@@ -311,6 +312,7 @@ export type BookingCountAggregateInputType = {
   customsDate?: true
   supervisor?: true
   supervisorId?: true
+  customFieldData?: true
   previousOwnerName?: true
   previousOwnerPhone?: true
   previousOwnerAddress?: true
@@ -434,6 +436,7 @@ export type BookingGroupByOutputType = {
   customsDate: string | null
   supervisor: string | null
   supervisorId: string | null
+  customFieldData: runtime.JsonValue | null
   previousOwnerName: string | null
   previousOwnerPhone: string | null
   previousOwnerAddress: string | null
@@ -505,6 +508,7 @@ export type BookingWhereInput = {
   customsDate?: Prisma.StringNullableFilter<"Booking"> | string | null
   supervisor?: Prisma.StringNullableFilter<"Booking"> | string | null
   supervisorId?: Prisma.StringNullableFilter<"Booking"> | string | null
+  customFieldData?: Prisma.JsonNullableFilter<"Booking">
   previousOwnerName?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerPhone?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerAddress?: Prisma.StringNullableFilter<"Booking"> | string | null
@@ -563,6 +567,7 @@ export type BookingOrderByWithRelationInput = {
   customsDate?: Prisma.SortOrderInput | Prisma.SortOrder
   supervisor?: Prisma.SortOrderInput | Prisma.SortOrder
   supervisorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  customFieldData?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerName?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerAddress?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -624,6 +629,7 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   customsDate?: Prisma.StringNullableFilter<"Booking"> | string | null
   supervisor?: Prisma.StringNullableFilter<"Booking"> | string | null
   supervisorId?: Prisma.StringNullableFilter<"Booking"> | string | null
+  customFieldData?: Prisma.JsonNullableFilter<"Booking">
   previousOwnerName?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerPhone?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerAddress?: Prisma.StringNullableFilter<"Booking"> | string | null
@@ -682,6 +688,7 @@ export type BookingOrderByWithAggregationInput = {
   customsDate?: Prisma.SortOrderInput | Prisma.SortOrder
   supervisor?: Prisma.SortOrderInput | Prisma.SortOrder
   supervisorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  customFieldData?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerName?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   previousOwnerAddress?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -738,6 +745,7 @@ export type BookingScalarWhereWithAggregatesInput = {
   customsDate?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   supervisor?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   supervisorId?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  customFieldData?: Prisma.JsonNullableWithAggregatesFilter<"Booking">
   previousOwnerName?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   previousOwnerPhone?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   previousOwnerAddress?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
@@ -786,6 +794,7 @@ export type BookingCreateInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -839,6 +848,7 @@ export type BookingUncheckedCreateInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -888,6 +898,7 @@ export type BookingUpdateInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -941,6 +952,7 @@ export type BookingUncheckedUpdateInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -992,6 +1004,7 @@ export type BookingCreateManyInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1040,6 +1053,7 @@ export type BookingUpdateManyMutationInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1085,6 +1099,7 @@ export type BookingUncheckedUpdateManyInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1145,6 +1160,7 @@ export type BookingCountOrderByAggregateInput = {
   customsDate?: Prisma.SortOrder
   supervisor?: Prisma.SortOrder
   supervisorId?: Prisma.SortOrder
+  customFieldData?: Prisma.SortOrder
   previousOwnerName?: Prisma.SortOrder
   previousOwnerPhone?: Prisma.SortOrder
   previousOwnerAddress?: Prisma.SortOrder
@@ -1612,6 +1628,7 @@ export type BookingCreateWithoutBranchInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1664,6 +1681,7 @@ export type BookingUncheckedCreateWithoutBranchInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1743,6 +1761,7 @@ export type BookingScalarWhereInput = {
   customsDate?: Prisma.StringNullableFilter<"Booking"> | string | null
   supervisor?: Prisma.StringNullableFilter<"Booking"> | string | null
   supervisorId?: Prisma.StringNullableFilter<"Booking"> | string | null
+  customFieldData?: Prisma.JsonNullableFilter<"Booking">
   previousOwnerName?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerPhone?: Prisma.StringNullableFilter<"Booking"> | string | null
   previousOwnerAddress?: Prisma.StringNullableFilter<"Booking"> | string | null
@@ -1791,6 +1810,7 @@ export type BookingCreateWithoutCreatedByInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1843,6 +1863,7 @@ export type BookingUncheckedCreateWithoutCreatedByInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1901,6 +1922,7 @@ export type BookingCreateWithoutReviewedByInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -1953,6 +1975,7 @@ export type BookingUncheckedCreateWithoutReviewedByInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2043,6 +2066,7 @@ export type BookingCreateWithoutReservationInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2095,6 +2119,7 @@ export type BookingUncheckedCreateWithoutReservationInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2169,6 +2194,7 @@ export type BookingCreateWithoutVrsInvoiceInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2221,6 +2247,7 @@ export type BookingUncheckedCreateWithoutVrsInvoiceInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2295,6 +2322,7 @@ export type BookingCreateWithoutPickupsInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2347,6 +2375,7 @@ export type BookingUncheckedCreateWithoutPickupsInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2411,6 +2440,7 @@ export type BookingUpdateWithoutPickupsInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2463,6 +2493,7 @@ export type BookingUncheckedUpdateWithoutPickupsInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2511,6 +2542,7 @@ export type BookingCreateWithoutVehicleModelInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2562,6 +2594,7 @@ export type BookingUncheckedCreateWithoutVehicleModelInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2637,6 +2670,7 @@ export type BookingCreateWithoutSupervisorRelInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2688,6 +2722,7 @@ export type BookingUncheckedCreateWithoutSupervisorRelInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2765,6 +2800,7 @@ export type BookingCreateManyBranchInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -2812,6 +2848,7 @@ export type BookingUpdateWithoutBranchInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2864,6 +2901,7 @@ export type BookingUncheckedUpdateWithoutBranchInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2914,6 +2952,7 @@ export type BookingUncheckedUpdateManyWithoutBranchInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2963,6 +3002,7 @@ export type BookingCreateManyCreatedByInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -3012,6 +3052,7 @@ export type BookingCreateManyReviewedByInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -3059,6 +3100,7 @@ export type BookingUpdateWithoutCreatedByInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3111,6 +3153,7 @@ export type BookingUncheckedUpdateWithoutCreatedByInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3161,6 +3204,7 @@ export type BookingUncheckedUpdateManyWithoutCreatedByInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3208,6 +3252,7 @@ export type BookingUpdateWithoutReviewedByInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3260,6 +3305,7 @@ export type BookingUncheckedUpdateWithoutReviewedByInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3310,6 +3356,7 @@ export type BookingUncheckedUpdateManyWithoutReviewedByInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3359,6 +3406,7 @@ export type BookingCreateManyReservationInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -3406,6 +3454,7 @@ export type BookingUpdateWithoutReservationInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3458,6 +3507,7 @@ export type BookingUncheckedUpdateWithoutReservationInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3508,6 +3558,7 @@ export type BookingUncheckedUpdateManyWithoutReservationInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3557,6 +3608,7 @@ export type BookingCreateManyVrsInvoiceInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -3604,6 +3656,7 @@ export type BookingUpdateWithoutVrsInvoiceInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3656,6 +3709,7 @@ export type BookingUncheckedUpdateWithoutVrsInvoiceInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3706,6 +3760,7 @@ export type BookingUncheckedUpdateManyWithoutVrsInvoiceInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3754,6 +3809,7 @@ export type BookingCreateManyVehicleModelInput = {
   customsDate?: string | null
   supervisor?: string | null
   supervisorId?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -3802,6 +3858,7 @@ export type BookingUpdateWithoutVehicleModelInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3853,6 +3910,7 @@ export type BookingUncheckedUpdateWithoutVehicleModelInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3903,6 +3961,7 @@ export type BookingUncheckedUpdateManyWithoutVehicleModelInput = {
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3952,6 +4011,7 @@ export type BookingCreateManySupervisorRelInput = {
   customsNo?: string | null
   customsDate?: string | null
   supervisor?: string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: string | null
   previousOwnerPhone?: string | null
   previousOwnerAddress?: string | null
@@ -4000,6 +4060,7 @@ export type BookingUpdateWithoutSupervisorRelInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4051,6 +4112,7 @@ export type BookingUncheckedUpdateWithoutSupervisorRelInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4101,6 +4163,7 @@ export type BookingUncheckedUpdateManyWithoutSupervisorRelInput = {
   customsNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customsDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supervisor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customFieldData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   previousOwnerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   previousOwnerAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4182,6 +4245,7 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   customsDate?: boolean
   supervisor?: boolean
   supervisorId?: boolean
+  customFieldData?: boolean
   previousOwnerName?: boolean
   previousOwnerPhone?: boolean
   previousOwnerAddress?: boolean
@@ -4241,6 +4305,7 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   customsDate?: boolean
   supervisor?: boolean
   supervisorId?: boolean
+  customFieldData?: boolean
   previousOwnerName?: boolean
   previousOwnerPhone?: boolean
   previousOwnerAddress?: boolean
@@ -4298,6 +4363,7 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   customsDate?: boolean
   supervisor?: boolean
   supervisorId?: boolean
+  customFieldData?: boolean
   previousOwnerName?: boolean
   previousOwnerPhone?: boolean
   previousOwnerAddress?: boolean
@@ -4355,6 +4421,7 @@ export type BookingSelectScalar = {
   customsDate?: boolean
   supervisor?: boolean
   supervisorId?: boolean
+  customFieldData?: boolean
   previousOwnerName?: boolean
   previousOwnerPhone?: boolean
   previousOwnerAddress?: boolean
@@ -4370,7 +4437,7 @@ export type BookingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "status" | "owner" | "ownerAddress" | "ownerPhone" | "vehicle" | "plate" | "date" | "classification" | "make" | "model" | "year" | "bodyType" | "fuelType" | "chassisNo" | "engineNo" | "engineCC" | "cylinders" | "netWeight" | "grossWeight" | "tyreFW" | "tyreFD" | "tyreMW" | "tyreMD" | "tyreRW" | "tyreRD" | "vehicleModelId" | "receiptNo" | "receiptDate" | "customsNo" | "customsDate" | "supervisor" | "supervisorId" | "previousOwnerName" | "previousOwnerPhone" | "previousOwnerAddress" | "previousOwnerCustom" | "branchId" | "vrsInvoiceId" | "reservationId" | "createdById" | "reviewedById" | "reviewedAt" | "reviewNote" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
+export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "status" | "owner" | "ownerAddress" | "ownerPhone" | "vehicle" | "plate" | "date" | "classification" | "make" | "model" | "year" | "bodyType" | "fuelType" | "chassisNo" | "engineNo" | "engineCC" | "cylinders" | "netWeight" | "grossWeight" | "tyreFW" | "tyreFD" | "tyreMW" | "tyreMD" | "tyreRW" | "tyreRD" | "vehicleModelId" | "receiptNo" | "receiptDate" | "customsNo" | "customsDate" | "supervisor" | "supervisorId" | "customFieldData" | "previousOwnerName" | "previousOwnerPhone" | "previousOwnerAddress" | "previousOwnerCustom" | "branchId" | "vrsInvoiceId" | "reservationId" | "createdById" | "reviewedById" | "reviewedAt" | "reviewNote" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
 export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   vehicleModel?: boolean | Prisma.Booking$vehicleModelArgs<ExtArgs>
   supervisorRel?: boolean | Prisma.Booking$supervisorRelArgs<ExtArgs>
@@ -4448,6 +4515,7 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     customsDate: string | null
     supervisor: string | null
     supervisorId: string | null
+    customFieldData: runtime.JsonValue | null
     previousOwnerName: string | null
     previousOwnerPhone: string | null
     previousOwnerAddress: string | null
@@ -4926,6 +4994,7 @@ export interface BookingFieldRefs {
   readonly customsDate: Prisma.FieldRef<"Booking", 'String'>
   readonly supervisor: Prisma.FieldRef<"Booking", 'String'>
   readonly supervisorId: Prisma.FieldRef<"Booking", 'String'>
+  readonly customFieldData: Prisma.FieldRef<"Booking", 'Json'>
   readonly previousOwnerName: Prisma.FieldRef<"Booking", 'String'>
   readonly previousOwnerPhone: Prisma.FieldRef<"Booking", 'String'>
   readonly previousOwnerAddress: Prisma.FieldRef<"Booking", 'String'>

@@ -260,6 +260,9 @@ model Booking {
   supervisorId         String?
   supervisorRel        Supervisor?   @relation(fields: [supervisorId], references: [id], onDelete: SetNull)
 
+  // ── Service Type Custom Field Values ──
+  customFieldData      Json?         // Stores {fieldKey: value} pairs from service type custom fields
+
   // ── Previous Title Owner Details (for transfers / change of ownership) ──
   previousOwnerName    String?
   previousOwnerPhone   String?
@@ -388,7 +391,9 @@ model ServiceType {
   prevOwnerRequireAddress Boolean  @default(false)  // Require previous owner address
   prevOwnerRequireCustom  Boolean  @default(false) // Require custom transfer documentation reference
   prevOwnerCustomLabel    String?  // Label for custom document field, e.g. "Deed of Transfer #"
-  
+  requiresCustoms         Boolean  @default(true)  // If false, customs number/date are hidden in booking Step 3
+  customFields            Json?    // Array of {fieldKey, label, type: "text"|"date"|"number", required: boolean}
+
   branchId    String?
   branch      Branch?  @relation(fields: [branchId], references: [id], onDelete: Cascade)
 

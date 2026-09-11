@@ -41,7 +41,9 @@ interface Booking {
   createdAt?: string;
   branch?: { name?: string; code?: string };
   createdBy?: { name?: string; username?: string };
-  reviewedBy?: { name?: string; username?: string };
+  reviewedBy?: { name?: string; username?: string; role?: string };
+  reviewedAt?: string | null;
+  reviewNote?: string | null;
 }
 
 export default function BookingsPage() {
@@ -556,11 +558,49 @@ export default function BookingsPage() {
               </div>
             )}
 
-            {/* Supervisor Decision Controls */}
+            {/* ── Approval / Review State ── */}
+            {inspectBooking.reviewedBy && (
+              <div className={`p-3.5 rounded-xl border space-y-2 text-xs ${
+                inspectBooking.status?.toLowerCase() === "approved" ? "bg-emerald-50 border-emerald-200/80" :
+                inspectBooking.status?.toLowerCase() === "rejected" ? "bg-rose-50 border-rose-200/80" :
+                "bg-blue-50 border-blue-200/80"
+              }`}>
+                <div className="flex items-center justify-between border-b border-current/20 pb-1.5">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${
+                    inspectBooking.status?.toLowerCase() === "approved" ? "text-emerald-900" :
+                    inspectBooking.status?.toLowerCase() === "rejected" ? "text-rose-900" :
+                    "text-blue-900"
+                  }`}>
+                    <span>{inspectBooking.status?.toLowerCase() === "approved" ? "✓" : inspectBooking.status?.toLowerCase() === "rejected" ? "✕" : "●"}</span>
+                    <span>Decision Record — {inspectBooking.status?.toUpperCase()}</span>
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  <p>
+                    <span className="text-slate-500 font-medium">Approving Officer:</span>{" "}
+                    <strong>{inspectBooking.reviewedBy.name || inspectBooking.reviewedBy.username}</strong>
+                  </p>
+                  {inspectBooking.reviewedAt && (
+                    <p>
+                      <span className="text-slate-500 font-medium">Date &amp; Time:</span>{" "}
+                      <span className="font-mono">{new Date(inspectBooking.reviewedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</span>
+                    </p>
+                  )}
+                  {inspectBooking.reviewNote && (
+                    <p className="sm:col-span-2">
+                      <span className="text-slate-500 font-medium">Note / Reason:</span>{" "}
+                      <span className="italic">{inspectBooking.reviewNote}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Approving Officer Controls */}
             {canMakeDecisions && (
               <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <span className="text-xs font-bold text-slate-900 block">Supervisor Certification</span>
+                  <span className="text-xs font-bold text-slate-900 block">Approving Officer Controls</span>
                   <span className="text-[11px] text-slate-500">Update official logbook status</span>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">

@@ -64,7 +64,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Branches & Regions", href: "/dashboard/branches", icon: OrgIcon, superAdminOnly: true },
       { label: "Users", href: "/dashboard/users", icon: UsersIcon, superAdminOnly: true },
-      { label: "Supervisors", href: "/dashboard/supervisors", icon: OfficerIcon },
+      { label: "Approving Officers", href: "/dashboard/supervisors", icon: OfficerIcon },
       { label: "Body Types", href: "/dashboard/settings/body-types", icon: BodyTypeIcon },
       { label: "Service Types", href: "/dashboard/services", icon: ServiceIcon, superAdminOnly: true },
       { label: "Settings", href: "/dashboard/settings", icon: SettingsIcon },
