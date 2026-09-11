@@ -130,8 +130,8 @@ function Field({
               </span>
             ) : (
               <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase tracking-wider ${hasError
-                  ? "bg-rose-600 text-white shadow-xs animate-bounce"
-                  : "bg-rose-100 text-rose-700 border border-rose-300"
+                ? "bg-rose-600 text-white shadow-xs animate-bounce"
+                : "bg-rose-100 text-rose-700 border border-rose-300"
                 }`}>
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                 REQUIRED
@@ -152,8 +152,8 @@ function Field({
       </label>
 
       <div className={`transition-all duration-200 rounded-lg ${hasError
-          ? "ring-2 ring-rose-400 border border-rose-500 bg-rose-50/20"
-          : ""
+        ? "ring-2 ring-rose-400 border border-rose-500 bg-rose-50/20"
+        : ""
         }`}>
         {children}
       </div>
@@ -188,15 +188,15 @@ function ChecklistItem({
       type="button"
       onClick={onClick}
       className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between text-left transition cursor-pointer border ${isDone
-          ? "bg-emerald-50/70 border-emerald-200/80 text-emerald-950 hover:bg-emerald-100/70"
-          : "bg-white border-slate-200 hover:border-rose-300 hover:bg-rose-50/30 text-slate-700"
+        ? "bg-emerald-50/70 border-emerald-200/80 text-emerald-950 hover:bg-emerald-100/70"
+        : "bg-white border-slate-200 hover:border-rose-300 hover:bg-rose-50/30 text-slate-700"
         }`}
     >
       <div className="flex items-center gap-2 min-w-0">
         <span
           className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${isDone
-              ? "bg-emerald-600 text-white"
-              : "border-2 border-dashed border-rose-400 text-rose-500 bg-rose-50"
+            ? "bg-emerald-600 text-white"
+            : "border-2 border-dashed border-rose-400 text-rose-500 bg-rose-50"
             }`}
         >
           {isDone ? "✓" : "!"}
@@ -1391,15 +1391,15 @@ function BookingDeskContent() {
                     type="button"
                     onClick={() => setActiveTab(tab.id as 1 | 2 | 3 | 4)}
                     className={`flex-1 py-3 px-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 ${active
-                        ? "border-[#81B71A] text-slate-900 bg-white font-bold shadow-2xs"
-                        : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/60"
+                      ? "border-[#81B71A] text-slate-900 bg-white font-bold shadow-2xs"
+                      : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/60"
                       }`}
                   >
                     <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${active
-                        ? "bg-[#103014] text-white"
-                        : isDone
-                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                          : "bg-slate-200 text-slate-600"
+                      ? "bg-[#103014] text-white"
+                      : isDone
+                        ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                        : "bg-slate-200 text-slate-600"
                       }`}>
                       {isDone && !active ? "✓" : tab.stepNum}
                     </span>
@@ -1421,10 +1421,10 @@ function BookingDeskContent() {
                 <div className="space-y-4">
                   {/* Step 1 Compact Status Bar */}
                   <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${missingFieldsTab1.length === 0
-                      ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
-                      : attemptedTabs[1]
-                        ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
-                        : "bg-slate-50 border-slate-200 text-slate-700"
+                    ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
+                    : attemptedTabs[1]
+                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                      : "bg-slate-50 border-slate-200 text-slate-700"
                     }`}>
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full shrink-0 ${missingFieldsTab1.length === 0 ? "bg-emerald-500" : attemptedTabs[1] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
@@ -1517,7 +1517,7 @@ function BookingDeskContent() {
                       <div className="flex items-center gap-2 border-b border-violet-200/60 pb-2">
                         <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0" />
                         <span className="text-xs font-bold text-violet-900 uppercase tracking-wide">
-                          Additional Fields — {activeServiceDef?.name}
+                          Additional Field(s)
                         </span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1854,10 +1854,10 @@ function BookingDeskContent() {
                 <div className="space-y-4">
                   {/* Step 2 Compact Status Bar */}
                   <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${missingFieldsTab2.length === 0
-                      ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
-                      : attemptedTabs[2]
-                        ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
-                        : "bg-slate-50 border-slate-200 text-slate-700"
+                    ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
+                    : attemptedTabs[2]
+                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                      : "bg-slate-50 border-slate-200 text-slate-700"
                     }`}>
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full shrink-0 ${missingFieldsTab2.length === 0 ? "bg-emerald-500" : attemptedTabs[2] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
@@ -2173,8 +2173,8 @@ function BookingDeskContent() {
                             required
                             placeholder="E.G. JTEBU5JR8P2091837"
                             className={`${INPUT} font-mono font-bold text-sm tracking-wider uppercase ${make && model && !chassisNo
-                                ? "ring-2 ring-emerald-500 border-emerald-500 bg-emerald-50/20"
-                                : ""
+                              ? "ring-2 ring-emerald-500 border-emerald-500 bg-emerald-50/20"
+                              : ""
                               }`}
                           />
                           {make && model && !chassisNo && (
@@ -2279,10 +2279,10 @@ function BookingDeskContent() {
                 <div className="space-y-4">
                   {/* Step 3 Compact Status Bar */}
                   <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition ${missingFieldsTab3.length === 0
-                      ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
-                      : attemptedTabs[3]
-                        ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
-                        : "bg-slate-50 border-slate-200 text-slate-700"
+                    ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
+                    : attemptedTabs[3]
+                      ? "bg-rose-50 border-rose-300 text-rose-900 shadow-2xs"
+                      : "bg-slate-50 border-slate-200 text-slate-700"
                     }`}>
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full shrink-0 ${missingFieldsTab3.length === 0 ? "bg-emerald-500" : attemptedTabs[3] ? "bg-rose-500 animate-pulse" : "bg-amber-500"
@@ -2463,8 +2463,8 @@ function BookingDeskContent() {
                       <button
                         type="submit"
                         className={`hidden lg:flex px-5 py-2.5 rounded-lg text-xs font-black uppercase transition shadow-2xs cursor-pointer items-center justify-center gap-1.5 ${overallCompletionPercent === 100
-                            ? "bg-[#103014] hover:bg-[#18481e] text-white"
-                            : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30"
+                          ? "bg-[#103014] hover:bg-[#18481e] text-white"
+                          : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30"
                           }`}
                       >
                         <span>Certify &amp; Submit</span>
@@ -2488,8 +2488,8 @@ function BookingDeskContent() {
                       </h3>
                     </div>
                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${overallCompletionPercent === 100
-                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                        : "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                      : "bg-amber-500/20 text-amber-300 border-amber-500/40"
                       }`}>
                       {totalCompletedFields}/{totalRequiredFields} Ready ({overallCompletionPercent}%)
                     </span>
@@ -2528,8 +2528,8 @@ function BookingDeskContent() {
                             type="button"
                             onClick={() => setClassification(cat.id)}
                             className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition cursor-pointer ${active
-                                ? "bg-slate-900 text-white font-bold shadow-xs"
-                                : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                              ? "bg-slate-900 text-white font-bold shadow-xs"
+                              : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
                               }`}
                           >
                             {cat.badge}
@@ -2591,8 +2591,8 @@ function BookingDeskContent() {
                     <button
                       type="submit"
                       className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-2 ${overallCompletionPercent === 100
-                          ? "bg-[#103014] hover:bg-[#18481e] text-white ring-2 ring-emerald-400/50"
-                          : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-400/40"
+                        ? "bg-[#103014] hover:bg-[#18481e] text-white ring-2 ring-emerald-400/50"
+                        : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-400/40"
                         }`}
                     >
                       {overallCompletionPercent === 100 ? (
@@ -2668,8 +2668,8 @@ function BookingDeskContent() {
                     type="button"
                     onClick={() => setClassification(cat.id)}
                     className={`px-2 py-1 rounded text-[10px] font-medium transition cursor-pointer ${active
-                        ? "bg-slate-900 text-white font-bold"
-                        : "bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100"
+                      ? "bg-slate-900 text-white font-bold"
+                      : "bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100"
                       }`}
                   >
                     {cat.badge}
@@ -2688,8 +2688,8 @@ function BookingDeskContent() {
                   </span>
                 </div>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${overallCompletionPercent === 100
-                    ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                    : "bg-amber-100 text-amber-800 border-amber-300"
+                  ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                  : "bg-amber-100 text-amber-800 border-amber-300"
                   }`}>
                   {totalCompletedFields}/{totalRequiredFields} Complete
                 </span>
@@ -2699,10 +2699,10 @@ function BookingDeskContent() {
               <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                 <div
                   className={`h-full transition-all duration-300 rounded-full ${overallCompletionPercent === 100
-                      ? "bg-emerald-600"
-                      : overallCompletionPercent >= 50
-                        ? "bg-amber-500"
-                        : "bg-rose-500"
+                    ? "bg-emerald-600"
+                    : overallCompletionPercent >= 50
+                      ? "bg-amber-500"
+                      : "bg-rose-500"
                     }`}
                   style={{ width: `${overallCompletionPercent}%` }}
                 />
@@ -2838,8 +2838,8 @@ function BookingDeskContent() {
             <button
               type="submit"
               className={`hidden lg:flex w-full py-2.5 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer mt-2 items-center justify-center gap-1.5 uppercase ${overallCompletionPercent === 100
-                  ? "bg-[#103014] hover:bg-[#18481e] text-white"
-                  : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30"
+                ? "bg-[#103014] hover:bg-[#18481e] text-white"
+                : "bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30"
                 }`}
             >
               {overallCompletionPercent === 100 ? (
@@ -2926,8 +2926,8 @@ function BookingDeskContent() {
                     if (form) form.requestSubmit();
                   }}
                   className={`px-3.5 py-2 text-xs font-black uppercase rounded-lg shadow-sm transition cursor-pointer ${overallCompletionPercent === 100
-                      ? "bg-[#103014] text-white ring-1 ring-emerald-400"
-                      : "bg-slate-900 text-amber-300 border border-amber-500/40"
+                    ? "bg-[#103014] text-white ring-1 ring-emerald-400"
+                    : "bg-slate-900 text-amber-300 border border-amber-500/40"
                     }`}
                 >
                   Certify &amp; Submit
