@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../lib/prisma";
 
 const BASELINE_BODY_TYPES = [
   { code: "SALOON", name: "Saloon", description: "Standard sedan / saloon body style for passenger cars", isActive: true, order: 1 },
