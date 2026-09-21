@@ -463,22 +463,22 @@ export default function BookingsPage() {
       {/* ── 5. Clean Modal Drawer: Inspect & VRS Verification ── */}
       {inspectBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4 p-5">
+          <div className="bg-white text-slate-900 rounded-2xl border border-slate-200 shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4 p-5">
             
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   Logbook Record Verification
                 </span>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-slate-950">
                   Booking Log #{inspectBooking.id} &bull; {inspectBooking.owner}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setInspectBooking(null)}
-                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-bold flex items-center justify-center transition cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-sm font-bold flex items-center justify-center transition cursor-pointer"
               >
                 ✕
               </button>
@@ -492,67 +492,69 @@ export default function BookingsPage() {
                   category={(inspectBooking.classification as PlateCategory) || "Private"}
                 />
               </div>
-              <span className="text-[10px] font-mono text-slate-500 mt-2">
-                Classification: {inspectBooking.classification} &bull; Date Filed: {inspectBooking.date}
+              <span className="text-xs font-mono font-medium text-slate-700 mt-2">
+                Classification: <strong className="text-slate-900 font-bold">{inspectBooking.classification}</strong> &bull; Date Filed: <strong className="text-slate-900 font-bold">{inspectBooking.date}</strong>
               </span>
             </div>
 
             {/* Side-by-Side Comparison: Filing vs VRS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block border-b border-slate-100 pb-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-900">
+              <div className="p-3.5 bg-slate-50/50 border border-slate-200 rounded-xl space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 block border-b border-slate-200 pb-1">
                   📝 Registration Record
                 </span>
-                <p><span className="text-slate-400">Owner:</span> <strong>{inspectBooking.owner}</strong></p>
-                <p><span className="text-slate-400">Vehicle:</span> {inspectBooking.vehicle}</p>
-                <p><span className="text-slate-400">Plate:</span> <strong className="font-mono">{inspectBooking.plate || "Pending"}</strong></p>
-                <p><span className="text-slate-400">Service:</span> {inspectBooking.type}</p>
-                <p><span className="text-slate-400">Station:</span> {inspectBooking.branch?.name || "DVLA Adenta"}</p>
-                <p><span className="text-slate-400">Officer:</span> {inspectBooking.createdBy?.name || inspectBooking.createdBy?.username || "A. Owusu"}</p>
+                <div className="space-y-1.5 text-slate-800">
+                  <p><span className="text-slate-500 font-semibold inline-block w-16">Owner:</span> <strong className="text-slate-950 font-bold">{inspectBooking.owner}</strong></p>
+                  <p><span className="text-slate-500 font-semibold inline-block w-16">Vehicle:</span> <span className="text-slate-900 font-semibold">{inspectBooking.vehicle}</span></p>
+                  <p><span className="text-slate-500 font-semibold inline-block w-16">Plate:</span> <strong className="font-mono text-slate-950 font-bold bg-slate-200/80 px-1.5 py-0.5 rounded text-xs">{inspectBooking.plate || "Pending"}</strong></p>
+                  <p><span className="text-slate-500 font-semibold inline-block w-16">Service:</span> <span className="text-slate-900 font-semibold">{inspectBooking.type}</span></p>
+                  <p><span className="text-slate-500 font-semibold inline-block w-16">Station:</span> <span className="text-slate-900 font-semibold">{inspectBooking.branch?.name || "DVLA Adenta"}</span></p>
+                  <p><span className="text-slate-500 font-semibold inline-block w-16">Officer:</span> <span className="text-slate-900 font-semibold">{inspectBooking.createdBy?.name || inspectBooking.createdBy?.username || "A. Owusu"}</span></p>
+                </div>
               </div>
 
-              <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block border-b border-slate-100 pb-1">
+              <div className="p-3.5 bg-slate-50/50 border border-slate-200 rounded-xl space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 block border-b border-slate-200 pb-1">
                   📄 VRS Invoice Verification
                 </span>
                 {inspectBooking.vrsInvoice ? (
-                  <>
-                    <p><span className="text-slate-400">Invoice:</span> <strong className="font-mono">{inspectBooking.vrsInvoice.invoiceNo}</strong></p>
-                    <p><span className="text-slate-400">VRS Owner:</span> {inspectBooking.vrsInvoice.ownerName}</p>
-                    <p><span className="text-slate-400">VIN:</span> <span className="font-mono">{inspectBooking.vrsInvoice.chassisNo || "—"}</span></p>
-                    <p><span className="text-slate-400">Engine:</span> <span className="font-mono">{inspectBooking.vrsInvoice.engineNo || "—"}</span></p>
-                    <p><span className="text-slate-400">Body / Fuel:</span> {inspectBooking.vrsInvoice.bodyType} &bull; {inspectBooking.vrsInvoice.fuelType}</p>
-                  </>
+                  <div className="space-y-1.5 text-slate-800">
+                    <p><span className="text-slate-500 font-semibold inline-block w-20">Invoice:</span> <strong className="font-mono text-slate-950 font-bold">{inspectBooking.vrsInvoice.invoiceNo}</strong></p>
+                    <p><span className="text-slate-500 font-semibold inline-block w-20">VRS Owner:</span> <span className="text-slate-900 font-semibold">{inspectBooking.vrsInvoice.ownerName}</span></p>
+                    <p><span className="text-slate-500 font-semibold inline-block w-20">VIN:</span> <span className="font-mono text-slate-900 font-semibold">{inspectBooking.vrsInvoice.chassisNo || "—"}</span></p>
+                    <p><span className="text-slate-500 font-semibold inline-block w-20">Engine:</span> <span className="font-mono text-slate-900 font-semibold">{inspectBooking.vrsInvoice.engineNo || "—"}</span></p>
+                    <p><span className="text-slate-500 font-semibold inline-block w-20">Body / Fuel:</span> <span className="text-slate-900 font-semibold">{inspectBooking.vrsInvoice.bodyType} &bull; {inspectBooking.vrsInvoice.fuelType}</span></p>
+                  </div>
                 ) : (
-                  <p className="text-slate-400 italic">No direct VRS Invoice attached to this manual filing.</p>
+                  <p className="text-slate-600 font-medium italic text-xs py-2">No direct VRS Invoice attached to this manual filing.</p>
                 )}
               </div>
             </div>
 
             {/* Previous Title Owner & Transfer Details (if present) */}
             {(inspectBooking.previousOwnerName || inspectBooking.previousOwnerPhone || inspectBooking.previousOwnerAddress || inspectBooking.previousOwnerCustom) && (
-              <div className="p-3.5 bg-amber-50/50 border border-amber-200/80 rounded-xl space-y-2 text-xs">
-                <div className="flex items-center justify-between border-b border-amber-200/60 pb-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+              <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl space-y-2 text-xs">
+                <div className="flex items-center justify-between border-b border-amber-200 pb-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-950 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-amber-600"></span>
                     <span>🔄 Previous Title Owner &amp; Transfer Record</span>
                   </span>
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-200/70 text-amber-900 uppercase">
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-200/80 text-amber-950 uppercase">
                     Title Transfer
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-900">
                   {inspectBooking.previousOwnerName && (
-                    <p><span className="text-slate-500 font-medium">Previous Owner:</span> <strong>{inspectBooking.previousOwnerName}</strong></p>
+                    <p><span className="text-slate-600 font-semibold">Previous Owner:</span> <strong className="text-slate-950 font-bold">{inspectBooking.previousOwnerName}</strong></p>
                   )}
                   {inspectBooking.previousOwnerPhone && (
-                    <p><span className="text-slate-500 font-medium">Contact Phone:</span> <span className="font-mono">{inspectBooking.previousOwnerPhone}</span></p>
+                    <p><span className="text-slate-600 font-semibold">Contact Phone:</span> <span className="font-mono text-slate-950 font-bold">{inspectBooking.previousOwnerPhone}</span></p>
                   )}
                   {inspectBooking.previousOwnerAddress && (
-                    <p className="sm:col-span-2"><span className="text-slate-500 font-medium">Previous Address:</span> {inspectBooking.previousOwnerAddress}</p>
+                    <p className="sm:col-span-2"><span className="text-slate-600 font-semibold">Previous Address:</span> <span className="text-slate-900 font-semibold">{inspectBooking.previousOwnerAddress}</span></p>
                   )}
                   {inspectBooking.previousOwnerCustom && (
-                    <p className="sm:col-span-2"><span className="text-slate-500 font-medium">Transfer Reference:</span> <strong className="font-mono bg-white px-1.5 py-0.5 rounded border border-amber-200">{inspectBooking.previousOwnerCustom}</strong></p>
+                    <p className="sm:col-span-2"><span className="text-slate-600 font-semibold">Transfer Reference:</span> <strong className="font-mono text-slate-950 font-bold bg-white px-1.5 py-0.5 rounded border border-amber-300">{inspectBooking.previousOwnerCustom}</strong></p>
                   )}
                 </div>
               </div>
@@ -575,21 +577,21 @@ export default function BookingsPage() {
                     <span>Decision Record — {inspectBooking.status?.toUpperCase()}</span>
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-slate-900">
                   <p>
-                    <span className="text-slate-500 font-medium">Approving Officer:</span>{" "}
-                    <strong>{inspectBooking.reviewedBy.name || inspectBooking.reviewedBy.username}</strong>
+                    <span className="text-slate-600 font-semibold">Approving Officer:</span>{" "}
+                    <strong className="text-slate-950 font-bold">{inspectBooking.reviewedBy.name || inspectBooking.reviewedBy.username}</strong>
                   </p>
                   {inspectBooking.reviewedAt && (
                     <p>
-                      <span className="text-slate-500 font-medium">Date &amp; Time:</span>{" "}
-                      <span className="font-mono">{new Date(inspectBooking.reviewedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</span>
+                      <span className="text-slate-600 font-semibold">Date &amp; Time:</span>{" "}
+                      <span className="font-mono text-slate-900 font-semibold">{new Date(inspectBooking.reviewedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</span>
                     </p>
                   )}
                   {inspectBooking.reviewNote && (
                     <p className="sm:col-span-2">
-                      <span className="text-slate-500 font-medium">Note / Reason:</span>{" "}
-                      <span className="italic">{inspectBooking.reviewNote}</span>
+                      <span className="text-slate-600 font-semibold">Note / Reason:</span>{" "}
+                      <span className="italic text-slate-900 font-medium">{inspectBooking.reviewNote}</span>
                     </p>
                   )}
                 </div>

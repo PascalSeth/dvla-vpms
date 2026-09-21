@@ -2550,38 +2550,38 @@ function BookingDeskContent() {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                        <span className="text-slate-400 block text-[10px]">PLATE NUMBER:</span>
-                        <span className="font-bold text-slate-900 font-mono text-sm">{regNo || "PENDING"}</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-slate-900">
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <span className="text-slate-600 font-semibold block text-[10px]">PLATE NUMBER:</span>
+                        <span className="font-bold text-slate-950 font-mono text-sm">{regNo || "PENDING"}</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                        <span className="text-slate-400 block text-[10px]">REGISTERED OWNER:</span>
-                        <span className="font-semibold text-slate-900 truncate block">{ownerName || "PENDING"}</span>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <span className="text-slate-600 font-semibold block text-[10px]">REGISTERED OWNER:</span>
+                        <span className="font-bold text-slate-950 truncate block">{ownerName || "PENDING"}</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                        <span className="text-slate-400 block text-[10px]">REVENUE RECEIPT #:</span>
-                        <span className="font-mono font-bold text-slate-900 truncate block">{receiptNo || "PENDING"}</span>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <span className="text-slate-600 font-semibold block text-[10px]">REVENUE RECEIPT #:</span>
+                        <span className="font-mono font-bold text-slate-950 truncate block">{receiptNo || "PENDING"}</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                        <span className="text-slate-400 block text-[10px]">VEHICLE:</span>
-                        <span className="font-semibold text-slate-900 truncate block">{make || "—"} {model} {year && `(${year})`}</span>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <span className="text-slate-600 font-semibold block text-[10px]">VEHICLE:</span>
+                        <span className="font-bold text-slate-950 truncate block">{make || "—"} {model} {year && `(${year})`}</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                        <span className="text-slate-400 block text-[10px]">ENGINE / SPECS:</span>
-                        <span className="font-semibold text-slate-900 truncate block">{engineCC ? `${engineCC} CC` : "—"} • {cylinders || "—"} CYL</span>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <span className="text-slate-600 font-semibold block text-[10px]">ENGINE / SPECS:</span>
+                        <span className="font-bold text-slate-950 truncate block">{engineCC ? `${engineCC} CC` : "—"} • {cylinders || "—"} CYL</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                        <span className="text-slate-400 block text-[10px]">CHASSIS / VIN:</span>
-                        <span className="font-mono font-semibold text-slate-900 truncate block">{chassisNo || "—"}</span>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <span className="text-slate-600 font-semibold block text-[10px]">CHASSIS / VIN:</span>
+                        <span className="font-mono font-bold text-slate-950 truncate block">{chassisNo || "—"}</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                        <span className="text-slate-400 block text-[10px]">CUSTOMS REF:</span>
-                        <span className="font-mono text-slate-900 truncate block">{customsNo || "—"}</span>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <span className="text-slate-600 font-semibold block text-[10px]">CUSTOMS REF:</span>
+                        <span className="font-mono font-bold text-slate-950 truncate block">{customsNo || "—"}</span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 col-span-2 sm:col-span-2">
-                        <span className="text-slate-400 block text-[10px]">SUPERVISING OFFICER:</span>
-                        <span className="font-bold text-slate-900 truncate block">{supervisor || "—"}</span>
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 col-span-2 sm:col-span-2">
+                        <span className="text-slate-600 font-semibold block text-[10px]">SUPERVISING OFFICER:</span>
+                        <span className="font-bold text-slate-950 truncate block">{supervisor || "—"}</span>
                       </div>
                     </div>
                   </div>
