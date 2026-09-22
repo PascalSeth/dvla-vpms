@@ -41,50 +41,7 @@ const FUEL_TYPES = [
   { id: "ELECTRIC", label: "Electric" },
 ];
 
-interface VehiclePreset {
-  label: string; year: string; make: string; model: string; engineCC: string;
-  cylinders: string; bodyType: string; netWeight: string;
-  grossWeight: string; tyreW: string; tyreDia: string; fuelType: string;
-}
 
-const VEHICLE_PRESETS: VehiclePreset[] = [
-  // 2025 Models
-  { label: "Toyota Camry (2025)", year: "2025", make: "Toyota", model: "Camry", engineCC: "2500", cylinders: "4", bodyType: "Saloon", netWeight: "1590", grossWeight: "2095", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Toyota Corolla (2025)", year: "2025", make: "Toyota", model: "Corolla", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1350", grossWeight: "1790", tyreW: "215", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Honda CR-V (2025)", year: "2025", make: "Honda", model: "CR-V", engineCC: "1500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1630", grossWeight: "2150", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Honda Accord (2025)", year: "2025", make: "Honda", model: "Accord", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1480", grossWeight: "1920", tyreW: "225", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Ford Explorer (2025)", year: "2025", make: "Ford", model: "Explorer", engineCC: "2300", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1970", grossWeight: "2790", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Ford Mustang (2025)", year: "2025", make: "Ford", model: "Mustang", engineCC: "5000", cylinders: "8", bodyType: "Coupe", netWeight: "1720", grossWeight: "2150", tyreW: "255", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Tesla Model Y (2025)", year: "2025", make: "Tesla", model: "Model Y", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "SUV / Station Wagon", netWeight: "1910", grossWeight: "2405", tyreW: "255", tyreDia: "19", fuelType: "ELECTRIC" },
-  { label: "Hyundai Santa Fe (2025)", year: "2025", make: "Hyundai", model: "Santa Fe", engineCC: "2500", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1830", grossWeight: "2510", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Kia Telluride (2025)", year: "2025", make: "Kia", model: "Telluride", engineCC: "3800", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "1980", grossWeight: "2640", tyreW: "245", tyreDia: "20", fuelType: "PETROL" },
-  { label: "BMW X5 (2025)", year: "2025", make: "BMW", model: "X5", engineCC: "3000", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2100", grossWeight: "2850", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
-  { label: "BMW 3 Series (2025)", year: "2025", make: "BMW", model: "3 Series", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1620", grossWeight: "2100", tyreW: "225", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Mercedes GLE (2025)", year: "2025", make: "Mercedes-Benz", model: "GLE", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2150", grossWeight: "2930", tyreW: "275", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Lexus RX 350 (2025)", year: "2025", make: "Lexus", model: "RX 350", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1950", grossWeight: "2600", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Nissan Rogue (2025)", year: "2025", make: "Nissan", model: "Rogue", engineCC: "1500", cylinders: "3", bodyType: "SUV / Station Wagon", netWeight: "1620", grossWeight: "2080", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-
-  // 2024 Models
-  { label: "Toyota Land Cruiser (2024)", year: "2024", make: "Toyota", model: "Land Cruiser", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2200", grossWeight: "2950", tyreW: "265", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Toyota Tacoma (2024)", year: "2024", make: "Toyota", model: "Tacoma", engineCC: "2400", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1950", grossWeight: "2630", tyreW: "265", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Toyota Highlander (2024)", year: "2024", make: "Toyota", model: "Highlander", engineCC: "2400", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1920", grossWeight: "2610", tyreW: "235", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Hyundai Tucson (2024)", year: "2024", make: "Hyundai", model: "Tucson", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1680", grossWeight: "2145", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Kia Sportage (2024)", year: "2024", make: "Kia", model: "Sportage", engineCC: "2000", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1610", grossWeight: "2090", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Honda Civic (2024)", year: "2024", make: "Honda", model: "Civic", engineCC: "1500", cylinders: "4", bodyType: "Saloon", netWeight: "1340", grossWeight: "1760", tyreW: "215", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Jetour Dashing (2024)", year: "2024", make: "Jetour", model: "Dashing", engineCC: "1498", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1535", grossWeight: "1888", tyreW: "235", tyreDia: "19", fuelType: "PETROL" },
-  { label: "Jetour Traveller T2 (2024)", year: "2024", make: "Jetour", model: "Traveller T2", engineCC: "1998", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1880", grossWeight: "2255", tyreW: "255", tyreDia: "20", fuelType: "PETROL" },
-  { label: "Tesla Model 3 (2024)", year: "2024", make: "Tesla", model: "Model 3", engineCC: "N/A (Electric)", cylinders: "N/A", bodyType: "Saloon", netWeight: "1760", grossWeight: "2200", tyreW: "235", tyreDia: "18", fuelType: "ELECTRIC" },
-
-  // 2023 & Older
-  { label: "Toyota Hilux (2023)", year: "2023", make: "Toyota", model: "Hilux", engineCC: "2800", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1920", grossWeight: "3200", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Toyota Fortuner (2023)", year: "2023", make: "Toyota", model: "Fortuner", engineCC: "2700", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "1920", grossWeight: "2560", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Nissan Navara (2023)", year: "2023", make: "Nissan", model: "Navara", engineCC: "2500", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1960", grossWeight: "2910", tyreW: "255", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Mercedes E-Class (2023)", year: "2023", make: "Mercedes-Benz", model: "E-Class", engineCC: "2000", cylinders: "4", bodyType: "Saloon", netWeight: "1720", grossWeight: "2195", tyreW: "245", tyreDia: "18", fuelType: "PETROL" },
-  { label: "Ford Ranger (2023)", year: "2023", make: "Ford", model: "Ranger", engineCC: "2000", cylinders: "4", bodyType: "Pickup / Truck", netWeight: "1950", grossWeight: "3150", tyreW: "265", tyreDia: "17", fuelType: "DIESEL" },
-  { label: "Toyota Land Cruiser V8 (2022)", year: "2022", make: "Toyota", model: "Land Cruiser V8", engineCC: "4500", cylinders: "8", bodyType: "SUV / Station Wagon", netWeight: "2630", grossWeight: "3300", tyreW: "285", tyreDia: "18", fuelType: "DIESEL" },
-  { label: "Toyota Prado (2022)", year: "2022", make: "Toyota", model: "Prado", engineCC: "2700", cylinders: "4", bodyType: "SUV / Station Wagon", netWeight: "2040", grossWeight: "2990", tyreW: "265", tyreDia: "17", fuelType: "PETROL" },
-  { label: "Nissan Patrol (2022)", year: "2022", make: "Nissan", model: "Patrol", engineCC: "4000", cylinders: "6", bodyType: "SUV / Station Wagon", netWeight: "2280", grossWeight: "2890", tyreW: "265", tyreDia: "17", fuelType: "PETROL" },
-];
 
 /* ── Design tokens: Locks capital in all inputs ── */
 const INPUT =
@@ -491,9 +448,8 @@ function BookingDeskContent() {
   const [supervisor, setSupervisor] = useState("");
   const [selectedSupervisorId, setSelectedSupervisorId] = useState("");
 
-  /* ── Submission and Simulation UI State ── */
+  /* ── Submission UI State ── */
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isSimulating, setIsSimulating] = useState(false);
 
   /* ── Local Draft Auto-Save (Phone Reload & Call Protection) ── */
   const DRAFT_STORAGE_KEY = "dvla_vpms_booking_draft_v1";
@@ -1047,64 +1003,7 @@ function BookingDeskContent() {
     setActiveTab(4);
   }
 
-  function applyPreset(p: VehiclePreset) {
-    setMake(p.make.toUpperCase());
-    setYear(p.year);
-    setModel(p.model.toUpperCase());
-    setEngineCC(p.engineCC);
-    setCylinders(p.cylinders);
-    setBodyType(p.bodyType);
-    setFuelType(p.fuelType);
-    setNetWeight(p.netWeight);
-    setGrossWeight(p.grossWeight);
-    setTyreFW(p.tyreW);
-    setTyreFD(p.tyreDia);
-    setTyreRW(p.tyreW);
-    setTyreRD(p.tyreDia);
-    setTyreMW("");
-    setTyreMD("");
-  }
 
-  function generateNewDVLAFormat() {
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const l1 = letters[Math.floor(Math.random() * letters.length)];
-    const l2 = letters[Math.floor(Math.random() * letters.length)];
-    const num = String(Math.floor(1000 + Math.random() * 9000)).padStart(4, "0");
-    return `${num}-AD${l1}${l2}`;
-  }
-
-  function handleAutofillSimulation() {
-    setIsSimulating(true);
-    setTimeout(() => {
-      const p = VEHICLE_PRESETS[14]; // Toyota Land Cruiser
-      setOwnerName("EBENEZER KWABENA BOATENG");
-      setAddress("HOUSE NO. 12, FRAFRAHA JUNCTION, ADENTA, ACCRA");
-      setPhone("+233 24 489 0291");
-      setRegNo(generateNewDVLAFormat());
-      setEngineNo("SQRF4J20-291823");
-      setChassisNo("JTEBU5JR8P2091837");
-      setYear("2024");
-      setModel("LAND CRUISER");
-      setReceiptNo("4702604819");
-      setCustomsNo("4708912/26");
-      setCustomsDate(new Date().toISOString().slice(0, 10));
-      const matchedSup = dbSupervisors.length > 0 ? dbSupervisors[0] : null;
-      if (matchedSup) {
-        setSupervisor(matchedSup.name);
-        setSelectedSupervisorId(matchedSup.id);
-      } else {
-        setSupervisor("SAVIOUR ADOM");
-      }
-      if (isTransfer) {
-        setOldOwnerName("SETH PASCAL KOFI");
-        setOldOwnerPhone("+233 24 901 8273");
-        setOldOwnerAddr("PLOT 8, ADENTAN MUNICIPAL AREA, ACCRA");
-        setOldOwnerCustom("AFF-2026/0912-GH");
-      }
-      applyPreset(p);
-      setIsSimulating(false);
-    }, 400);
-  }
 
   function handleReset() {
     setIsSuccess(false);
@@ -1403,15 +1302,6 @@ function BookingDeskContent() {
               🔒 Locked
             </button>
           </div>
-
-          <button
-            type="button"
-            onClick={handleAutofillSimulation}
-            disabled={isSimulating}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
-          >
-            <span>Demo Sample Data</span>
-          </button>
 
           {/* Quick Mobile Review Shortcut */}
           <button
