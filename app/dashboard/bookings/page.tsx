@@ -51,6 +51,11 @@ export default function BookingsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [classificationFilter, setClassificationFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [periodPreset, setPeriodPreset] = useState<"all" | "today" | "yesterday" | "this_week" | "this_month" | "custom">("all");
+  const [customStartDate, setCustomStartDate] = useState<string>("");
+  const [customEndDate, setCustomEndDate] = useState<string>("");
+  const [officerFilter, setOfficerFilter] = useState<string>("all");
+  const [showProductivityPanel, setShowProductivityPanel] = useState<boolean>(true);
   const [userRole, setUserRole] = useState("SUPERADMIN");
   const [userName, setUserName] = useState("Admin User");
   const [userId, setUserId] = useState<string | null>(null);
@@ -149,43 +154,233 @@ export default function BookingsPage() {
     }
   }
 
-  // Filter bookings by status, classification, and search query
+  // ── Helper: Parse Booking Creation Date ──
+  function parseBookingDate(b: Booking): Date | null {
+    if (b.createdAt) {
+      const d = new Date(b.createdAt);
+      if (!isNaN(d.getTime())) return d;
+    }
+    if (b.date) {
+      const d = new Date(b.date);
+      if (!isNaN(d.getTime())) return d;
+    }
+    return null;
+  }
+
+  // ── Helper: Check if Booking falls inside Custom Period ──
+  function isWithinPeriod(b: Booking, preset: string, startStr: string, endStr: string): boolean {
+    if (preset === "all") return true;
+
+    const bDate = parseBookingDate(b);
+    if (!bDate) return true;
+
+    const now = new Date();
+
+    if (preset === "today") {
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      return bDate >= todayStart && bDate <= todayEnd;
+    }
+
+    if (preset === "yesterday") {
+      const yestStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0, 0);
+      const yestEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+      return bDate >= yestStart && bDate <= yestEnd;
+    }
+
+    if (preset === "this_week") {
+      const dayOfWeek = now.getDay();
+      const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek, 0, 0, 0, 0);
+      const weekEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (6 - dayOfWeek), 23, 59, 59, 999);
+      return bDate >= weekStart && bDate <= weekEnd;
+    }
+
+    if (preset === "this_month") {
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      return bDate >= monthStart && bDate <= monthEnd;
+    }
+
+    if (preset === "custom") {
+      let valid = true;
+      if (startStr) {
+        const s = new Date(startStr + "T00:00:00");
+        if (!isNaN(s.getTime())) valid = valid && bDate >= s;
+      }
+      if (endStr) {
+        const e = new Date(endStr + "T23:59:59.999");
+        if (!isNaN(e.getTime())) valid = valid && bDate <= e;
+      }
+      return valid;
+    }
+
+    return true;
+  }
+
+  // ── Helper: Extract Officer Name & Details from Booking ──
+  function getBookingOfficer(b: Booking): { name: string; username?: string; initials: string } {
+    let name = "DVLA Entry Desk";
+    let username: string | undefined = undefined;
+
+    if (b.createdBy?.name || b.createdBy?.username) {
+      name = b.createdBy.name || b.createdBy.username || "Officer";
+      username = b.createdBy.username;
+    }
+
+    const initials = name
+      .split(" ")
+      .map((w) => w[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "OF";
+
+    return {
+      name,
+      username,
+      initials,
+    };
+  }
+
+  // ── Human-Readable Period Label ──
+  const periodLabel = useMemo(() => {
+    switch (periodPreset) {
+      case "today": return "Today";
+      case "yesterday": return "Yesterday";
+      case "this_week": return "This Week";
+      case "this_month": return "This Month";
+      case "custom":
+        if (customStartDate && customEndDate) return `${customStartDate} → ${customEndDate}`;
+        if (customStartDate) return `From ${customStartDate}`;
+        if (customEndDate) return `Up to ${customEndDate}`;
+        return "Custom Range";
+      default: return "All Time";
+    }
+  }, [periodPreset, customStartDate, customEndDate]);
+
+  // ── Bookings within Active Period (Base for Officer Analytics) ──
+  const bookingsInPeriod = useMemo(() => {
+    return bookings.filter(b => isWithinPeriod(b, periodPreset, customStartDate, customEndDate));
+  }, [bookings, periodPreset, customStartDate, customEndDate]);
+
+  // ── Available Officers list across all loaded records ──
+  const availableOfficers = useMemo(() => {
+    const map = new Map<string, { name: string; username?: string; count: number }>();
+    bookings.forEach(b => {
+      const off = getBookingOfficer(b);
+      const existing = map.get(off.name) || { name: off.name, username: off.username, count: 0 };
+      existing.count += 1;
+      map.set(off.name, existing);
+    });
+    return Array.from(map.values()).sort((a, b) => b.count - a.count);
+  }, [bookings]);
+
+  // ── Officer Productivity & Activity Breakdown per Active Period ──
+  interface OfficerProductivity {
+    name: string;
+    username?: string;
+    total: number;
+    approved: number;
+    pending: number;
+    picked: number;
+    rejected: number;
+    percent: number;
+  }
+
+  const officerProductivityList = useMemo<OfficerProductivity[]>(() => {
+    const map = new Map<string, OfficerProductivity>();
+
+    bookingsInPeriod.forEach(b => {
+      const off = getBookingOfficer(b);
+      const existing = map.get(off.name) || {
+        name: off.name,
+        username: off.username,
+        total: 0,
+        approved: 0,
+        pending: 0,
+        picked: 0,
+        rejected: 0,
+        percent: 0,
+      };
+
+      existing.total += 1;
+      const st = (b.status || "").toLowerCase();
+      if (st === "approved") existing.approved += 1;
+      else if (st === "rejected") existing.rejected += 1;
+      else if (st === "picked") existing.picked += 1;
+      else existing.pending += 1;
+
+      map.set(off.name, existing);
+    });
+
+    const totalCount = bookingsInPeriod.length || 1;
+    return Array.from(map.values())
+      .map(item => ({
+        ...item,
+        percent: Math.round((item.total / totalCount) * 100),
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [bookingsInPeriod]);
+
+  // ── Filter bookings by period, officer, status, classification, and search query ──
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
-      // Status filter
+      // 1. Period filter
+      if (!isWithinPeriod(b, periodPreset, customStartDate, customEndDate)) {
+        return false;
+      }
+      // 2. Officer filter
+      if (officerFilter !== "all") {
+        const off = getBookingOfficer(b);
+        if (off.name !== officerFilter) return false;
+      }
+      // 3. Status filter
       if (statusFilter !== "all" && b.status.toLowerCase() !== statusFilter.toLowerCase()) {
         return false;
       }
-      // Classification filter
+      // 4. Classification filter
       if (classificationFilter !== "all" && b.classification.toLowerCase() !== classificationFilter.toLowerCase()) {
         return false;
       }
-      // Search query
+      // 5. Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
+        const off = getBookingOfficer(b);
         const invNo = b.vrsInvoice?.invoiceNo?.toLowerCase() || "";
         const match =
           b.id.toLowerCase().includes(q) ||
           b.owner.toLowerCase().includes(q) ||
           b.vehicle.toLowerCase().includes(q) ||
           (b.plate && b.plate.toLowerCase().includes(q)) ||
+          off.name.toLowerCase().includes(q) ||
+          (off.username && off.username.toLowerCase().includes(q)) ||
           invNo.includes(q);
         if (!match) return false;
       }
       return true;
     });
-  }, [bookings, statusFilter, classificationFilter, searchQuery]);
+  }, [bookings, periodPreset, customStartDate, customEndDate, officerFilter, statusFilter, classificationFilter, searchQuery]);
 
-  // Statistics
+  // ── Statistics for Period & Overall Registry ──
   const stats = useMemo(() => {
-    const total = bookings.length;
-    const pending = bookings.filter((b) => b.status.toLowerCase() === "pending").length;
-    const approved = bookings.filter((b) => b.status.toLowerCase() === "approved").length;
-    const picked = bookings.filter((b) => b.status.toLowerCase() === "picked").length;
-    const rejected = bookings.filter((b) => b.status.toLowerCase() === "rejected").length;
+    const totalInPeriod = bookingsInPeriod.length;
+    const pending = bookingsInPeriod.filter((b) => b.status.toLowerCase() === "pending").length;
+    const approved = bookingsInPeriod.filter((b) => b.status.toLowerCase() === "approved").length;
+    const picked = bookingsInPeriod.filter((b) => b.status.toLowerCase() === "picked").length;
+    const rejected = bookingsInPeriod.filter((b) => b.status.toLowerCase() === "rejected").length;
+    const topOfficer = officerProductivityList.length > 0 ? officerProductivityList[0] : null;
 
-    return { total, pending, approved, picked, rejected };
-  }, [bookings]);
+    return {
+      total: totalInPeriod,
+      allTime: bookings.length,
+      pending,
+      approved,
+      picked,
+      rejected,
+      activeOfficers: officerProductivityList.length,
+      topOfficer,
+    };
+  }, [bookingsInPeriod, officerProductivityList, bookings.length]);
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
@@ -201,21 +396,27 @@ export default function BookingsPage() {
   };
 
   function exportCSV() {
-    const headers = ["ID", "Owner", "Vehicle", "Plate", "Classification", "Status", "Date"];
-    const rows = filteredBookings.map(b => [
-      b.id,
-      `"${b.owner.replace(/"/g, '""')}"`,
-      `"${b.vehicle.replace(/"/g, '""')}"`,
-      b.plate || "Pending",
-      b.classification,
-      b.status,
-      b.date
-    ]);
+    const headers = ["Log ID", "Date Filed", "Desk Officer", "Officer Username", "Legal Owner", "Vehicle", "Plate Assigned", "Classification", "Status", "Branch"];
+    const rows = filteredBookings.map(b => {
+      const off = getBookingOfficer(b);
+      return [
+        b.id,
+        b.date || (b.createdAt ? b.createdAt.slice(0, 10) : ""),
+        `"${off.name.replace(/"/g, '""')}"`,
+        off.username || "",
+        `"${b.owner.replace(/"/g, '""')}"`,
+        `"${b.vehicle.replace(/"/g, '""')}"`,
+        b.plate || "Pending",
+        b.classification,
+        b.status,
+        `"${(b.branch?.name || "").replace(/"/g, '""')}"`
+      ];
+    });
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `dvla_booking_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `dvla_booking_logs_${periodPreset}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -241,6 +442,18 @@ export default function BookingsPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setShowProductivityPanel(prev => !prev)}
+            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+              showProductivityPanel
+                ? "bg-slate-900 border-slate-900 text-white"
+                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+            }`}
+            title="Toggle Officer Productivity Breakdown"
+          >
+            <span>👥 Officer Output ({officerProductivityList.length})</span>
+          </button>
           <button
             type="button"
             onClick={exportCSV}
@@ -275,24 +488,34 @@ export default function BookingsPage() {
       {/* ── 2. Metric KPI Tiles ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs">
-          <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Total Filed</span>
-          <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">{stats.total}</p>
-        </div>
-
-        <div className="bg-white p-3.5 rounded-xl border border-amber-200/70 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase text-amber-800 tracking-wider">Pending</span>
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Entries in Period</span>
+            <span className="text-[10px] font-mono text-slate-400">All: {stats.allTime}</span>
           </div>
-          <p className="text-xl font-bold font-mono text-amber-700 mt-0.5">{stats.pending}</p>
+          <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">{stats.total}</p>
+          <span className="text-[10px] text-slate-500 truncate block mt-0.5 font-medium">{periodLabel}</span>
         </div>
 
         <div className="bg-white p-3.5 rounded-xl border border-emerald-200/70 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase text-emerald-800 tracking-wider">Approved</span>
+            <span className="text-[10px] font-bold uppercase text-emerald-800 tracking-wider">Active Officers</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
-          <p className="text-xl font-bold font-mono text-emerald-700 mt-0.5">{stats.approved}</p>
+          <p className="text-xl font-bold font-mono text-emerald-700 mt-0.5">{stats.activeOfficers}</p>
+          <span className="text-[10px] text-emerald-700 font-semibold truncate block mt-0.5">
+            {stats.topOfficer ? `Top: ${stats.topOfficer.name}` : "No entries"}
+          </span>
+        </div>
+
+        <div className="bg-white p-3.5 rounded-xl border border-amber-200/70 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase text-amber-800 tracking-wider">Pending Review</span>
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          </div>
+          <p className="text-xl font-bold font-mono text-amber-700 mt-0.5">{stats.pending}</p>
+          <span className="text-[10px] text-amber-700 font-semibold truncate block mt-0.5">
+            {stats.approved} Approved in period
+          </span>
         </div>
 
         <div className="bg-white p-3.5 rounded-xl border border-rose-200/70 shadow-2xs">
@@ -301,11 +524,131 @@ export default function BookingsPage() {
             <span className="w-2 h-2 rounded-full bg-rose-500" />
           </div>
           <p className="text-xl font-bold font-mono text-rose-700 mt-0.5">{stats.rejected}</p>
+          <span className="text-[10px] text-rose-700 font-semibold truncate block mt-0.5">
+            {stats.picked} Picked up
+          </span>
         </div>
       </div>
 
-      {/* ── 3. Filter & Search Toolbar ── */}
-      <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs space-y-2.5">
+      {/* ── 3. Officer Performance & Productivity Breakdown Station ── */}
+      {showProductivityPanel && (
+        <div className="bg-white border border-slate-200/80 rounded-xl p-4 sm:p-5 shadow-2xs space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+                <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>👥 Officer Performance &amp; Entry Breakdown</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    {periodLabel}
+                  </span>
+                </h2>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Breakdown of entries and verification output per desk officer for the selected custom timeframe.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {officerFilter !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => setOfficerFilter("all")}
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition cursor-pointer flex items-center gap-1"
+                >
+                  <span>Filtering: {officerFilter}</span>
+                  <span className="text-[10px] font-bold">✕ Clear</span>
+                </button>
+              )}
+              <span className="text-[11px] text-slate-400 font-mono">
+                {officerProductivityList.length} Officers &bull; {bookingsInPeriod.length} Entries
+              </span>
+            </div>
+          </div>
+
+          {officerProductivityList.length === 0 ? (
+            <div className="p-6 text-center text-xs font-semibold text-slate-500 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+              No registration entries filed by any officer during {periodLabel}.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {officerProductivityList.map((off) => {
+                const isSelected = officerFilter === off.name;
+                const initials = off.name.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("") || "OF";
+
+                return (
+                  <div
+                    key={off.name}
+                    className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between space-y-3 ${
+                      isSelected
+                        ? "bg-emerald-50/70 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs"
+                        : "bg-slate-50/50 hover:bg-slate-50 border-slate-200 hover:border-slate-300 shadow-2xs"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-[#103014] text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                          {initials}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-xs font-bold text-slate-900 truncate" title={off.name}>
+                            {off.name}
+                          </h3>
+                          <p className="text-[10px] text-slate-500 font-mono truncate">
+                            {off.username ? `@${off.username}` : "Desk Officer"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className="text-base font-black font-mono text-slate-950 block leading-tight">
+                          {off.total}
+                        </span>
+                        <span className="text-[9px] font-bold font-mono px-1.5 py-0.2 rounded bg-slate-200 text-slate-700">
+                          {off.percent}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Mini distribution bar */}
+                    <div className="space-y-1">
+                      <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden flex">
+                        <div style={{ width: `${(off.approved / off.total) * 100}%` }} className="bg-emerald-500 h-full" title={`Approved: ${off.approved}`} />
+                        <div style={{ width: `${(off.pending / off.total) * 100}%` }} className="bg-amber-500 h-full" title={`Pending: ${off.pending}`} />
+                        <div style={{ width: `${(off.picked / off.total) * 100}%` }} className="bg-blue-500 h-full" title={`Picked: ${off.picked}`} />
+                        <div style={{ width: `${(off.rejected / off.total) * 100}%` }} className="bg-rose-500 h-full" title={`Rejected: ${off.rejected}`} />
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-slate-500 pt-0.5">
+                        <span className="text-emerald-700 font-semibold font-mono">✓ {off.approved} Appr</span>
+                        <span className="text-amber-700 font-semibold font-mono">⏳ {off.pending} Pend</span>
+                        {off.rejected > 0 && <span className="text-rose-700 font-semibold font-mono">✕ {off.rejected} Rej</span>}
+                        {off.picked > 0 && <span className="text-blue-700 font-semibold font-mono">📦 {off.picked} Pick</span>}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setOfficerFilter(isSelected ? "all" : off.name)}
+                      className={`w-full py-1.5 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                        isSelected
+                          ? "bg-emerald-700 hover:bg-emerald-800 text-white shadow-2xs"
+                          : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
+                      }`}
+                    >
+                      <span>{isSelected ? "✓ Showing Entries" : `Show Entries (${off.total})`}</span>
+                      {!isSelected && <span>&rarr;</span>}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── 4. Filter & Search Toolbar ── */}
+      <div className="bg-white border border-slate-200/80 rounded-xl p-3 sm:p-4 shadow-2xs space-y-3">
+        {/* Row 1: Search + Officer Dropdown + Classification */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
           {/* Search Box */}
           <div className="relative flex-1">
@@ -313,7 +656,7 @@ export default function BookingsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by Owner, Plate Number, VIN, Model, or Invoice #..."
+              placeholder="Search by Owner, Plate, VIN, Model, Invoice #, or Officer Name..."
               className="w-full pl-8 pr-4 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#81B71A] focus:ring-1 focus:ring-[#81B71A]"
             />
             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">
@@ -329,53 +672,147 @@ export default function BookingsPage() {
             )}
           </div>
 
-          {/* Classification Dropdown */}
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold text-slate-500 whitespace-nowrap">Class:</span>
-            <select
-              value={classificationFilter}
-              onChange={(e) => setClassificationFilter(e.target.value)}
-              className="px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none"
-            >
-              <option value="all">All Classifications</option>
-              <option value="private">Private (White)</option>
-              <option value="commercial">Commercial (Yellow)</option>
-              <option value="government">Government (GV Split)</option>
-              <option value="electric">Electric (EV Green)</option>
-              <option value="trailer">Trailer</option>
-              <option value="motorcycle">Motorcycle</option>
-            </select>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Officer Filter Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-slate-500 whitespace-nowrap">Officer:</span>
+              <select
+                value={officerFilter}
+                onChange={(e) => setOfficerFilter(e.target.value)}
+                className={`px-2.5 py-2 rounded-lg border text-xs font-semibold focus:outline-none cursor-pointer ${
+                  officerFilter !== "all"
+                    ? "border-emerald-500 bg-emerald-50/70 text-emerald-900 font-bold"
+                    : "border-slate-200 bg-white text-slate-700"
+                }`}
+              >
+                <option value="all">All Officers ({availableOfficers.length})</option>
+                {availableOfficers.map((off) => (
+                  <option key={off.name} value={off.name}>
+                    {off.name} ({off.count} total)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Classification Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-slate-500 whitespace-nowrap">Class:</span>
+              <select
+                value={classificationFilter}
+                onChange={(e) => setClassificationFilter(e.target.value)}
+                className="px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+              >
+                <option value="all">All Classifications</option>
+                <option value="private">Private (White)</option>
+                <option value="commercial">Commercial (Yellow)</option>
+                <option value="government">Government (GV Split)</option>
+                <option value="electric">Electric (EV Green)</option>
+                <option value="trailer">Trailer</option>
+                <option value="motorcycle">Motorcycle</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100 overflow-x-auto">
-          {([
-            { id: "all", label: "All Logs", count: bookings.length },
-            { id: "pending", label: "Pending", count: stats.pending },
-            { id: "approved", label: "Approved", count: stats.approved },
-            { id: "picked", label: "Picked", count: stats.picked },
-            { id: "rejected", label: "Rejected", count: stats.rejected },
-          ] as const).map(tab => {
-            const active = statusFilter === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setStatusFilter(tab.id)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                  active
-                    ? "bg-slate-900 text-white shadow-2xs font-bold"
-                    : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span className={`text-[10px] font-mono px-1 rounded ${active ? "bg-white/20 text-white" : "bg-slate-200/70 text-slate-700"}`}>
-                  {tab.count}
-                </span>
-              </button>
-            );
-          })}
+        {/* Row 2: Custom Period Selector Pills & Date Pickers */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 pt-2.5 border-t border-slate-100">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Timeframe:</span>
+            {([
+              { id: "all", label: "All Time" },
+              { id: "today", label: "Today" },
+              { id: "yesterday", label: "Yesterday" },
+              { id: "this_week", label: "This Week" },
+              { id: "this_month", label: "This Month" },
+              { id: "custom", label: "Custom Range" },
+            ] as const).map((p) => {
+              const isActive = periodPreset === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setPeriodPreset(p.id)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 ${
+                    isActive
+                      ? "bg-[#103014] text-white shadow-2xs font-bold"
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Custom Date Pickers when 'custom' is active */}
+          {periodPreset === "custom" && (
+            <div className="flex items-center gap-2 self-start lg:self-auto bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
+              <span className="text-slate-500 font-bold text-[10px] uppercase">From:</span>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-800 font-mono focus:outline-none focus:border-emerald-500"
+              />
+              <span className="text-slate-500 font-bold text-[10px] uppercase">To:</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-800 font-mono focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Row 3: Status Filter Tabs & Active Filter Reset */}
+        <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100 overflow-x-auto">
+          <div className="flex items-center gap-1.5">
+            {([
+              { id: "all", label: "All Logs", count: filteredBookings.length },
+              { id: "pending", label: "Pending", count: stats.pending },
+              { id: "approved", label: "Approved", count: stats.approved },
+              { id: "picked", label: "Picked", count: stats.picked },
+              { id: "rejected", label: "Rejected", count: stats.rejected },
+            ] as const).map(tab => {
+              const active = statusFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                    active
+                      ? "bg-slate-900 text-white shadow-2xs font-bold"
+                      : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span className={`text-[10px] font-mono px-1 rounded ${active ? "bg-white/20 text-white" : "bg-slate-200/70 text-slate-700"}`}>
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {(officerFilter !== "all" || periodPreset !== "all" || classificationFilter !== "all" || statusFilter !== "all" || searchQuery) && (
+            <button
+              type="button"
+              onClick={() => {
+                setOfficerFilter("all");
+                setPeriodPreset("all");
+                setCustomStartDate("");
+                setCustomEndDate("");
+                setClassificationFilter("all");
+                setStatusFilter("all");
+                setSearchQuery("");
+              }}
+              className="text-xs text-rose-600 hover:text-rose-800 font-bold whitespace-nowrap cursor-pointer hover:underline"
+            >
+              ✕ Reset All Filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -405,6 +842,7 @@ export default function BookingsPage() {
                 <tr>
                   <th className="py-3 px-4">Log ID</th>
                   <th className="py-3 px-4">Date Filed</th>
+                  <th className="py-3 px-4">Desk Officer</th>
                   <th className="py-3 px-4">Legal Owner &amp; Vehicle</th>
                   <th className="py-3 px-4">Plate Assigned</th>
                   <th className="py-3 px-4">Classification</th>
@@ -416,6 +854,8 @@ export default function BookingsPage() {
                 {filteredBookings.map((b) => {
                   const badgeClass = getStatusBadge(b.status);
                   const isUpdating = updatingId === b.id;
+                  const officerInfo = getBookingOfficer(b);
+                  const initials = officerInfo.initials;
 
                   return (
                     <tr key={b.id} className="hover:bg-slate-50/70 transition-colors">
@@ -424,6 +864,26 @@ export default function BookingsPage() {
                       </td>
                       <td className="py-3 px-4 text-slate-500 font-medium">
                         {b.date}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] flex items-center justify-center shrink-0 border border-emerald-200">
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => setOfficerFilter(officerInfo.name)}
+                              className="font-bold text-slate-900 hover:text-emerald-700 text-xs text-left truncate block cursor-pointer transition-colors"
+                              title={`Filter entries by ${officerInfo.name}`}
+                            >
+                              {officerInfo.name}
+                            </button>
+                            <p className="text-[10px] text-slate-500 font-mono truncate">
+                              {b.branch?.name || (officerInfo.username ? `@${officerInfo.username}` : "Entry Desk")}
+                            </p>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="font-bold text-slate-900">{b.owner}</div>
@@ -509,7 +969,20 @@ export default function BookingsPage() {
                   <p><span className="text-slate-500 font-semibold inline-block w-16">Plate:</span> <strong className="font-mono text-slate-950 font-bold bg-slate-200/80 px-1.5 py-0.5 rounded text-xs">{inspectBooking.plate || "Pending"}</strong></p>
                   <p><span className="text-slate-500 font-semibold inline-block w-16">Service:</span> <span className="text-slate-900 font-semibold">{inspectBooking.type}</span></p>
                   <p><span className="text-slate-500 font-semibold inline-block w-16">Station:</span> <span className="text-slate-900 font-semibold">{inspectBooking.branch?.name || "DVLA Adenta"}</span></p>
-                  <p><span className="text-slate-500 font-semibold inline-block w-16">Officer:</span> <span className="text-slate-900 font-semibold">{inspectBooking.createdBy?.name || inspectBooking.createdBy?.username || "A. Owusu"}</span></p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 font-semibold inline-block w-16">Officer:</span>
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-slate-950">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold inline-flex items-center justify-center">
+                        {getBookingOfficer(inspectBooking).initials}
+                      </span>
+                      <span>{getBookingOfficer(inspectBooking).name}</span>
+                      {getBookingOfficer(inspectBooking).username && (
+                        <span className="text-[10px] text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded font-mono">
+                          @{getBookingOfficer(inspectBooking).username}
+                        </span>
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
 
