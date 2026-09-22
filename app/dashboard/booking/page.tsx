@@ -343,8 +343,26 @@ function BookingDeskContent() {
   const vehicleSearchDropdownRef = useRef<HTMLDivElement>(null);
   const [vehicleSearchQuery, setVehicleSearchQuery] = useState("");
   const [selectedCatalogYear, setSelectedCatalogYear] = useState("2024");
+  const [selectedQuickMake, setSelectedQuickMake] = useState("TOYOTA");
   const [isVehicleDropdownOpen, setIsVehicleDropdownOpen] = useState(false);
   const [autoFilledNotice, setAutoFilledNotice] = useState<string | null>(null);
+
+  /* ── Mobile Usability: Voice Dictation & Draft Auto-Save ── */
+  const [activeVoiceField, setActiveVoiceField] = useState<string | null>(null);
+  const [draftNotice, setDraftNotice] = useState<string | null>(null);
+
+  const POPULAR_MAKES = [
+    "TOYOTA",
+    "HONDA",
+    "HYUNDAI",
+    "KIA",
+    "NISSAN",
+    "FORD",
+    "MERCEDES-BENZ",
+    "JETOUR",
+    "BMW",
+    "TESLA",
+  ];
 
   // Database Vehicles state
   const [dbVehicles, setDbVehicles] = useState<VehicleModel[]>([]);
@@ -407,6 +425,15 @@ function BookingDeskContent() {
       return full.includes(q) || m.includes(q) || mdl.includes(q) || body.includes(q) || category.includes(q);
     });
   }, [dbVehicles, vehicleSearchQuery]);
+
+  // Quick-select models filtered by selectedQuickMake
+  const quickFilteredModels = useMemo(() => {
+    const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
+    if (!selectedQuickMake) return [];
+    return list.filter(
+      (v: any) => (v.make || "").toUpperCase() === selectedQuickMake.toUpperCase()
+    );
+  }, [dbVehicles, selectedQuickMake]);
 
   function handleResetVehicle() {
     setMake("");
@@ -485,6 +512,160 @@ function BookingDeskContent() {
   const [customsDate, setCustomsDate] = useState("");
   const [supervisor, setSupervisor] = useState("");
   const [selectedSupervisorId, setSelectedSupervisorId] = useState("");
+
+  /* ── Submission and Simulation UI State ── */
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+
+  /* ── Local Draft Auto-Save (Phone Reload & Call Protection) ── */
+  const DRAFT_STORAGE_KEY = "dvla_vpms_booking_draft_v1";
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") {
+          if (!isPrefill && !ownerName && !regNo && parsed.ownerName) {
+            if (parsed.bookingType) setBookingType(parsed.bookingType);
+            if (parsed.classification) setClassification(parsed.classification);
+            if (parsed.regNo) setRegNo(parsed.regNo);
+            if (parsed.ownerName) setOwnerName(parsed.ownerName);
+            if (parsed.address) setAddress(parsed.address);
+            if (parsed.phone) setPhone(parsed.phone);
+            if (parsed.receiptNo) setReceiptNo(parsed.receiptNo);
+            if (parsed.receiptDate) setReceiptDate(parsed.receiptDate);
+            if (parsed.make) setMake(parsed.make);
+            if (parsed.model) setModel(parsed.model);
+            if (parsed.year) setYear(parsed.year);
+            if (parsed.bodyType) setBodyType(parsed.bodyType);
+            if (parsed.fuelType) setFuelType(parsed.fuelType);
+            if (parsed.chassisNo) setChassisNo(parsed.chassisNo);
+            if (parsed.engineNo) setEngineNo(parsed.engineNo);
+            if (parsed.engineCC) setEngineCC(parsed.engineCC);
+            if (parsed.cylinders) setCylinders(parsed.cylinders);
+            if (parsed.customsNo) setCustomsNo(parsed.customsNo);
+            if (parsed.customsDate) setCustomsDate(parsed.customsDate);
+            if (parsed.supervisor) setSupervisor(parsed.supervisor);
+            if (parsed.oldOwnerName) setOldOwnerName(parsed.oldOwnerName);
+            if (parsed.oldOwnerPhone) setOldOwnerPhone(parsed.oldOwnerPhone);
+            if (parsed.oldOwnerAddr) setOldOwnerAddr(parsed.oldOwnerAddr);
+            if (parsed.oldOwnerCustom) setOldOwnerCustom(parsed.oldOwnerCustom);
+            setDraftNotice("Restored unsaved booking draft from previous phone session.");
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Draft restore error:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || isSuccess) return;
+    if (ownerName || regNo || chassisNo || receiptNo || make) {
+      const timer = setTimeout(() => {
+        try {
+          localStorage.setItem(
+            DRAFT_STORAGE_KEY,
+            JSON.stringify({
+              bookingType, classification, regNo, ownerName, address, phone,
+              receiptNo, receiptDate, make, model, year, bodyType, fuelType,
+              chassisNo, engineNo, engineCC, cylinders, customsNo, customsDate,
+              supervisor, oldOwnerName, oldOwnerPhone, oldOwnerAddr, oldOwnerCustom,
+              savedAt: new Date().toISOString(),
+            })
+          );
+        } catch (e) {
+          console.error("Failed to auto-save draft:", e);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    bookingType, classification, regNo, ownerName, address, phone,
+    receiptNo, receiptDate, make, model, year, bodyType, fuelType,
+    chassisNo, engineNo, engineCC, cylinders, customsNo, customsDate,
+    supervisor, oldOwnerName, oldOwnerPhone, oldOwnerAddr, oldOwnerCustom, isSuccess
+  ]);
+
+  function handleDiscardDraft() {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+    }
+    setDraftNotice(null);
+    handleReset();
+  }
+
+  function startVoiceDictation(fieldName: "ownerName" | "address" | "oldOwnerName" | "oldOwnerAddr") {
+    if (typeof window === "undefined") return;
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) {
+      alert("Voice recognition is not supported in this browser. Please use your phone keyboard microphone.");
+      return;
+    }
+    try {
+      const recognition = new SpeechRec();
+      recognition.lang = "en-GH";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      setActiveVoiceField(fieldName);
+
+      recognition.onresult = (e: any) => {
+        const text = e.results?.[0]?.[0]?.transcript || "";
+        if (text) {
+          const clean = text.trim().toUpperCase();
+          if (fieldName === "ownerName") setOwnerName(prev => prev ? `${prev} ${clean}` : clean);
+          if (fieldName === "address") setAddress(prev => prev ? `${prev} ${clean}` : clean);
+          if (fieldName === "oldOwnerName") setOldOwnerName(prev => prev ? `${prev} ${clean}` : clean);
+          if (fieldName === "oldOwnerAddr") setOldOwnerAddr(prev => prev ? `${prev} ${clean}` : clean);
+        }
+        setActiveVoiceField(null);
+      };
+
+      recognition.onerror = () => setActiveVoiceField(null);
+      recognition.onend = () => setActiveVoiceField(null);
+      recognition.start();
+    } catch (err) {
+      console.error("Voice dictation error:", err);
+      setActiveVoiceField(null);
+    }
+  }
+
+  async function handlePasteCleanVIN() {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          const cleaned = text.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 17);
+          setChassisNo(cleaned);
+          setAutoFilledNotice(`VIN pasted & sanitized (${cleaned.length}/17 chars).`);
+          return;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+    const manual = prompt("Paste Chassis/VIN Number here:");
+    if (manual) {
+      setChassisNo(manual.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 17));
+    }
+  }
+
+  function setQuickDate(setter: (d: string) => void, offsetDays: number = 0) {
+    const d = new Date(Date.now() - offsetDays * 86400000);
+    setter(d.toISOString().slice(0, 10));
+  }
+
+  function handleQuickGeneratePlate(prefix?: string) {
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const pfx = prefix || (sessionUser?.branch?.code ? String(sessionUser.branch.code).slice(0, 2).toUpperCase() : "AD");
+    const l1 = letters[Math.floor(Math.random() * letters.length)];
+    const l2 = letters[Math.floor(Math.random() * letters.length)];
+    const num = String(Math.floor(1000 + Math.random() * 9000)).padStart(4, "0");
+    const generated = `${num}-${pfx}${l1}${l2}`;
+    setRegNo(generated);
+  }
 
   /* ── Database-Driven Plate Categories & Supervisors ── */
   interface PlateCategoryDbItem {
@@ -621,9 +802,7 @@ function BookingDeskContent() {
     }
   }, [dbSupervisors, supervisor]);
 
-  /* ── UI state ── */
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isSimulating, setIsSimulating] = useState(false);
+  /* ── Reservations State ── */
   const [reservations, setReservations] = useState<Reservation[]>([]);
 
   useEffect(() => {
@@ -974,6 +1153,10 @@ function BookingDeskContent() {
     setVrsSuccessMessage("");
     setAlreadyBookedError(null);
     setAttemptedTabs({ 1: false, 2: false, 3: false });
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+    }
+    setDraftNotice(null);
     setActiveTab(1);
   }
 
@@ -1080,27 +1263,27 @@ function BookingDeskContent() {
       setTyreRW(invoice.tyreRW || "215");
       setTyreRD(invoice.tyreRD || "16");
 
-      setReceiptNo("");
-      setCustomsNo("");
-      setCustomsDate("");
+      setReceiptNo(invoice.invoiceNo);
+      setReceiptDate(new Date().toISOString().slice(0, 10));
 
-      setVrsSuccessMessage(`VRS Invoice #${invoice.invoiceNo} imported successfully.`);
       setActiveTab(3); // Navigate directly to Customs & Certification
+      setVrsSuccessMessage(`Auto-filled vehicle & owner specifications from VRS Invoice #${invoice.invoiceNo}.`);
     } else {
-      alert("Invoice not found in VRS. Please check the 14-character invoice number (e.g. 4N92P81C11VR7K).");
+      setVrsSuccessMessage("");
+      alert(`VRS Invoice #${invoiceNoToFetch} not found.`);
     }
+
     setIsFetchingVrs(false);
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  /* ── 4. Final Form Submission ── */
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     if (alreadyBookedError) {
       alert("⚠️ Booking Blocked: This VRS Invoice has already been booked in the system.");
       return;
     }
 
-    // Step-by-step verification: Step 1 -> Step 2 -> Step 3
     if (missingFieldsTab1.length > 0) {
       focusField(missingFieldsTab1[0].id, 1);
       alert(`⚠️ Step 1 Incomplete: Please enter "${missingFieldsTab1[0].label}" before certifying.`);
@@ -1193,6 +1376,10 @@ function BookingDeskContent() {
       }
 
       setIsSuccess(true);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+      }
+      setDraftNotice(null);
       fetchDbVehicles();
     } catch (err) {
       console.error("Error creating booking in DB:", err);
@@ -1229,22 +1416,23 @@ function BookingDeskContent() {
 
         {/* Action Toolbar */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Inline VRS Invoice Search */}
-          <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
-            <input
-              type="text"
-              value={vrsInvoiceNo}
-              onChange={e => setVrsInvoiceNo(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 14))}
-              placeholder="VRS INVOICE #"
-              className="px-2.5 py-1.5 text-xs font-mono font-bold text-slate-800 placeholder-slate-400 focus:outline-none w-32 md:w-36 uppercase"
-            />
+          {/* VRS Auto-Sync Status (Disabled pending DVLA clearance) */}
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50/90 border border-amber-200/90 rounded-lg text-slate-700 shadow-2xs"
+            title="VRS auto-sync integration is not yet accepted/cleared by DVLA. Manual entry is required."
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-[10px] font-black text-amber-950 uppercase tracking-tight">VRS Auto-Sync:</span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-200/80 text-amber-900 border border-amber-300 uppercase">
+              Pending DVLA Clearance
+            </span>
             <button
               type="button"
-              disabled={vrsInvoiceNo.length !== 14 || isFetchingVrs}
-              onClick={() => handleFetchVrs(vrsInvoiceNo)}
-              className="px-2.5 py-1.5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              disabled
+              className="px-2 py-0.5 text-[9px] font-black bg-slate-200 text-slate-500 rounded cursor-not-allowed uppercase opacity-80"
+              title="VRS Auto-fill is disabled pending DVLA clearance. Enter details manually."
             >
-              {isFetchingVrs ? "..." : "Import"}
+              🔒 Locked
             </button>
           </div>
 
@@ -1254,7 +1442,7 @@ function BookingDeskContent() {
             disabled={isSimulating}
             className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer disabled:opacity-50 flex items-center gap-1"
           >
-            <span>Demo Auto-Fill</span>
+            <span>Demo Sample Data</span>
           </button>
 
           {/* Quick Mobile Review Shortcut */}
@@ -1276,6 +1464,32 @@ function BookingDeskContent() {
           </button>
         </div>
       </div>
+
+      {/* Draft Notification Banner */}
+      {draftNotice && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg px-3.5 py-2 text-xs text-blue-900 flex items-center justify-between shadow-2xs animate-in fade-in duration-150">
+          <div className="flex items-center gap-2">
+            <span className="text-blue-600 font-bold">💾</span>
+            <span>{draftNotice}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleDiscardDraft}
+              className="text-[11px] font-bold text-rose-700 hover:text-rose-900 underline cursor-pointer"
+            >
+              Discard Draft
+            </button>
+            <button
+              type="button"
+              onClick={() => setDraftNotice(null)}
+              className="text-slate-400 hover:text-slate-700 font-bold ml-1 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Alerts */}
       {vrsSuccessMessage && (
@@ -1557,14 +1771,43 @@ function BookingDeskContent() {
                       fieldId="regNo"
                       hint={isSpecialOrCustomized ? "Custom sequence" : "e.g. 1092-ADXY"}
                     >
-                      <input
-                        id="input-regNo"
-                        value={regNo}
-                        onChange={e => setRegNo(e.target.value.toUpperCase())}
-                        required
-                        placeholder={isSpecialOrCustomized ? "E.G. KX 1111-AD" : "E.G. 1092-ADXY"}
-                        className={INPUT + " font-mono font-bold"}
-                      />
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-1 flex-wrap">
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase">Prefix:</span>
+                            {["AD", "GR", "GW", "GE", "AS", "BA", "NR"].map(code => (
+                              <button
+                                key={code}
+                                type="button"
+                                onClick={() => handleQuickGeneratePlate(code)}
+                                className="px-1.5 py-0.5 text-[9px] font-bold font-mono bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded border border-slate-200 transition cursor-pointer"
+                                title={`Generate plate with ${code} code`}
+                              >
+                                {code}
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickGeneratePlate()}
+                            className="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded border border-emerald-300 transition cursor-pointer flex items-center gap-1"
+                            title="Generate next sequential plate number automatically"
+                          >
+                            <span>⚡ Next Plate</span>
+                          </button>
+                        </div>
+                        <input
+                          id="input-regNo"
+                          value={regNo}
+                          onChange={e => setRegNo(e.target.value.toUpperCase())}
+                          required
+                          autoCapitalize="characters"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          placeholder={isSpecialOrCustomized ? "E.G. KX 1111-AD" : "E.G. 1092-ADXY"}
+                          className={INPUT + " font-mono font-bold"}
+                        />
+                      </div>
                       {activeReservation && (
                         <div className="mt-1 px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-medium">
                           Reserved: {activeReservation.holder} ({activeReservation.authRef})
@@ -1580,14 +1823,46 @@ function BookingDeskContent() {
                       errorMessage="Owner full legal name is required"
                       fieldId="ownerName"
                     >
-                      <input
-                        id="input-ownerName"
-                        value={ownerName}
-                        onChange={e => setOwnerName(e.target.value.toUpperCase())}
-                        required
-                        placeholder="ENTER OWNER OR CORPORATE NAME"
-                        className={INPUT}
-                      />
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-1 flex-wrap">
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase">Title:</span>
+                            {["MR.", "MRS.", "MS.", "DR.", "ALHAJI", "HON."].map(t => (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() => setOwnerName(prev => prev ? `${t} ${prev.replace(/^(MR\.|MRS\.|MS\.|DR\.|ALHAJI|HON\.)\s*/i, "")}` : `${t} `)}
+                                className="px-1.5 py-0.5 text-[9px] font-bold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded border border-slate-200 transition cursor-pointer"
+                              >
+                                {t}
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => startVoiceDictation("ownerName")}
+                            className={`px-2 py-0.5 text-[10px] font-bold rounded border transition cursor-pointer flex items-center gap-1 ${
+                              activeVoiceField === "ownerName"
+                                ? "bg-rose-50 text-rose-700 border-rose-300 animate-pulse"
+                                : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                            }`}
+                            title="Speak name into microphone"
+                          >
+                            <span>🎙️ {activeVoiceField === "ownerName" ? "Listening..." : "Dictate"}</span>
+                          </button>
+                        </div>
+                        <input
+                          id="input-ownerName"
+                          value={ownerName}
+                          onChange={e => setOwnerName(e.target.value.toUpperCase())}
+                          required
+                          autoCapitalize="words"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          placeholder="ENTER OWNER OR CORPORATE NAME"
+                          className={INPUT}
+                        />
+                      </div>
                     </Field>
                   </div>
 
@@ -1599,13 +1874,44 @@ function BookingDeskContent() {
                         isFilled={Boolean(address.trim())}
                         fieldId="address"
                       >
-                        <input
-                          id="input-address"
-                          value={address}
-                          onChange={e => setAddress(e.target.value.toUpperCase())}
-                          placeholder="STREET, TOWN / SUB-DISTRICT, REGION"
-                          className={INPUT}
-                        />
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-1 flex-wrap">
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase">Quick City:</span>
+                              {["ACCRA", "ADENTA", "MADINA", "TEMA", "KUMASI", "TAKORADI", "EAST LEGON"].map(c => (
+                                <button
+                                  key={c}
+                                  type="button"
+                                  onClick={() => setAddress(prev => prev ? `${prev}, ${c}` : c)}
+                                  className="px-1.5 py-0.5 text-[9px] font-bold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded border border-slate-200 transition cursor-pointer"
+                                >
+                                  {c}
+                                </button>
+                              ))}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => startVoiceDictation("address")}
+                              className={`px-2 py-0.5 text-[10px] font-bold rounded border transition cursor-pointer flex items-center gap-1 ${
+                                activeVoiceField === "address"
+                                  ? "bg-rose-50 text-rose-700 border-rose-300 animate-pulse"
+                                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                              }`}
+                              title="Speak address into microphone"
+                            >
+                              <span>🎙️ {activeVoiceField === "address" ? "Listening..." : "Dictate"}</span>
+                            </button>
+                          </div>
+                          <input
+                            id="input-address"
+                            value={address}
+                            onChange={e => setAddress(e.target.value.toUpperCase())}
+                            autoCapitalize="words"
+                            autoCorrect="off"
+                            placeholder="STREET, TOWN / SUB-DISTRICT, REGION"
+                            className={INPUT}
+                          />
+                        </div>
                       </Field>
                     </div>
                     <Field
@@ -1614,13 +1920,31 @@ function BookingDeskContent() {
                       isFilled={Boolean(phone.trim())}
                       fieldId="phone"
                     >
-                      <input
-                        id="input-phone"
-                        value={phone}
-                        onChange={e => setPhone(e.target.value.toUpperCase())}
-                        placeholder="E.G. 0241234567"
-                        className={INPUT}
-                      />
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">Network:</span>
+                          {["024", "054", "055", "020", "027", "+233"].map(pfx => (
+                            <button
+                              key={pfx}
+                              type="button"
+                              onClick={() => setPhone(pfx)}
+                              className="px-1.5 py-0.5 text-[9px] font-bold font-mono bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded border border-slate-200 transition cursor-pointer"
+                            >
+                              {pfx}
+                            </button>
+                          ))}
+                        </div>
+                        <input
+                          id="input-phone"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          value={phone}
+                          onChange={e => setPhone(e.target.value.toUpperCase())}
+                          placeholder="E.G. 0241234567"
+                          className={INPUT}
+                        />
+                      </div>
                     </Field>
                   </div>
 
@@ -1660,14 +1984,27 @@ function BookingDeskContent() {
                                   fieldId="oldOwnerName"
                                   hint="As shown on existing logbook"
                                 >
-                                  <input
-                                    id="input-oldOwnerName"
-                                    value={oldOwnerName}
-                                    onChange={e => setOldOwnerName(e.target.value.toUpperCase())}
-                                    required={activeServiceDef?.prevOwnerRequireName !== false}
-                                    placeholder="FULL LEGAL NAME OF PREVIOUS OWNER"
-                                    className={INPUT}
-                                  />
+                                  <div className="space-y-1">
+                                    <div className="flex justify-end">
+                                      <button
+                                        type="button"
+                                        onClick={() => startVoiceDictation("oldOwnerName")}
+                                        className="text-[10px] font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <span>🎙️ {activeVoiceField === "oldOwnerName" ? "Listening..." : "Dictate"}</span>
+                                      </button>
+                                    </div>
+                                    <input
+                                      id="input-oldOwnerName"
+                                      value={oldOwnerName}
+                                      onChange={e => setOldOwnerName(e.target.value.toUpperCase())}
+                                      required={activeServiceDef?.prevOwnerRequireName !== false}
+                                      autoCapitalize="words"
+                                      autoCorrect="off"
+                                      placeholder="FULL LEGAL NAME OF PREVIOUS OWNER"
+                                      className={INPUT}
+                                    />
+                                  </div>
                                 </Field>
                               )}
 
@@ -1684,6 +2021,9 @@ function BookingDeskContent() {
                                 >
                                   <input
                                     id="input-oldOwnerPhone"
+                                    type="tel"
+                                    inputMode="tel"
+                                    autoComplete="tel"
                                     value={oldOwnerPhone}
                                     onChange={e => setOldOwnerPhone(e.target.value.toUpperCase())}
                                     required={Boolean(activeServiceDef?.prevOwnerRequirePhone)}
@@ -1705,14 +2045,27 @@ function BookingDeskContent() {
                                     fieldId="oldOwnerAddr"
                                     hint="Title address on record"
                                   >
-                                    <input
-                                      id="input-oldOwnerAddr"
-                                      value={oldOwnerAddr}
-                                      onChange={e => setOldOwnerAddr(e.target.value.toUpperCase())}
-                                      required={activeServiceDef?.prevOwnerRequireAddress !== false}
-                                      placeholder="STREET, TOWN / SUB-DISTRICT, REGION"
-                                      className={INPUT}
-                                    />
+                                    <div className="space-y-1">
+                                      <div className="flex justify-end">
+                                        <button
+                                          type="button"
+                                          onClick={() => startVoiceDictation("oldOwnerAddr")}
+                                          className="text-[10px] font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
+                                        >
+                                          <span>🎙️ {activeVoiceField === "oldOwnerAddr" ? "Listening..." : "Dictate"}</span>
+                                        </button>
+                                      </div>
+                                      <input
+                                        id="input-oldOwnerAddr"
+                                        value={oldOwnerAddr}
+                                        onChange={e => setOldOwnerAddr(e.target.value.toUpperCase())}
+                                        required={activeServiceDef?.prevOwnerRequireAddress !== false}
+                                        autoCapitalize="words"
+                                        autoCorrect="off"
+                                        placeholder="STREET, TOWN / SUB-DISTRICT, REGION"
+                                        className={INPUT}
+                                      />
+                                    </div>
                                   </Field>
                                 </div>
                               )}
@@ -1734,6 +2087,8 @@ function BookingDeskContent() {
                                       value={oldOwnerCustom}
                                       onChange={e => setOldOwnerCustom(e.target.value.toUpperCase())}
                                       required={Boolean(activeServiceDef?.prevOwnerRequireCustom)}
+                                      autoCapitalize="characters"
+                                      autoCorrect="off"
                                       placeholder={`ENTER ${customLabel.toUpperCase()}`}
                                       className={INPUT}
                                     />
@@ -1809,6 +2164,10 @@ function BookingDeskContent() {
                         <input
                           id="input-receiptNo"
                           value={receiptNo}
+                          inputMode="numeric"
+                          autoCapitalize="characters"
+                          autoCorrect="off"
+                          spellCheck={false}
                           onChange={e => setReceiptNo(e.target.value.toUpperCase())}
                           required
                           placeholder="E.G. 4702604819"
@@ -1825,14 +2184,33 @@ function BookingDeskContent() {
                         fieldId="receiptDate"
                         hint="Date on official receipt"
                       >
-                        <input
-                          id="input-receiptDate"
-                          type="date"
-                          value={receiptDate}
-                          onChange={e => setReceiptDate(e.target.value)}
-                          required
-                          className={INPUT}
-                        />
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase">Quick Date:</span>
+                            <button
+                              type="button"
+                              onClick={() => setQuickDate(setReceiptDate, 0)}
+                              className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded border border-slate-200 transition cursor-pointer"
+                            >
+                              Today
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setQuickDate(setReceiptDate, 1)}
+                              className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded border border-slate-200 transition cursor-pointer"
+                            >
+                              Yesterday
+                            </button>
+                          </div>
+                          <input
+                            id="input-receiptDate"
+                            type="date"
+                            value={receiptDate}
+                            onChange={e => setReceiptDate(e.target.value)}
+                            required
+                            className={INPUT}
+                          />
+                        </div>
                       </Field>
                     </div>
                   </div>
@@ -1876,16 +2254,145 @@ function BookingDeskContent() {
                   </div>
 
                   {/* ══════════════════════════════════════════════════════════════
-                      CORPORATE VEHICLE CATALOG SEARCH STATION
+                      CORPORATE VEHICLE CATALOG SEARCH STATION (YEAR-FIRST FLOW)
                   ══════════════════════════════════════════════════════════════ */}
                   <div className="p-4 sm:p-5 bg-white border border-slate-200 rounded-xl space-y-4 shadow-2xs">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                    
+                    {/* ── Quick Vehicle Selection by Year First ── */}
+                    <div className="p-4 bg-gradient-to-r from-emerald-50/50 via-white to-slate-50 border border-emerald-200 rounded-xl space-y-3.5 shadow-2xs">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-100 pb-2.5">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                              Quick Vehicle Spec Auto-Fill (By Year)
+                            </h3>
+                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase">
+                              1-Tap Zero Typing
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 mt-0.5">
+                            Step 1: Pick Model Year &bull; Step 2: Tap Make &bull; Step 3: Tap Model to auto-fill all specifications.
+                          </p>
+                        </div>
+                        {make && model && (
+                          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 border border-emerald-300 px-2.5 py-0.5 rounded-full shrink-0">
+                            Selected: {make} {model} ({year || selectedCatalogYear})
+                          </span>
+                        )}
+                      </div>
+
+                      {/* 1. Year Selector Pills */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">
+                            1. Select Model Year:
+                          </span>
+                          <span className="text-[10px] font-mono font-bold text-emerald-700">
+                            Active: {selectedCatalogYear}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
+                          {YEARS_LIST.slice(0, 10).map((yr) => {
+                            const isSelected = selectedCatalogYear === yr;
+                            return (
+                              <button
+                                key={yr}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedCatalogYear(yr);
+                                  if (make && model) setYear(yr);
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition cursor-pointer shrink-0 ${
+                                  isSelected
+                                    ? "bg-[#103014] text-white shadow-xs ring-2 ring-[#81B71A]"
+                                    : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                                }`}
+                              >
+                                {yr}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* 2. Popular Makes for Year */}
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">
+                          2. Select Make for {selectedCatalogYear}:
+                        </span>
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
+                          {POPULAR_MAKES.map((mk) => {
+                            const isSelected = selectedQuickMake === mk;
+                            return (
+                              <button
+                                key={mk}
+                                type="button"
+                                onClick={() => setSelectedQuickMake(mk)}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer shrink-0 uppercase ${
+                                  isSelected
+                                    ? "bg-emerald-700 text-white shadow-2xs ring-2 ring-emerald-400"
+                                    : "bg-white border border-slate-200 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
+                                }`}
+                              >
+                                {mk}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* 3. Models for Selected Make & Year */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">
+                            3. Tap Model ({selectedQuickMake} - {selectedCatalogYear}):
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            {quickFilteredModels.length} models available
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                          {quickFilteredModels.slice(0, 12).map((m: any) => {
+                            const isCurrentActive =
+                              make.toUpperCase() === (m.make || "").toUpperCase() &&
+                              model.toUpperCase() === (m.model || "").toUpperCase();
+                            return (
+                              <button
+                                key={m.id || `${m.make}-${m.model}`}
+                                type="button"
+                                onClick={() => handleSelectVehicle(m, selectedCatalogYear)}
+                                className={`p-2 rounded-lg text-left transition border cursor-pointer group flex flex-col justify-between ${
+                                  isCurrentActive
+                                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 shadow-2xs"
+                                    : "bg-white border-slate-200 hover:border-emerald-300 hover:bg-slate-50"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-1">
+                                  <span className="text-xs font-extrabold text-slate-900 group-hover:text-emerald-800 uppercase truncate">
+                                    {m.model}
+                                  </span>
+                                  <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1 py-0.2 rounded shrink-0 uppercase">
+                                    {m.bodyType?.includes("Pickup") ? "Pickup" : m.bodyType?.includes("SUV") ? "SUV" : "Saloon"}
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-slate-500 font-mono mt-1">
+                                  {m.engineCC} CC &bull; {m.fuelType}
+                                </p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 pt-1">
                       <div>
                         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                          Vehicle Catalog Search
+                          Or Search Entire Vehicle Catalog
                         </h3>
                         <p className="text-[10px] text-slate-500 mt-0.5">
-                          Search by make or model to auto-fill specifications.
+                          Type any make, model, or chassis series to auto-fill specifications.
                         </p>
                       </div>
 
@@ -2059,6 +2566,9 @@ function BookingDeskContent() {
                           value={make}
                           onChange={e => setMake(e.target.value.toUpperCase())}
                           required
+                          autoCapitalize="characters"
+                          autoCorrect="off"
+                          spellCheck={false}
                           placeholder="E.G. TOYOTA"
                           className={INPUT}
                         />
@@ -2077,6 +2587,9 @@ function BookingDeskContent() {
                           value={model}
                           onChange={e => setModel(e.target.value.toUpperCase())}
                           required
+                          autoCapitalize="characters"
+                          autoCorrect="off"
+                          spellCheck={false}
                           placeholder="E.G. CAMRY"
                           className={INPUT}
                         />
@@ -2093,6 +2606,8 @@ function BookingDeskContent() {
                         <input
                           id="input-year"
                           value={year}
+                          inputMode="numeric"
+                          maxLength={4}
                           onChange={e => setYear(e.target.value.toUpperCase())}
                           required
                           placeholder="2025"
@@ -2150,7 +2665,7 @@ function BookingDeskContent() {
                         2. Physical Vehicle Identifiers
                       </span>
                       <span className="text-[10px] text-slate-500 font-medium">
-                        VIN is mandatory &bull; Engine number is optional
+                        VIN is mandatory (17 chars) &bull; Engine number is optional
                       </span>
                     </div>
 
@@ -2164,24 +2679,60 @@ function BookingDeskContent() {
                         fieldId="chassisNo"
                         hint="Stamped on vehicle chassis"
                       >
-                        <div className="relative">
-                          <input
-                            id="input-chassisNo"
-                            ref={chassisInputRef}
-                            value={chassisNo}
-                            onChange={e => setChassisNo(e.target.value.toUpperCase())}
-                            required
-                            placeholder="E.G. JTEBU5JR8P2091837"
-                            className={`${INPUT} font-mono font-bold text-sm tracking-wider uppercase ${make && model && !chassisNo
-                              ? "ring-2 ring-emerald-500 border-emerald-500 bg-emerald-50/20"
-                              : ""
-                              }`}
-                          />
-                          {make && model && !chassisNo && (
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-                              ENTER VIN
-                            </span>
-                          )}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-1 flex-wrap">
+                            <div className="flex items-center gap-1.5">
+                              {chassisNo.length === 17 ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                  ✓ 17/17 VIN Complete
+                                </span>
+                              ) : chassisNo.length > 17 ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                                  ⚠️ {chassisNo.length}/17 ({chassisNo.length - 17} too long)
+                                </span>
+                              ) : chassisNo.length > 0 ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                  {chassisNo.length}/17 ({17 - chassisNo.length} more)
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  0/17 characters
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handlePasteCleanVIN}
+                              className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 transition cursor-pointer flex items-center gap-1"
+                              title="Paste VIN from clipboard (cleans spaces & hyphens)"
+                            >
+                              <span>📋 Paste &amp; Clean</span>
+                            </button>
+                          </div>
+                          <div className="relative">
+                            <input
+                              id="input-chassisNo"
+                              ref={chassisInputRef}
+                              value={chassisNo}
+                              onChange={e => setChassisNo(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 17))}
+                              required
+                              autoCapitalize="characters"
+                              autoCorrect="off"
+                              spellCheck={false}
+                              autoComplete="off"
+                              maxLength={17}
+                              placeholder="E.G. JTEBU5JR8P2091837"
+                              className={`${INPUT} font-mono font-bold text-sm tracking-wider uppercase ${make && model && !chassisNo
+                                ? "ring-2 ring-emerald-500 border-emerald-500 bg-emerald-50/20"
+                                : ""
+                                }`}
+                            />
+                            {make && model && !chassisNo && (
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                                ENTER VIN
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </Field>
 
@@ -2196,6 +2747,9 @@ function BookingDeskContent() {
                           id="input-engineNo"
                           value={engineNo}
                           onChange={e => setEngineNo(e.target.value.toUpperCase())}
+                          autoCapitalize="characters"
+                          autoCorrect="off"
+                          spellCheck={false}
                           placeholder="E.G. 1UR-894012 (OPTIONAL)"
                           className={`${INPUT} font-mono uppercase text-sm`}
                         />
@@ -2221,14 +2775,30 @@ function BookingDeskContent() {
                         fieldId="engineCC"
                         hint="Engine capacity in cubic centimeters"
                       >
-                        <input
-                          id="input-engineCC"
-                          value={engineCC}
-                          onChange={e => setEngineCC(e.target.value.toUpperCase())}
-                          required
-                          placeholder="2400"
-                          className={INPUT + " font-mono font-bold text-sm"}
-                        />
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase">Quick CC:</span>
+                            {["1500", "1800", "2000", "2400", "2700", "3000", "3500"].map(cc => (
+                              <button
+                                key={cc}
+                                type="button"
+                                onClick={() => setEngineCC(cc)}
+                                className="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded border border-slate-200 transition cursor-pointer"
+                              >
+                                {cc}
+                              </button>
+                            ))}
+                          </div>
+                          <input
+                            id="input-engineCC"
+                            inputMode="numeric"
+                            value={engineCC}
+                            onChange={e => setEngineCC(e.target.value.toUpperCase())}
+                            required
+                            placeholder="2400"
+                            className={INPUT + " font-mono font-bold text-sm"}
+                          />
+                        </div>
                       </Field>
 
                       <Field
@@ -2316,6 +2886,9 @@ function BookingDeskContent() {
                             value={customsNo}
                             onChange={e => setCustomsNo(e.target.value.toUpperCase())}
                             required
+                            autoCapitalize="characters"
+                            autoCorrect="off"
+                            spellCheck={false}
                             placeholder="E.G. 4708912/26"
                             className={INPUT + " font-mono font-bold"}
                           />
@@ -2330,14 +2903,33 @@ function BookingDeskContent() {
                           fieldId="customsDate"
                           hint="Clearance stamp date"
                         >
-                          <input
-                            id="input-customsDate"
-                            type="date"
-                            value={customsDate}
-                            onChange={e => setCustomsDate(e.target.value)}
-                            required
-                            className={INPUT}
-                          />
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase">Quick Date:</span>
+                              <button
+                                type="button"
+                                onClick={() => setQuickDate(setCustomsDate, 0)}
+                                className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded border border-slate-200 transition cursor-pointer"
+                              >
+                                Today
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setQuickDate(setCustomsDate, 1)}
+                                className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded border border-slate-200 transition cursor-pointer"
+                              >
+                                Yesterday
+                              </button>
+                            </div>
+                            <input
+                              id="input-customsDate"
+                              type="date"
+                              value={customsDate}
+                              onChange={e => setCustomsDate(e.target.value)}
+                              required
+                              className={INPUT}
+                            />
+                          </div>
                         </Field>
                       </>
                     )}
