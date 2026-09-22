@@ -343,26 +343,12 @@ function BookingDeskContent() {
   const vehicleSearchDropdownRef = useRef<HTMLDivElement>(null);
   const [vehicleSearchQuery, setVehicleSearchQuery] = useState("");
   const [selectedCatalogYear, setSelectedCatalogYear] = useState("2024");
-  const [selectedQuickMake, setSelectedQuickMake] = useState("TOYOTA");
   const [isVehicleDropdownOpen, setIsVehicleDropdownOpen] = useState(false);
   const [autoFilledNotice, setAutoFilledNotice] = useState<string | null>(null);
 
   /* ── Mobile Usability: Voice Dictation & Draft Auto-Save ── */
   const [activeVoiceField, setActiveVoiceField] = useState<string | null>(null);
   const [draftNotice, setDraftNotice] = useState<string | null>(null);
-
-  const POPULAR_MAKES = [
-    "TOYOTA",
-    "HONDA",
-    "HYUNDAI",
-    "KIA",
-    "NISSAN",
-    "FORD",
-    "MERCEDES-BENZ",
-    "JETOUR",
-    "BMW",
-    "TESLA",
-  ];
 
   // Database Vehicles state
   const [dbVehicles, setDbVehicles] = useState<VehicleModel[]>([]);
@@ -426,14 +412,6 @@ function BookingDeskContent() {
     });
   }, [dbVehicles, vehicleSearchQuery]);
 
-  // Quick-select models filtered by selectedQuickMake
-  const quickFilteredModels = useMemo(() => {
-    const list = dbVehicles.length > 0 ? dbVehicles : VEHICLE_CATALOG;
-    if (!selectedQuickMake) return [];
-    return list.filter(
-      (v: any) => (v.make || "").toUpperCase() === selectedQuickMake.toUpperCase()
-    );
-  }, [dbVehicles, selectedQuickMake]);
 
   function handleResetVehicle() {
     setMake("");
@@ -637,9 +615,9 @@ function BookingDeskContent() {
       if (typeof navigator !== "undefined" && navigator.clipboard) {
         const text = await navigator.clipboard.readText();
         if (text) {
-          const cleaned = text.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 17);
+          const cleaned = text.replace(/[^a-zA-Z0-9-]/g, "").toUpperCase().slice(0, 20);
           setChassisNo(cleaned);
-          setAutoFilledNotice(`VIN pasted & sanitized (${cleaned.length}/17 chars).`);
+          setAutoFilledNotice(`Chassis/VIN pasted & sanitized (${cleaned.length} chars).`);
           return;
         }
       }
@@ -648,23 +626,13 @@ function BookingDeskContent() {
     }
     const manual = prompt("Paste Chassis/VIN Number here:");
     if (manual) {
-      setChassisNo(manual.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 17));
+      setChassisNo(manual.replace(/[^a-zA-Z0-9-]/g, "").toUpperCase().slice(0, 20));
     }
   }
 
   function setQuickDate(setter: (d: string) => void, offsetDays: number = 0) {
     const d = new Date(Date.now() - offsetDays * 86400000);
     setter(d.toISOString().slice(0, 10));
-  }
-
-  function handleQuickGeneratePlate(prefix?: string) {
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const pfx = prefix || (sessionUser?.branch?.code ? String(sessionUser.branch.code).slice(0, 2).toUpperCase() : "AD");
-    const l1 = letters[Math.floor(Math.random() * letters.length)];
-    const l2 = letters[Math.floor(Math.random() * letters.length)];
-    const num = String(Math.floor(1000 + Math.random() * 9000)).padStart(4, "0");
-    const generated = `${num}-${pfx}${l1}${l2}`;
-    setRegNo(generated);
   }
 
   /* ── Database-Driven Plate Categories & Supervisors ── */
@@ -1767,47 +1735,21 @@ function BookingDeskContent() {
                       required
                       isFilled={Boolean(regNo.trim())}
                       hasError={attemptedTabs[1] && !regNo.trim()}
-                      errorMessage="Please enter or generate an assigned plate number"
+                      errorMessage="Please enter the assigned plate number"
                       fieldId="regNo"
                       hint={isSpecialOrCustomized ? "Custom sequence" : "e.g. 1092-ADXY"}
                     >
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between gap-1 flex-wrap">
-                          <div className="flex items-center gap-1 flex-wrap">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">Prefix:</span>
-                            {["AD", "GR", "GW", "GE", "AS", "BA", "NR"].map(code => (
-                              <button
-                                key={code}
-                                type="button"
-                                onClick={() => handleQuickGeneratePlate(code)}
-                                className="px-1.5 py-0.5 text-[9px] font-bold font-mono bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 rounded border border-slate-200 transition cursor-pointer"
-                                title={`Generate plate with ${code} code`}
-                              >
-                                {code}
-                              </button>
-                            ))}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleQuickGeneratePlate()}
-                            className="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded border border-emerald-300 transition cursor-pointer flex items-center gap-1"
-                            title="Generate next sequential plate number automatically"
-                          >
-                            <span>⚡ Next Plate</span>
-                          </button>
-                        </div>
-                        <input
-                          id="input-regNo"
-                          value={regNo}
-                          onChange={e => setRegNo(e.target.value.toUpperCase())}
-                          required
-                          autoCapitalize="characters"
-                          autoCorrect="off"
-                          spellCheck={false}
-                          placeholder={isSpecialOrCustomized ? "E.G. KX 1111-AD" : "E.G. 1092-ADXY"}
-                          className={INPUT + " font-mono font-bold"}
-                        />
-                      </div>
+                      <input
+                        id="input-regNo"
+                        value={regNo}
+                        onChange={e => setRegNo(e.target.value.toUpperCase())}
+                        required
+                        autoCapitalize="characters"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        placeholder={isSpecialOrCustomized ? "E.G. KX 1111-AD" : "E.G. 1092-ADXY"}
+                        className={INPUT + " font-mono font-bold"}
+                      />
                       {activeReservation && (
                         <div className="mt-1 px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-medium">
                           Reserved: {activeReservation.holder} ({activeReservation.authRef})
@@ -2257,142 +2199,13 @@ function BookingDeskContent() {
                       CORPORATE VEHICLE CATALOG SEARCH STATION (YEAR-FIRST FLOW)
                   ══════════════════════════════════════════════════════════════ */}
                   <div className="p-4 sm:p-5 bg-white border border-slate-200 rounded-xl space-y-4 shadow-2xs">
-                    
-                    {/* ── Quick Vehicle Selection by Year First ── */}
-                    <div className="p-4 bg-gradient-to-r from-emerald-50/50 via-white to-slate-50 border border-emerald-200 rounded-xl space-y-3.5 shadow-2xs">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-100 pb-2.5">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
-                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                              Quick Vehicle Spec Auto-Fill (By Year)
-                            </h3>
-                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase">
-                              1-Tap Zero Typing
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-slate-500 mt-0.5">
-                            Step 1: Pick Model Year &bull; Step 2: Tap Make &bull; Step 3: Tap Model to auto-fill all specifications.
-                          </p>
-                        </div>
-                        {make && model && (
-                          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 border border-emerald-300 px-2.5 py-0.5 rounded-full shrink-0">
-                            Selected: {make} {model} ({year || selectedCatalogYear})
-                          </span>
-                        )}
-                      </div>
-
-                      {/* 1. Year Selector Pills */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">
-                            1. Select Model Year:
-                          </span>
-                          <span className="text-[10px] font-mono font-bold text-emerald-700">
-                            Active: {selectedCatalogYear}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
-                          {YEARS_LIST.slice(0, 10).map((yr) => {
-                            const isSelected = selectedCatalogYear === yr;
-                            return (
-                              <button
-                                key={yr}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedCatalogYear(yr);
-                                  if (make && model) setYear(yr);
-                                }}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition cursor-pointer shrink-0 ${
-                                  isSelected
-                                    ? "bg-[#103014] text-white shadow-xs ring-2 ring-[#81B71A]"
-                                    : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
-                                }`}
-                              >
-                                {yr}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* 2. Popular Makes for Year */}
-                      <div className="space-y-1.5">
-                        <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">
-                          2. Select Make for {selectedCatalogYear}:
-                        </span>
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
-                          {POPULAR_MAKES.map((mk) => {
-                            const isSelected = selectedQuickMake === mk;
-                            return (
-                              <button
-                                key={mk}
-                                type="button"
-                                onClick={() => setSelectedQuickMake(mk)}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer shrink-0 uppercase ${
-                                  isSelected
-                                    ? "bg-emerald-700 text-white shadow-2xs ring-2 ring-emerald-400"
-                                    : "bg-white border border-slate-200 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
-                                }`}
-                              >
-                                {mk}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* 3. Models for Selected Make & Year */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">
-                            3. Tap Model ({selectedQuickMake} - {selectedCatalogYear}):
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-medium">
-                            {quickFilteredModels.length} models available
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                          {quickFilteredModels.slice(0, 12).map((m: any) => {
-                            const isCurrentActive =
-                              make.toUpperCase() === (m.make || "").toUpperCase() &&
-                              model.toUpperCase() === (m.model || "").toUpperCase();
-                            return (
-                              <button
-                                key={m.id || `${m.make}-${m.model}`}
-                                type="button"
-                                onClick={() => handleSelectVehicle(m, selectedCatalogYear)}
-                                className={`p-2 rounded-lg text-left transition border cursor-pointer group flex flex-col justify-between ${
-                                  isCurrentActive
-                                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 shadow-2xs"
-                                    : "bg-white border-slate-200 hover:border-emerald-300 hover:bg-slate-50"
-                                }`}
-                              >
-                                <div className="flex items-center justify-between gap-1">
-                                  <span className="text-xs font-extrabold text-slate-900 group-hover:text-emerald-800 uppercase truncate">
-                                    {m.model}
-                                  </span>
-                                  <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1 py-0.2 rounded shrink-0 uppercase">
-                                    {m.bodyType?.includes("Pickup") ? "Pickup" : m.bodyType?.includes("SUV") ? "SUV" : "Saloon"}
-                                  </span>
-                                </div>
-                                <p className="text-[10px] text-slate-500 font-mono mt-1">
-                                  {m.engineCC} CC &bull; {m.fuelType}
-                                </p>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 pt-1">
                       <div>
                         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                          Or Search Entire Vehicle Catalog
+                          Vehicle Catalog Search (Optional)
                         </h3>
                         <p className="text-[10px] text-slate-500 mt-0.5">
-                          Type any make, model, or chassis series to auto-fill specifications.
+                          Search by make or model to look up specifications, or enter manually below.
                         </p>
                       </div>
 
@@ -2665,38 +2478,42 @@ function BookingDeskContent() {
                         2. Physical Vehicle Identifiers
                       </span>
                       <span className="text-[10px] text-slate-500 font-medium">
-                        VIN is mandatory (17 chars) &bull; Engine number is optional
+                        Chassis / VIN is mandatory &bull; Engine number is optional
                       </span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Field
-                        label="Chassis / VIN Number (17 Characters)"
+                        label="Chassis / VIN Number"
                         required
                         isFilled={Boolean(chassisNo.trim())}
                         hasError={attemptedTabs[2] && !chassisNo.trim()}
                         errorMessage="Chassis / VIN Number is required"
                         fieldId="chassisNo"
-                        hint="Stamped on vehicle chassis"
+                        hint="Standard 17-digit VIN or JDM Frame Number"
                       >
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between gap-1 flex-wrap">
                             <div className="flex items-center gap-1.5">
-                              {chassisNo.length === 17 ? (
+                              {chassisNo.length === 17 && !chassisNo.includes("-") ? (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                                  ✓ 17/17 VIN Complete
+                                  ✓ Standard 17-Digit VIN
                                 </span>
-                              ) : chassisNo.length > 17 ? (
+                              ) : (chassisNo.length >= 8 && chassisNo.length <= 16) || (chassisNo.includes("-") && chassisNo.length >= 8 && chassisNo.length <= 20) ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-sky-100 text-sky-800 border border-sky-300">
+                                  ✓ JDM / Frame No. ({chassisNo.length} chars)
+                                </span>
+                              ) : chassisNo.length > 20 ? (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                                  ⚠️ {chassisNo.length}/17 ({chassisNo.length - 17} too long)
+                                  ⚠️ {chassisNo.length} chars (Too long)
                                 </span>
                               ) : chassisNo.length > 0 ? (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                                  {chassisNo.length}/17 ({17 - chassisNo.length} more)
+                                  {chassisNo.length} chars (Typing...)
                                 </span>
                               ) : (
                                 <span className="text-[10px] text-slate-400 font-mono">
-                                  0/17 characters
+                                  17-digit VIN or JDM Frame No.
                                 </span>
                               )}
                             </div>
@@ -2704,7 +2521,7 @@ function BookingDeskContent() {
                               type="button"
                               onClick={handlePasteCleanVIN}
                               className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 transition cursor-pointer flex items-center gap-1"
-                              title="Paste VIN from clipboard (cleans spaces & hyphens)"
+                              title="Paste VIN or JDM Frame No. from clipboard"
                             >
                               <span>📋 Paste &amp; Clean</span>
                             </button>
@@ -2714,14 +2531,14 @@ function BookingDeskContent() {
                               id="input-chassisNo"
                               ref={chassisInputRef}
                               value={chassisNo}
-                              onChange={e => setChassisNo(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 17))}
+                              onChange={e => setChassisNo(e.target.value.replace(/[^a-zA-Z0-9-]/g, "").toUpperCase().slice(0, 20))}
                               required
                               autoCapitalize="characters"
                               autoCorrect="off"
                               spellCheck={false}
                               autoComplete="off"
-                              maxLength={17}
-                              placeholder="E.G. JTEBU5JR8P2091837"
+                              maxLength={20}
+                              placeholder="E.G. JTEBU5JR8P2091837 OR KDH200-0012345"
                               className={`${INPUT} font-mono font-bold text-sm tracking-wider uppercase ${make && model && !chassisNo
                                 ? "ring-2 ring-emerald-500 border-emerald-500 bg-emerald-50/20"
                                 : ""
@@ -2729,7 +2546,7 @@ function BookingDeskContent() {
                             />
                             {make && model && !chassisNo && (
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-                                ENTER VIN
+                                ENTER CHASSIS
                               </span>
                             )}
                           </div>
