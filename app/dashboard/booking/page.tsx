@@ -180,6 +180,285 @@ function ChecklistItem({
   );
 }
 
+/* ── Flexible Date Parser & Formatter for Typing & Calendar Selection ── */
+function parseFlexibleDate(input: string): { iso: string; readable: string } | null {
+  if (!input) return null;
+  const raw = input.trim();
+  if (!raw) return null;
+
+  // Strict check: only parse when a complete 8-digit date is provided
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length !== 8) {
+    return null;
+  }
+
+  let y: number | null = null;
+  let m: number | null = null;
+  let d: number | null = null;
+
+  // 1. Ghana / British standard: DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+  const dmy = raw.match(/^(\d{2})[-/.](\d{2})[-/.](\d{4})$/);
+  if (dmy) {
+    d = parseInt(dmy[1], 10);
+    m = parseInt(dmy[2], 10);
+    y = parseInt(dmy[3], 10);
+  }
+
+  // 2. ISO standard: YYYY-MM-DD or YYYY/MM/DD
+  if (!y) {
+    const ymd = raw.match(/^(\d{4})[-/.](\d{2})[-/.](\d{2})$/);
+    if (ymd) {
+      y = parseInt(ymd[1], 10);
+      m = parseInt(ymd[2], 10);
+      d = parseInt(ymd[3], 10);
+    }
+  }
+
+  // 3. Fallback: Pure 8 digits DDMMYYYY
+  if (!y && !raw.includes("-")) {
+    d = parseInt(digits.slice(0, 2), 10);
+    m = parseInt(digits.slice(2, 4), 10);
+    y = parseInt(digits.slice(4, 8), 10);
+  }
+
+  if (y && m && d) {
+    if (m >= 1 && m <= 12 && d >= 1 && d <= 31 && y >= 1970 && y <= 2050) {
+      const testDate = new Date(y, m - 1, d);
+      if (testDate.getFullYear() === y && testDate.getMonth() === m - 1 && testDate.getDate() === d) {
+        const iso = `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const readable = testDate.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+        return { iso, readable };
+      }
+    }
+  }
+
+  return null;
+}
+
+/* ── Helper: Format YYYY-MM-DD to DD/MM/YYYY for UI display ── */
+function isoToDmy(str: string): string {
+  if (!str) return "";
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) {
+    return `${match[3]}/${match[2]}/${match[1]}`;
+  }
+  return str;
+}
+
+/* ── Live As-You-Type Date Auto-Formatting Mask (One by One) ── */
+function applyDateMask(input: string, prev: string): string {
+  // 1. If deleting (backspace/cut)
+  if (input.length < prev.length) {
+    if (input.endsWith("/")) {
+      return input.slice(0, -1);
+    }
+    return input;
+  }
+
+  // 2. If user explicitly typed a slash after a 1-digit day e.g. "5/" -> auto-pad to "05/"
+  if (input.endsWith("/") && /^\d{1}\/$/.test(input)) {
+    return `0${input}`;
+  }
+
+  // 3. If user explicitly typed a slash after a 1-digit month e.g. "22/9/" -> auto-pad to "22/09/"
+  if (input.endsWith("/") && /^\d{2}\/\d{1}\/$/.test(input)) {
+    const parts = input.split("/");
+    return `${parts[0]}/0${parts[1]}/`;
+  }
+
+  // 4. Extract pure digits only (maximum 8 digits: DDMMYYYY)
+  const digits = input.replace(/\D/g, "").slice(0, 8);
+  if (!digits) return "";
+
+  // 5. If user is explicitly typing ISO format with dash (e.g. 2026-09-22)
+  if (input.includes("-") && (digits.startsWith("20") || digits.startsWith("19"))) {
+    if (digits.length <= 4) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+  }
+
+  // 6. Standard Ghana DD/MM/YYYY formatting one by one
+  if (digits.length === 1) {
+    return digits;
+  }
+  if (digits.length === 2) {
+    return `${digits}/`;
+  }
+  if (digits.length === 3) {
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+  if (digits.length === 4) {
+    return `${digits.slice(0, 2)}/${digits.slice(2)}/`;
+  }
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+}
+
+interface FlexibleDateInputProps {
+  id: string;
+  value: string;
+  onChange: (val: string) => void;
+  required?: boolean;
+  placeholder?: string;
+  className?: string;
+}
+
+function FlexibleDateInput({
+  id,
+  value,
+  onChange,
+  required = false,
+  placeholder = "DD / MM / YYYY (e.g. 22092026)",
+  className = "",
+}: FlexibleDateInputProps) {
+  const [typedText, setTypedText] = useState(() => isoToDmy(value || ""));
+  const pickerRef = useRef<HTMLInputElement>(null);
+  const isTypingRef = useRef(false);
+
+  // Sync external changes (such as Quick Date Today / Yesterday buttons, reset, or draft restore)
+  useEffect(() => {
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      return;
+    }
+    if (value) {
+      setTypedText(isoToDmy(value));
+    } else {
+      setTypedText("");
+    }
+  }, [value]);
+
+  const parsedInfo = parseFlexibleDate(typedText);
+
+  function handleTextChange(rawVal: string) {
+    isTypingRef.current = true;
+    const formatted = applyDateMask(rawVal, typedText);
+    setTypedText(formatted);
+
+    // Only update parent state if full valid date is recognized, or if cleared
+    const parsed = parseFlexibleDate(formatted);
+    if (parsed) {
+      onChange(parsed.iso);
+    } else if (!formatted.trim()) {
+      onChange("");
+    }
+  }
+
+  function handleBlur() {
+    isTypingRef.current = false;
+    if (parsedInfo) {
+      const parts = parsedInfo.iso.split("-");
+      if (parts.length === 3) {
+        setTypedText(`${parts[2]}/${parts[1]}/${parts[0]}`);
+      }
+      onChange(parsedInfo.iso);
+    }
+  }
+
+  function openCalendar() {
+    if (pickerRef.current) {
+      try {
+        if (typeof pickerRef.current.showPicker === "function") {
+          pickerRef.current.showPicker();
+        } else {
+          pickerRef.current.focus();
+        }
+      } catch {
+        pickerRef.current.focus();
+      }
+    }
+  }
+
+  function handlePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
+    isTypingRef.current = false;
+    const val = e.target.value;
+    if (val) {
+      setTypedText(isoToDmy(val));
+      onChange(val);
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <div className="relative flex items-center">
+        <input
+          id={id}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          spellCheck={false}
+          value={typedText}
+          onChange={e => handleTextChange(e.target.value)}
+          onBlur={handleBlur}
+          required={required}
+          placeholder={placeholder}
+          className={`${INPUT} font-mono font-bold pr-28 ${className}`}
+        />
+
+        {/* Hidden native date input for optional calendar picker */}
+        <input
+          ref={pickerRef}
+          type="date"
+          tabIndex={-1}
+          aria-hidden="true"
+          value={parsedInfo ? parsedInfo.iso : ""}
+          onChange={handlePickerChange}
+          className="sr-only"
+        />
+
+        {/* Action buttons embedded on right of input */}
+        <div className="absolute right-1.5 flex items-center gap-1">
+          {typedText && (
+            <button
+              type="button"
+              onClick={() => {
+                isTypingRef.current = false;
+                setTypedText("");
+                onChange("");
+              }}
+              title="Clear date"
+              className="p-1 text-slate-400 hover:text-slate-600 rounded transition cursor-pointer text-xs"
+            >
+              ✕
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={openCalendar}
+            title="Open calendar picker (optional)"
+            className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded border border-slate-200 text-[11px] font-semibold transition cursor-pointer shadow-2xs"
+          >
+            <span>📅</span>
+            <span className="hidden sm:inline text-[10px] font-bold">Calendar</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Helpful real-time date feedback */}
+      <div className="flex items-center justify-between text-[10px] px-0.5 text-slate-500">
+        {parsedInfo ? (
+          <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Date Recognized: <strong>{parsedInfo.readable}</strong></span>
+          </span>
+        ) : typedText.trim() ? (
+          <span className="text-amber-600 font-medium">
+            Type 8 digits (e.g. 22092026) or click 📅 Calendar
+          </span>
+        ) : (
+          <span className="text-slate-400">
+            Type date freely (DD/MM/YYYY) or click 📅 Calendar
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ════════════════ PAGE CONTENT ════════════════ */
 function BookingDeskContent() {
   const searchParams = useSearchParams();
@@ -440,7 +719,7 @@ function BookingDeskContent() {
 
   /* ── Official Revenue Receipt & Date (Step 1) ── */
   const [receiptNo, setReceiptNo] = useState("");
-  const [receiptDate, setReceiptDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [receiptDate, setReceiptDate] = useState("");
 
   /* ── Customs & Certification (Step 3) ── */
   const [customsNo, setCustomsNo] = useState("");
@@ -1013,7 +1292,7 @@ function BookingDeskContent() {
     setMake(""); setYear(""); setModel(""); setEngineCC(""); setEngineNo(""); setChassisNo("");
     setBodyType("Saloon"); setNetWeight("1500"); setGrossWeight("2000");
     setTyreFW("215"); setTyreFD("16"); setTyreMW(""); setTyreMD(""); setTyreRW("215"); setTyreRD("16");
-    setReceiptNo(""); setCustomsNo(""); setCustomsDate(""); setSupervisor(""); setSelectedSupervisorId("");
+    setReceiptNo(""); setReceiptDate(""); setCustomsNo(""); setCustomsDate(""); setSupervisor(""); setSelectedSupervisorId("");
     setCylinders("4"); setFuelType("PETROL");
     setRegNo("");
     setVrsInvoiceNo("");
@@ -1604,15 +1883,25 @@ function BookingDeskContent() {
                             errorMessage={`${f.label || f.fieldKey} is required`}
                             fieldId={`custom-${f.fieldKey}`}
                           >
-                            <input
-                              id={`input-custom-${f.fieldKey}`}
-                              type={f.type === "date" ? "date" : f.type === "number" ? "number" : "text"}
-                              value={customFieldValues[f.fieldKey] || ""}
-                              onChange={e => setCustomFieldValues(prev => ({ ...prev, [f.fieldKey]: f.type === "text" ? e.target.value.toUpperCase() : e.target.value }))}
-                              required={f.required}
-                              placeholder={`Enter ${f.label || f.fieldKey}`}
-                              className={INPUT + (f.type === "text" ? " uppercase" : "")}
-                            />
+                            {f.type === "date" ? (
+                              <FlexibleDateInput
+                                id={`input-custom-${f.fieldKey}`}
+                                value={customFieldValues[f.fieldKey] || ""}
+                                onChange={val => setCustomFieldValues(prev => ({ ...prev, [f.fieldKey]: val }))}
+                                required={f.required}
+                                placeholder="DD/MM/YYYY or YYYY-MM-DD"
+                              />
+                            ) : (
+                              <input
+                                id={`input-custom-${f.fieldKey}`}
+                                type={f.type === "number" ? "number" : "text"}
+                                value={customFieldValues[f.fieldKey] || ""}
+                                onChange={e => setCustomFieldValues(prev => ({ ...prev, [f.fieldKey]: f.type === "text" ? e.target.value.toUpperCase() : e.target.value }))}
+                                required={f.required}
+                                placeholder={`Enter ${f.label || f.fieldKey}`}
+                                className={INPUT + (f.type === "text" ? " uppercase" : "")}
+                              />
+                            )}
                           </Field>
                         ))}
                       </div>
@@ -2034,13 +2323,12 @@ function BookingDeskContent() {
                               Yesterday
                             </button>
                           </div>
-                          <input
+                          <FlexibleDateInput
                             id="input-receiptDate"
-                            type="date"
                             value={receiptDate}
-                            onChange={e => setReceiptDate(e.target.value)}
+                            onChange={setReceiptDate}
                             required
-                            className={INPUT}
+                            placeholder="DD/MM/YYYY or YYYY-MM-DD"
                           />
                         </div>
                       </Field>
@@ -2628,13 +2916,12 @@ function BookingDeskContent() {
                                 Yesterday
                               </button>
                             </div>
-                            <input
+                            <FlexibleDateInput
                               id="input-customsDate"
-                              type="date"
                               value={customsDate}
-                              onChange={e => setCustomsDate(e.target.value)}
+                              onChange={setCustomsDate}
                               required
-                              className={INPUT}
+                              placeholder="DD/MM/YYYY or YYYY-MM-DD"
                             />
                           </div>
                         </Field>

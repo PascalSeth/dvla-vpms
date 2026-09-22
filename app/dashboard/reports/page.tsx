@@ -26,10 +26,25 @@ interface BookingRecord {
   type: string;
   status: string;
   owner: string;
+  ownerAddress?: string;
+  ownerPhone?: string;
   vehicle: string;
   plate?: string;
   date: string;
   classification: string;
+  make?: string;
+  model?: string;
+  year?: string;
+  bodyType?: string;
+  fuelType?: string;
+  chassisNo?: string;
+  engineNo?: string;
+  engineCC?: string;
+  cylinders?: string;
+  receiptNo?: string;
+  receiptDate?: string;
+  customsNo?: string;
+  customsDate?: string;
   vrsInvoiceId?: string;
   vrsInvoice?: VrsInvoice;
   createdAt?: string;
@@ -45,6 +60,51 @@ interface PickupRegistration {
   plateNumber: string;
   timestamp: string;
   status: "pending" | "picked" | "completed";
+}
+
+// Date parsing helper: parses ISO, DD/MM/YYYY, or string dates reliably
+function parseBookingDate(raw?: string): Date | null {
+  if (!raw) return null;
+  const s = raw.trim();
+  if (!s) return null;
+
+  // 1. ISO format: YYYY-MM-DD
+  const isoMatch = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+  if (isoMatch) {
+    const y = parseInt(isoMatch[1], 10);
+    const m = parseInt(isoMatch[2], 10);
+    const d = parseInt(isoMatch[3], 10);
+    const dt = new Date(y, m - 1, d);
+    if (!isNaN(dt.getTime())) return dt;
+  }
+
+  // 2. Ghana / British format: DD/MM/YYYY
+  const dmyMatch = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+  if (dmyMatch) {
+    const d = parseInt(dmyMatch[1], 10);
+    const m = parseInt(dmyMatch[2], 10);
+    const y = parseInt(dmyMatch[3], 10);
+    const dt = new Date(y, m - 1, d);
+    if (!isNaN(dt.getTime())) return dt;
+  }
+
+  // 3. Fallback to standard Date constructor
+  const parsed = new Date(s);
+  if (!isNaN(parsed.getTime())) return parsed;
+
+  return null;
+}
+
+// Single standardized date format across ALL exported reports: YYYY-MM-DD
+function formatReportDate(rawDate?: string, rawCreatedAt?: string): string {
+  const d = parseBookingDate(rawCreatedAt) || parseBookingDate(rawDate);
+  if (d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+  return rawDate || "—";
 }
 
 // Service Type helper
@@ -78,29 +138,34 @@ interface ColumnOption {
 
 const EXPORT_COLUMNS: ColumnOption[] = [
   { key: "id", label: "Booking ID", category: "General", getValue: (b) => b.id },
-  { key: "date", label: "Filing Date", category: "General", getValue: (b) => b.date || (b.createdAt ? new Date(b.createdAt).toLocaleDateString("en-GB") : "") },
+  { key: "date", label: "Filing Date", category: "General", getValue: (b) => formatReportDate(b.date, b.createdAt) },
   { key: "status", label: "Booking Status", category: "General", getValue: (b) => b.status.toUpperCase() },
   { key: "type", label: "Booking / Service Type", category: "General", getValue: (b) => normalizeServiceType(b.type) },
-  { key: "owner", label: "Registered Owner", category: "General", getValue: (b, inv) => b.owner || inv.ownerName || "" },
-  { key: "plate", label: "Assigned Plate Number", category: "General", getValue: (b, inv) => b.plate || inv.regNo || "N/A" },
-  { key: "classification", label: "Classification", category: "General", getValue: (b, inv) => b.classification || inv.classification || "" },
+  { key: "owner", label: "Registered Owner", category: "General", getValue: (b, inv) => b.owner || inv?.ownerName || "" },
+  { key: "plate", label: "Assigned Plate Number", category: "General", getValue: (b, inv) => b.plate || inv?.regNo || "Pending" },
+  { key: "classification", label: "Classification", category: "General", getValue: (b, inv) => b.classification || inv?.classification || "" },
 
-  { key: "vehicle", label: "Vehicle Description", category: "Vehicle", getValue: (b) => b.vehicle },
-  { key: "make", label: "Make / Brand", category: "Vehicle", getValue: (b, inv) => inv.make || b.vehicle.split(" ")[0] || "" },
-  { key: "yearModel", label: "Year & Model", category: "Vehicle", getValue: (b, inv) => inv.yearModel || b.vehicle.replace(/^[^\s]+\s*/, "") || "" },
-  { key: "bodyType", label: "Body Type", category: "Vehicle", getValue: (_, inv) => inv.bodyType || "Saloon" },
-  { key: "fuelType", label: "Fuel Type", category: "Vehicle", getValue: (_, inv) => inv.fuelType || "PETROL" },
+  { key: "vehicle", label: "Vehicle Description", category: "Vehicle", getValue: (b) => b.vehicle || `${b.make || ""} ${b.model || ""}`.trim() || "—" },
+  { key: "make", label: "Make / Brand", category: "Vehicle", getValue: (b, inv) => b.make || inv?.make || (b.vehicle ? b.vehicle.split(" ")[0] : "") || "—" },
+  { key: "yearModel", label: "Year & Model", category: "Vehicle", getValue: (b, inv) => (b.model ? `${b.model} (${b.year || "—"})` : inv?.yearModel || (b.vehicle ? b.vehicle.replace(/^[^\s]+\s*/, "") : "") || "—") },
+  { key: "bodyType", label: "Body Type", category: "Vehicle", getValue: (b, inv) => b.bodyType || inv?.bodyType || "Saloon" },
+  { key: "fuelType", label: "Fuel Type", category: "Vehicle", getValue: (b, inv) => b.fuelType || inv?.fuelType || "PETROL" },
 
-  { key: "invoiceNo", label: "VRS Invoice Number", category: "Invoice & Specs", getValue: (b, inv) => inv.invoiceNo || (`8F92K47L01${b.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 4)}`) },
-  { key: "chassisNo", label: "Chassis / VIN Number", category: "Invoice & Specs", getValue: (b, inv) => inv.chassisNo || (`KMHDK41D7NU40${b.id.replace(/\D/g, "").padStart(4, "0")}`) },
-  { key: "engineNo", label: "Engine Number", category: "Invoice & Specs", getValue: (b, inv) => inv.engineNo || (`1ZR-FE-40${b.id.replace(/\D/g, "").padStart(4, "0")}`) },
-  { key: "engineCC", label: "Engine Capacity (CC)", category: "Invoice & Specs", getValue: (_, inv) => inv.engineCC || "1999" },
-  { key: "phone", label: "Owner Phone Number", category: "Invoice & Specs", getValue: (_, inv) => inv.phone || "" },
-  { key: "address", label: "Owner Address", category: "Invoice & Specs", getValue: (_, inv) => inv.address || "" },
+  { key: "invoiceNo", label: "VRS Invoice Number", category: "Invoice & Specs", getValue: (b, inv) => inv?.invoiceNo || b.receiptNo || "—" },
+  { key: "chassisNo", label: "Chassis / VIN Number", category: "Invoice & Specs", getValue: (b, inv) => b.chassisNo || inv?.chassisNo || "—" },
+  { key: "engineNo", label: "Engine Number", category: "Invoice & Specs", getValue: (b, inv) => b.engineNo || inv?.engineNo || "—" },
+  { key: "engineCC", label: "Engine Capacity (CC)", category: "Invoice & Specs", getValue: (b, inv) => b.engineCC || inv?.engineCC || "—" },
+  { key: "phone", label: "Owner Phone Number", category: "Invoice & Specs", getValue: (b, inv) => b.ownerPhone || inv?.phone || "—" },
+  { key: "address", label: "Owner Address", category: "Invoice & Specs", getValue: (b, inv) => b.ownerAddress || inv?.address || "—" },
 
-  { key: "branch", label: "DVLA Branch Office", category: "Audit", getValue: (b) => b.branch?.name || "DVLA ADENTA" },
-  { key: "createdBy", label: "Filed By Officer", category: "Audit", getValue: (b) => b.createdBy?.name || b.createdBy?.username || "Data Entry Clerk" },
-  { key: "reviewedBy", label: "Approved By Officer", category: "Audit", getValue: (b) => b.reviewedBy?.name || b.reviewedBy?.username || "Supervisor" },
+  { key: "receiptNo", label: "Revenue Receipt No", category: "Invoice & Specs", getValue: (b) => b.receiptNo || "—" },
+  { key: "receiptDate", label: "Receipt Date", category: "Invoice & Specs", getValue: (b) => b.receiptDate ? formatReportDate(b.receiptDate) : "—" },
+  { key: "customsNo", label: "Customs Clearance No", category: "Invoice & Specs", getValue: (b) => b.customsNo || "—" },
+  { key: "customsDate", label: "Customs Date", category: "Invoice & Specs", getValue: (b) => b.customsDate ? formatReportDate(b.customsDate) : "—" },
+
+  { key: "branch", label: "DVLA Branch Office", category: "Audit", getValue: (b) => b.branch?.name || "DVLA Adenta" },
+  { key: "createdBy", label: "Filed By Officer", category: "Audit", getValue: (b) => b.createdBy?.name || (b.createdBy?.username ? `@${b.createdBy.username}` : "Data Entry Clerk") },
+  { key: "reviewedBy", label: "Approved By Officer", category: "Audit", getValue: (b) => b.reviewedBy?.name || (b.reviewedBy?.username ? `@${b.reviewedBy.username}` : "Supervisor") },
 ];
 
 const DEFAULT_SELECTED_COLUMNS = [
@@ -199,15 +264,7 @@ export default function ReportsPage() {
       }
 
       // Date timeframe filter
-      let bDate = b.createdAt ? new Date(b.createdAt) : null;
-      if (!bDate || isNaN(bDate.getTime())) {
-        if (b.date) {
-          bDate = new Date(b.date);
-        }
-      }
-      if (!bDate || isNaN(bDate.getTime())) {
-        bDate = new Date();
-      }
+      const bDate = parseBookingDate(b.createdAt) || parseBookingDate(b.date) || new Date();
 
       const bYear = bDate.getFullYear();
       const bMonth = bDate.getMonth();
@@ -295,26 +352,18 @@ export default function ReportsPage() {
     const headers = activeOptionCols.map((c) => `"${c.label.replace(/"/g, '""')}"`);
 
     const rows = filteredBookings.map((b) => {
-      const inv = b.vrsInvoice || {
-        invoiceNo: `8F92K47L01${b.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 4)}`,
-        ownerName: b.owner,
-        make: b.vehicle.split(" ")[0] || "Toyota",
-        yearModel: b.vehicle.replace(/^[^\s]+\s*/, "") || "Corolla 2024",
-        regNo: b.plate || "0891-ADKX",
-        classification: b.classification?.toUpperCase() || "PRIVATE",
-        chassisNo: `KMHDK41D7NU40${b.id.replace(/\D/g, "").padStart(4, "0")}`,
-        engineNo: `1ZR-FE-40${b.id.replace(/\D/g, "").padStart(4, "0")}`,
-        bodyType: "Saloon",
-        fuelType: "PETROL",
-      };
+      const inv = b.vrsInvoice || ({} as VrsInvoice);
 
       return activeOptionCols
-        .map((c) => `"${(c.getValue(b, inv) || "").replace(/"/g, '""')}"`)
+        .map((c) => {
+          const val = c.getValue(b, inv) ?? "";
+          return `"${String(val).replace(/"/g, '""')}"`;
+        })
         .join(",");
     });
 
-    const csvContent = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const csvContent = [headers.join(","), ...rows].join("\r\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
@@ -703,7 +752,7 @@ export default function ReportsPage() {
                     {filteredBookings.map((b) => (
                       <tr key={b.id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="py-3 px-4 font-mono font-semibold text-slate-900">#{b.id}</td>
-                        <td className="py-3 px-4 font-normal text-slate-500">{b.date}</td>
+                        <td className="py-3 px-4 font-mono text-slate-500 font-medium">{formatReportDate(b.date, b.createdAt)}</td>
                         <td className="py-3 px-4 font-medium text-slate-800">
                           {normalizeServiceType(b.type)}
                         </td>
