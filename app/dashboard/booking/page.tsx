@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getStoredReservations, checkPlateReservation, saveStoredReservations, Reservation } from "../../../components/reservationsData";
 import { DigitalPlate, PlateCategory } from "@/components/DigitalPlate";
+import { TabAutocompleteInput } from "@/components/TabAutocompleteInput";
 import {
   VehicleModel,
   VEHICLE_CATALOG,
@@ -1729,7 +1730,7 @@ function BookingDeskContent() {
             {/* Modern 4-Step Stepper Navigation Strip */}
             <div className="flex border-b border-slate-200 bg-slate-50/70">
               {([
-                { id: 1, stepNum: 1, label: "1. Owner & Filing", shortLabel: "1. Owner", total: totalFieldsTab1, missing: missingFieldsTab1.length, attempted: attemptedTabs[1] },
+                { id: 1, stepNum: 1, label: " 1. Owner & Filing", shortLabel: "1. Owner", total: totalFieldsTab1, missing: missingFieldsTab1.length, attempted: attemptedTabs[1] },
                 { id: 2, stepNum: 2, label: "2. Vehicle Specs", shortLabel: "2. Vehicle", total: totalFieldsTab2, missing: missingFieldsTab2.length, attempted: attemptedTabs[2] },
                 { id: 3, stepNum: 3, label: "3. Customs & Certification", shortLabel: "3. Customs", total: totalFieldsTab3, missing: missingFieldsTab3.length, attempted: attemptedTabs[3] },
                 { id: 4, stepNum: 4, label: "4. Review & Inspection", shortLabel: "4. Review", total: totalRequiredFields, missing: totalRequiredFields - totalCompletedFields, attempted: false },
@@ -1962,24 +1963,20 @@ function BookingDeskContent() {
                           <button
                             type="button"
                             onClick={() => startVoiceDictation("ownerName")}
-                            className={`px-2 py-0.5 text-[10px] font-bold rounded border transition cursor-pointer flex items-center gap-1 ${
-                              activeVoiceField === "ownerName"
+                            className={`px-2 py-0.5 text-[10px] font-bold rounded border transition cursor-pointer flex items-center gap-1 ${activeVoiceField === "ownerName"
                                 ? "bg-rose-50 text-rose-700 border-rose-300 animate-pulse"
                                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
-                            }`}
+                              }`}
                             title="Speak name into microphone"
                           >
                             <span>🎙️ {activeVoiceField === "ownerName" ? "Listening..." : "Dictate"}</span>
                           </button>
                         </div>
-                        <input
+                        <TabAutocompleteInput
                           id="input-ownerName"
                           value={ownerName}
-                          onChange={e => setOwnerName(e.target.value.toUpperCase())}
+                          onChange={val => setOwnerName(val)}
                           required
-                          autoCapitalize="words"
-                          autoCorrect="off"
-                          spellCheck={false}
                           placeholder="ENTER OWNER OR CORPORATE NAME"
                           className={INPUT}
                         />
@@ -2013,11 +2010,10 @@ function BookingDeskContent() {
                             <button
                               type="button"
                               onClick={() => startVoiceDictation("address")}
-                              className={`px-2 py-0.5 text-[10px] font-bold rounded border transition cursor-pointer flex items-center gap-1 ${
-                                activeVoiceField === "address"
+                              className={`px-2 py-0.5 text-[10px] font-bold rounded border transition cursor-pointer flex items-center gap-1 ${activeVoiceField === "address"
                                   ? "bg-rose-50 text-rose-700 border-rose-300 animate-pulse"
                                   : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
-                              }`}
+                                }`}
                               title="Speak address into microphone"
                             >
                               <span>🎙️ {activeVoiceField === "address" ? "Listening..." : "Dictate"}</span>
@@ -2115,13 +2111,11 @@ function BookingDeskContent() {
                                         <span>🎙️ {activeVoiceField === "oldOwnerName" ? "Listening..." : "Dictate"}</span>
                                       </button>
                                     </div>
-                                    <input
+                                    <TabAutocompleteInput
                                       id="input-oldOwnerName"
                                       value={oldOwnerName}
-                                      onChange={e => setOldOwnerName(e.target.value.toUpperCase())}
+                                      onChange={val => setOldOwnerName(val)}
                                       required={activeServiceDef?.prevOwnerRequireName !== false}
-                                      autoCapitalize="words"
-                                      autoCorrect="off"
                                       placeholder="FULL LEGAL NAME OF PREVIOUS OWNER"
                                       className={INPUT}
                                     />
