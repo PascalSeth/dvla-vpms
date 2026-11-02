@@ -56,6 +56,7 @@ export const TabAutocompleteInput = forwardRef<TabAutocompleteInputRef, TabAutoc
   ) => {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const ghostRef = useRef<HTMLDivElement | null>(null);
+    const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const [isFocused, setIsFocused] = useState(false);
     const [cursorPos, setCursorPos] = useState<number>(value.length);
@@ -159,7 +160,7 @@ export const TabAutocompleteInput = forwardRef<TabAutocompleteInputRef, TabAutoc
       setFullNames([]);
       setCursorPos(newCursor);
 
-      // Re-position cursor inside input on next tick
+      // Re-position cursor inside input on next tick and keep focus
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
@@ -242,9 +243,11 @@ export const TabAutocompleteInput = forwardRef<TabAutocompleteInputRef, TabAutoc
       setCursorPos(pos);
     };
 
+    const hasActiveQuickAction = Boolean(isFocused && activeSuggestion && currentWord);
+
     return (
       <div className="relative w-full">
-        {/* Main Input Wrapper with aligned Ghost Text overlay */}
+        {/* Main Input Wrapper with aligned Ghost Text overlay & In-input thumb button */}
         <div className="relative w-full">
           <input
             ref={inputRef}
@@ -260,15 +263,18 @@ export const TabAutocompleteInput = forwardRef<TabAutocompleteInputRef, TabAutoc
             onClick={handleSelectOrChange}
             onKeyUp={handleSelectOrChange}
             onFocus={(e) => {
+              if (blurTimeoutRef.current) {
+                clearTimeout(blurTimeoutRef.current);
+              }
               setIsFocused(true);
               setCursorPos(e.target.selectionStart ?? value.length);
               if (onFocus) onFocus(e);
             }}
             onBlur={(e) => {
-              // Delay hiding slightly to allow clicking suggestion pills
-              setTimeout(() => {
+              // Delay hiding slightly to allow clicking suggestion pills on touch screens
+              blurTimeoutRef.current = setTimeout(() => {
                 setIsFocused(false);
-              }, 200);
+              }, 250);
               if (onBlur) onBlur(e);
             }}
             onScroll={(e) => {
@@ -280,16 +286,18 @@ export const TabAutocompleteInput = forwardRef<TabAutocompleteInputRef, TabAutoc
             autoCapitalize="words"
             autoCorrect="off"
             spellCheck={false}
-            className={className}
+            className={`${className} ${hasActiveQuickAction ? "pr-28 sm:pr-32" : ""}`.trim()}
             {...rest}
           />
 
-          {/* Ghost Text Overlay: renders pixel-perfect behind/over cursor */}
+          {/* Ghost Text Overlay: renders behind/over cursor */}
           {isFocused && ghostSuffix && (
             <div
               ref={ghostRef}
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 px-3 py-2 text-xs font-medium uppercase tracking-wide flex items-center overflow-hidden whitespace-pre select-none text-transparent"
+              className={`pointer-events-none absolute inset-0 px-3 py-2 text-xs font-medium uppercase tracking-wide flex items-center overflow-hidden whitespace-pre select-none text-transparent ${
+                hasActiveQuickAction ? "pr-28 sm:pr-32" : ""
+              }`}
             >
               <span className="invisible">{textBeforeCursor}</span>
               <span className="text-slate-400 font-semibold tracking-wide">
@@ -297,60 +305,93 @@ export const TabAutocompleteInput = forwardRef<TabAutocompleteInputRef, TabAutoc
               </span>
             </div>
           )}
+
+          {/* Mobile & Desktop In-Input Quick Fill Action Pill */}
+          {hasActiveQuickAction && (
+            <button
+              type="button"
+              onPointerDown={(e) => {
+                e.preventDefault(); // Prevents soft keyboard dismissal on mobile
+                applySuggestion(activeSuggestion!);
+              }}
+              onClick={() => applySuggestion(activeSuggestion!)}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 flex items-center gap-1 px-2.5 py-1 bg-[#81B71A] hover:bg-[#72a316] active:scale-95 text-white font-extrabold text-[11px] rounded-md shadow-xs transition-transform cursor-pointer select-none"
+              title={`Tap to fill ${activeSuggestion}`}
+            >
+              <span className="text-[10px] opacity-90">⇥</span>
+              <span className="truncate max-w-[85px] sm:max-w-[120px]">{activeSuggestion}</span>
+            </button>
+          )}
         </div>
 
-        {/* Interactive Suggestion Pills Bar */}
+        {/* Predictive QuickType Ribbon (Horizontal Swipeable Strip for Mobile & Desktop) */}
         {isFocused && (suggestions.length > 0 || fullNames.length > 0) && currentWord.length >= 1 && (
-          <div className="mt-1.5 p-2 bg-slate-50/90 border border-slate-200/80 rounded-lg shadow-xs space-y-1.5 transition-all">
+          <div className="mt-1.5 p-2 bg-slate-50/95 border border-slate-200/90 rounded-lg shadow-xs space-y-1.5 transition-all">
             {/* Word completions */}
             {suggestions.length > 0 && (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded text-[9px] font-mono font-bold shadow-xs">
-                    TAB ⇥
-                  </kbd>
-                  to complete:
-                </span>
-                {suggestions.map((s, idx) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onMouseDown={(e) => {
-                      e.preventDefault(); // Don't steal focus from input
-                      applySuggestion(s);
-                    }}
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide transition cursor-pointer border ${
-                      idx === selectedIndex
-                        ? "bg-[#81B71A]/20 text-[#4c6f0d] border-[#81B71A]/60 ring-1 ring-[#81B71A]/40 font-extrabold"
-                        : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
+              <div>
+                <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <span className="hidden sm:inline-flex items-center gap-1">
+                    <kbd className="px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded text-[9px] font-mono font-bold shadow-xs">
+                      TAB ⇥
+                    </kbd>
+                    or click to complete:
+                  </span>
+                  <span className="inline-flex sm:hidden items-center gap-1 text-emerald-800">
+                    <span>👆 Tap to complete:</span>
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-normal">
+                    {suggestions.length} match{suggestions.length > 1 ? "es" : ""}
+                  </span>
+                </div>
+
+                {/* Horizontal swipeable pill strip (smooth touch scrolling) */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-0.5 px-0.5 touch-pan-x scrollbar-thin">
+                  {suggestions.map((s, idx) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onPointerDown={(e) => {
+                        e.preventDefault(); // Prevents keyboard dismissal on mobile
+                        applySuggestion(s);
+                      }}
+                      onClick={() => applySuggestion(s)}
+                      className={`shrink-0 min-h-[32px] sm:min-h-[26px] px-3 py-1 rounded-lg text-xs font-bold tracking-wide transition cursor-pointer select-none active:scale-95 border ${
+                        idx === selectedIndex
+                          ? "bg-[#81B71A]/20 text-[#4c6f0d] border-[#81B71A]/60 ring-1 ring-[#81B71A]/40 font-extrabold"
+                          : "bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-xs"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Full customer record suggestions (from past bookings / invoices) */}
+            {/* Past customer record suggestions */}
             {fullNames.length > 0 && (
-              <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-200/60">
-                <span className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider">
-                  Past Clients:
-                </span>
-                {fullNames.map((fn) => (
-                  <button
-                    key={fn}
-                    type="button"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      applyFullName(fn);
-                    }}
-                    className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition cursor-pointer"
-                    title="Click to fill entire customer name"
-                  >
-                    👤 {fn}
-                  </button>
-                ))}
+              <div className="pt-1.5 border-t border-slate-200/80">
+                <div className="text-[9px] font-bold text-emerald-800 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <span>👤 Past Registered Clients:</span>
+                </div>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-0.5 px-0.5 touch-pan-x scrollbar-thin">
+                  {fullNames.map((fn) => (
+                    <button
+                      key={fn}
+                      type="button"
+                      onPointerDown={(e) => {
+                        e.preventDefault(); // Prevents keyboard dismissal on mobile
+                        applyFullName(fn);
+                      }}
+                      onClick={() => applyFullName(fn)}
+                      className="shrink-0 min-h-[32px] sm:min-h-[26px] px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 transition cursor-pointer select-none active:scale-95 shadow-xs flex items-center gap-1"
+                      title="Tap to fill entire customer name"
+                    >
+                      <span>{fn}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -362,4 +403,3 @@ export const TabAutocompleteInput = forwardRef<TabAutocompleteInputRef, TabAutoc
 
 TabAutocompleteInput.displayName = "TabAutocompleteInput";
 export default TabAutocompleteInput;
-
