@@ -36,6 +36,7 @@ interface Booking {
   previousOwnerPhone?: string;
   previousOwnerAddress?: string;
   previousOwnerCustom?: string;
+  customFieldData?: Record<string, any>;
   vrsInvoiceId?: string;
   vrsInvoice?: VrsInvoice;
   createdAt?: string;
@@ -890,7 +891,12 @@ export default function BookingsPage() {
                         <div className="text-[11px] text-slate-500">{b.vehicle}</div>
                       </td>
                       <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                        {b.plate || <span className="text-slate-400 font-normal">Pending</span>}
+                        <div>{b.plate || <span className="text-slate-400 font-normal">Pending</span>}</div>
+                        {b.customFieldData?.regularPlate && (
+                          <div className="text-[10px] text-slate-500 font-normal">
+                            Reg: <span className="font-semibold text-slate-700">{b.customFieldData.regularPlate}</span>
+                          </div>
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-slate-100 text-slate-700 border border-slate-200">
@@ -967,6 +973,9 @@ export default function BookingsPage() {
                   <p><span className="text-slate-500 font-semibold inline-block w-16">Owner:</span> <strong className="text-slate-950 font-bold">{inspectBooking.owner}</strong></p>
                   <p><span className="text-slate-500 font-semibold inline-block w-16">Vehicle:</span> <span className="text-slate-900 font-semibold">{inspectBooking.vehicle}</span></p>
                   <p><span className="text-slate-500 font-semibold inline-block w-16">Plate:</span> <strong className="font-mono text-slate-950 font-bold bg-slate-200/80 px-1.5 py-0.5 rounded text-xs">{inspectBooking.plate || "Pending"}</strong></p>
+                  {inspectBooking.customFieldData?.regularPlate && (
+                    <p><span className="text-slate-500 font-semibold inline-block w-20">Regular No:</span> <strong className="font-mono text-slate-950 font-bold bg-slate-200/80 px-1.5 py-0.5 rounded text-xs">{inspectBooking.customFieldData.regularPlate}</strong></p>
+                  )}
                   <p><span className="text-slate-500 font-semibold inline-block w-16">Service:</span> <span className="text-slate-900 font-semibold">{inspectBooking.type}</span></p>
                   <p><span className="text-slate-500 font-semibold inline-block w-16">Station:</span> <span className="text-slate-900 font-semibold">{inspectBooking.branch?.name || "DVLA Adenta"}</span></p>
                   <div className="flex items-center gap-1.5">

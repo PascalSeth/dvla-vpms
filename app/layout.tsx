@@ -15,8 +15,8 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DVLA VPMS — DVLA HQ",
-  description: "Driver & Vehicle Licensing Authority — DVLA HQ Vehicle Plate Management System",
+  title: "DVLA VPMS ",
+  description: "Driver & Vehicle Licensing Authority — Vehicle Plate Management System",
   icons: {
     icon: [
       { url: "/dvla-bg.png", type: "image/png" },
