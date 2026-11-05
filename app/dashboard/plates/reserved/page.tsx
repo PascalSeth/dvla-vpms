@@ -80,6 +80,22 @@ export default function ReservedPlatesPage() {
     return () => window.removeEventListener("dvla_session_change", loadSession);
   }, []);
 
+  // Sync URL search parameter (?q=...) into searchTerm
+  useEffect(() => {
+    const readQueryParam = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get("q");
+        if (q) {
+          setSearchTerm(q);
+        }
+      } catch {}
+    };
+    readQueryParam();
+    window.addEventListener("popstate", readQueryParam);
+    return () => window.removeEventListener("popstate", readQueryParam);
+  }, []);
+
   // Form State for new reservation
   const [resType, setResType] = useState<"Single" | "Range">("Range");
   const [resPlate, setResPlate] = useState("");

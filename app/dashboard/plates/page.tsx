@@ -134,6 +134,23 @@ export default function PlatesSearchPage() {
     return () => window.removeEventListener("dvla_session_change", loadSession);
   }, []);
 
+  // Sync URL search parameter (?q=...) into search inputs
+  useEffect(() => {
+    const readQueryParam = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get("q");
+        if (q) {
+          setSearchQuery(q);
+          setResSearchQuery(q);
+        }
+      } catch {}
+    };
+    readQueryParam();
+    window.addEventListener("popstate", readQueryParam);
+    return () => window.removeEventListener("popstate", readQueryParam);
+  }, []);
+
   // Show temporary toast message
   const triggerToast = (msg: string) => {
     setToastMsg(msg);
