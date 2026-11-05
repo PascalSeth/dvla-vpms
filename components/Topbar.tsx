@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -27,6 +27,21 @@ export default function Topbar({ onMobileMenuOpen }: TopbarProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  const profileId = useId();
+  const notificationsId = useId();
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const notificationsButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (profileDropdownOpen) { setProfileDropdownOpen(false); profileButtonRef.current?.focus(); }
+      if (notificationsOpen) { setNotificationsOpen(false); notificationsButtonRef.current?.focus(); }
+    };
+    document.addEventListener("keydown", onEscape);
+    return () => document.removeEventListener("keydown", onEscape);
+  }, [profileDropdownOpen, notificationsOpen]);
 
   // 1. Fetch live branch from DB API & User Session Load
   useEffect(() => {
@@ -176,230 +191,111 @@ export default function Topbar({ onMobileMenuOpen }: TopbarProps) {
 
   const currentRole = userSession?.role?.toUpperCase() || "SUPERADMIN";
 
+  const focus = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#486B58] focus-visible:ring-offset-2";
+  const iconButton = `flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#70776F] transition-colors hover:bg-[#F0F2ED] hover:text-[#294F39] md:h-9 md:w-9 ${focus}`;
+  const panel = "fixed left-3 right-3 top-[60px] z-50 max-h-[calc(100dvh-76px)] overflow-y-auto rounded-xl border border-[#E1E6DD] bg-white text-[#252B27] shadow-[0_12px_40px_-12px_rgba(28,40,31,0.22)] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-80";
+  const roleLabel = currentRole === "SUPERADMIN" ? "Super administrator" : currentRole === "SUPERVISOR" ? "Supervisor" : currentRole === "DATA_ENTRY" ? "Data entry officer" : currentRole;
+  const initial = userSession?.name?.charAt(0).toUpperCase() || "A";
+
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between gap-4 px-4 sm:px-6 h-14 bg-gradient-to-r from-[#103014] via-[#153e1a] to-[#0e2c12] text-white border-b border-[#24582a]/50 shrink-0 shadow-xs relative select-none">
-      
-      {/* ── Left: Mobile Hamburger & Station Identity ── */}
-      <div className="flex items-center gap-3 min-w-0">
-        {/* Mobile menu trigger */}
-        <button
-          onClick={onMobileMenuOpen}
-          className="lg:hidden p-1.5 -ml-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer shrink-0"
-          aria-label="Toggle navigation menu"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
+    <header className="sticky top-0 z-30 shrink-0 border-b border-[#E4E7E1] bg-white text-[#252B27]">
+      <div className="flex h-16 items-center gap-2 px-3 sm:gap-4 sm:px-5">
+        <button type="button" onClick={onMobileMenuOpen} className={`${iconButton} lg:hidden`} aria-label="Open navigation menu">
+          <TopbarIcon name="menu" />
         </button>
 
-        {/* Dynamic Station Identity */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="w-2 h-2 rounded-full bg-[#81B71A] shrink-0 animate-pulse" />
-          <span className="font-bold text-xs sm:text-sm text-white truncate tracking-tight">{orgName}</span>
-          {orgCode && (
-            <span className="text-[11px] font-mono text-emerald-400/80 hidden md:inline shrink-0">
-              · {orgCode}
-            </span>
-          )}
+        <div className="min-w-0 flex-1 md:flex-initial md:basis-56">
+          <span className="mb-0.5 hidden text-[10px] font-medium uppercase tracking-[0.1em] text-[#777F74] sm:block">Station workspace</span>
+          <div className="flex min-w-0 items-center gap-2">
+            <span title={orgName} className="truncate text-[13px] font-semibold tracking-tight">{orgName}</span>
+            {orgCode && <span className="hidden shrink-0 rounded border border-[#E3E7DF] bg-[#F6F7F3] px-1.5 py-0.5 text-[10px] font-medium text-[#70776F] xl:inline">{orgCode}</span>}
+          </div>
         </div>
-      </div>
 
-      {/* ── Center: Slim Understated Search ── */}
-      <div className="flex-1 max-w-xs mx-3 hidden md:block">
-        <form onSubmit={handleSearchSubmit} className="relative">
-          <svg
-            className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search plate, VIN, owner..."
-            className="w-full pl-8 pr-4 py-1.5 bg-black/25 hover:bg-black/35 border border-white/10 focus:border-[#81B71A] rounded-full text-xs text-white placeholder:text-slate-400 focus:outline-none transition"
-          />
+        <form role="search" onSubmit={handleSearchSubmit} className="relative mx-auto hidden w-full max-w-sm min-w-0 flex-1 md:block">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#7C8479]"><TopbarIcon name="search" size={16} /></span>
+          <input aria-label="Search plates, VIN or owner" type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search plate, VIN or owner…" className="h-9 w-full rounded-lg border border-[#E4E7E1] bg-[#F7F8F5] pl-9 pr-3 text-xs text-[#252B27] outline-none transition-colors placeholder:text-[#777F74] hover:border-[#CFD7CA] focus:border-[#6A8773] focus:bg-white focus:ring-2 focus:ring-[#E8EFE9]" />
         </form>
-      </div>
 
-      {/* ── Right: Clean Action Controls ── */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        {/* Notifications Popover */}
-        <div className="relative" ref={notifRef}>
-          <button
-            onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer relative"
-            aria-label="Notifications"
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#81B71A]" />
-          </button>
-
-          {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-200 p-3 space-y-2 z-50 animate-in zoom-in-95 text-slate-800">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">System Alerts</span>
-                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                  All Systems Operational
-                </span>
-              </div>
-              <div className="space-y-2 text-xs">
-                <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
-                  <p className="font-semibold text-slate-800 text-[11px]">Database Synchronization</p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">PostgreSQL Supabase live stream active with zero lag.</p>
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          <div className="relative" ref={notifRef} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setNotificationsOpen(false); }}>
+            <button ref={notificationsButtonRef} type="button" onClick={() => { setNotificationsOpen(!notificationsOpen); setProfileDropdownOpen(false); }} className={`${iconButton} ${notificationsOpen ? "bg-[#E8EFE9] text-[#294F39]" : ""}`} aria-label="System alerts" aria-expanded={notificationsOpen} aria-controls={notificationsOpen ? notificationsId : undefined}>
+              <TopbarIcon name="bell" />
+            </button>
+            {notificationsOpen && (
+              <section id={notificationsId} aria-label="System alerts" className={panel}>
+                <div className="flex items-center justify-between border-b border-[#EDF0E9] px-4 py-3">
+                  <h2 className="text-[13px] font-semibold">System alerts</h2>
+                  <button type="button" aria-label="Close alerts" className={iconButton} onClick={() => { setNotificationsOpen(false); notificationsButtonRef.current?.focus(); }}><TopbarIcon name="close" size={16} /></button>
                 </div>
-                <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
-                  <p className="font-semibold text-slate-800 text-[11px]">Embossing Queue Online</p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Press line #2 dispatched 2,500 AD series blanks.</p>
+                <div className="px-4 py-3">
+                  <p className="mb-3 text-[11px] text-[#777F74]">Configured system notices</p>
+                  <div className="space-y-4">
+                    <div><p className="text-xs font-medium">Database synchronization</p><p className="mt-1 text-[11px] leading-relaxed text-[#70776F]">PostgreSQL Supabase live stream active with zero lag.</p></div>
+                    <div><p className="text-xs font-medium">Embossing queue online</p><p className="mt-1 text-[11px] leading-relaxed text-[#70776F]">Press line #2 dispatched 2,500 AD series blanks.</p></div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
+              </section>
+            )}
+          </div>
 
-        {/* ── Executive Officer Profile Menu ── */}
-        <div className="relative" ref={profileRef}>
-          <button
-            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-            className="flex items-center gap-2 py-1 px-1.5 rounded-lg hover:bg-white/10 transition cursor-pointer"
-          >
-            {/* Avatar badge */}
-            <div className="w-7 h-7 rounded-full bg-[#81B71A] text-white flex items-center justify-center text-xs font-bold font-mono shadow-xs">
-              {userSession?.name ? userSession.name.charAt(0).toUpperCase() : "A"}
-            </div>
+          <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-[#E4E7E1] sm:block" />
 
-            {/* Officer Name */}
-            <span className="text-xs font-semibold text-white hidden sm:inline max-w-[120px] truncate">
-              {userSession?.name || "Admin"}
-            </span>
-
-            {/* Chevron icon */}
-            <svg
-              className={`w-3 h-3 text-slate-300 transition-transform ${
-                profileDropdownOpen ? "rotate-180" : ""
-              }`}
-              viewBox="0 0 12 12"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path d="M2 4l4 4 4-4" />
-            </svg>
-          </button>
-
-          {/* Interactive Officer Profile Dropdown Popover */}
-          {profileDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-slate-200 p-3.5 space-y-3 z-50 animate-in zoom-in-95">
-              {/* Officer Dossier Header */}
-              <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-sm font-bold font-mono shadow-xs">
-                  {userSession?.name ? userSession.name.charAt(0).toUpperCase() : "A"}
+          <div className="relative" ref={profileRef} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setProfileDropdownOpen(false); }}>
+            <button ref={profileButtonRef} type="button" onClick={() => { setProfileDropdownOpen(!profileDropdownOpen); setNotificationsOpen(false); }} aria-label="Account and role settings" aria-expanded={profileDropdownOpen} aria-controls={profileDropdownOpen ? profileId : undefined} className={`flex min-h-11 items-center gap-2.5 rounded-lg px-1.5 text-left transition-colors hover:bg-[#F4F6F1] ${focus}`}>
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#DCE2D8] bg-[#E8ECE3] text-xs font-semibold text-[#4F5E48]">{initial}</span>
+              <span className="hidden min-w-0 sm:block"><span className="block max-w-[145px] truncate text-xs font-semibold">{userSession?.name || "Administrator"}</span><span className="mt-0.5 block text-[10px] text-[#70776F]">{roleLabel}</span></span>
+              <span className={`hidden text-[#7A8179] transition-transform sm:block ${profileDropdownOpen ? "rotate-180" : ""}`}><TopbarIcon name="chevron" size={13} /></span>
+            </button>
+            {profileDropdownOpen && (
+              <section id={profileId} aria-label="Account settings" className={panel}>
+                <div className="border-b border-[#EDF0E9] p-4">
+                  <p className="break-words text-[13px] font-semibold">{userSession?.name || "System Administrator"}</p>
+                  <p className="mt-1 break-all text-[11px] text-[#70776F]">{userSession?.email || "admin@dvla.gov.gh"}</p>
+                  <p className="mt-2 text-[11px] font-medium text-[#486B58]">{orgName}</p>
                 </div>
-                <div className="leading-tight">
-                  <p className="font-bold text-xs text-slate-900">{userSession?.name || "System Administrator"}</p>
-                  <p className="text-[11px] text-slate-400 font-mono">{userSession?.email || "admin@dvla.gov.gh"}</p>
-                  <p className="text-[10px] text-emerald-700 font-semibold mt-0.5">{orgName}</p>
-                </div>
-              </div>
-
-              {/* Authority Role Switcher */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
-                  Active Authority Level
-                </span>
-
-                {[
-                  {
-                    role: "SUPERADMIN",
-                    title: "SuperAdmin",
-                    desc: "Full root access, audit logs, & org control",
-                    color: "text-rose-700",
-                    border: "border-rose-200",
-                    dot: "bg-rose-500",
-                  },
-                  {
-                    role: "SUPERVISOR",
-                    title: "Supervisor (Admin)",
-                    desc: "Booking approval, quota sign-off, & certs",
-                    color: "text-amber-700",
-                    border: "border-amber-200",
-                    dot: "bg-amber-500",
-                  },
-                  {
-                    role: "DATA_ENTRY",
-                    title: "Data Entry Officer",
-                    desc: "Standard plate bookings & counter handover",
-                    color: "text-blue-700",
-                    border: "border-blue-200",
-                    dot: "bg-blue-500",
-                  },
-                ].map((tier) => {
-                  const isSelected = currentRole === tier.role;
-                  return (
-                    <button
-                      key={tier.role}
-                      onClick={() => handleRoleSelect(tier.role)}
-                      className={`w-full text-left p-2 rounded-lg border transition cursor-pointer flex items-start gap-2.5 ${
-                        isSelected
-                          ? `bg-slate-50 ${tier.border} shadow-2xs`
-                          : "border-transparent hover:bg-slate-50 hover:border-slate-200"
-                      }`}
-                    >
-                      <span className={`w-2 h-2 rounded-full mt-1 shrink-0 ${
-                        isSelected ? tier.dot : "bg-slate-300"
-                      }`} />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className={`text-xs font-bold ${tier.color}`}>
-                            {tier.title}
-                          </span>
-                          {isSelected && (
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">
-                              Active
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-                          {tier.desc}
-                        </p>
-                      </div>
+                <div className="p-2">
+                  <h2 className="px-2 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#777F74]">Switch role</h2>
+                  {[
+                    { role: "SUPERADMIN", title: "Super administrator", desc: "Organization, users and audit logs" },
+                    { role: "SUPERVISOR", title: "Supervisor", desc: "Approvals, quotas and certificates" },
+                    { role: "DATA_ENTRY", title: "Data entry officer", desc: "Bookings and counter handover" },
+                  ].map((tier) => (
+                    <button key={tier.role} type="button" aria-pressed={currentRole === tier.role} onClick={() => { handleRoleSelect(tier.role); profileButtonRef.current?.focus(); }} className={`mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${focus} ${currentRole === tier.role ? "bg-[#E8EFE9] text-[#294F39]" : "hover:bg-[#F4F6F1]"}`}>
+                      <span className="min-w-0 flex-1"><span className="block text-xs font-medium">{tier.title}</span><span className="mt-0.5 block text-[11px] leading-relaxed text-[#70776F]">{tier.desc}</span></span>
+                      {currentRole === tier.role && <TopbarIcon name="check" size={16} />}
                     </button>
-                  );
-                })}
-              </div>
-
-              {/* Navigation Shortcuts & Sign out */}
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                <Link
-                  href="/dashboard/help"
-                  onClick={() => setProfileDropdownOpen(false)}
-                  className="text-slate-600 hover:text-slate-900 font-semibold text-[11px] py-1 px-2 rounded hover:bg-slate-100 transition"
-                >
-                  Help &amp; SOPs
-                </Link>
-
-                <button
-                  onClick={handleLogout}
-                  className="text-rose-600 hover:text-rose-800 font-bold text-[11px] py-1 px-2 rounded hover:bg-rose-50 transition cursor-pointer"
-                >
-                  Sign Out →
-                </button>
-              </div>
-            </div>
-          )}
+                  ))}
+                </div>
+                <div className="flex items-center justify-between border-t border-[#EDF0E9] p-2">
+                  <Link href="/dashboard/help" onClick={() => setProfileDropdownOpen(false)} className={`flex min-h-11 items-center rounded-lg px-3 text-xs text-[#626B5E] hover:bg-[#F4F6F1] ${focus}`}>Help &amp; SOPs</Link>
+                  <button type="button" onClick={handleLogout} className={`flex min-h-11 items-center gap-2 rounded-lg px-3 text-xs font-medium text-[#9C4939] hover:bg-[#F8EEEB] ${focus}`}>Sign out <TopbarIcon name="logout" size={15} /></button>
+                </div>
+              </section>
+            )}
+          </div>
         </div>
-
       </div>
+      <form role="search" onSubmit={handleSearchSubmit} className="flex items-center gap-2 border-t border-[#F0F2EC] px-4 pb-2.5 pt-2 md:hidden">
+        <span className="text-[#7C8479]"><TopbarIcon name="search" size={16} /></span>
+        <input aria-label="Search plates, VIN or owner" type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search plate, VIN or owner…" className="h-9 min-w-0 flex-1 rounded-md bg-transparent px-1 text-base text-[#252B27] outline-none placeholder:text-[#777F74] focus:ring-2 focus:ring-[#E8EFE9]" />
+        <button type="submit" aria-label="Submit search" className={`flex h-11 w-11 items-center justify-center rounded-lg bg-[#F0F3EC] text-[#486B58] ${focus}`}><TopbarIcon name="arrow" size={16} /></button>
+      </form>
     </header>
+  );
+}
+
+function TopbarIcon({ name, size = 18 }: { name: "menu" | "search" | "bell" | "chevron" | "check" | "logout" | "arrow" | "close"; size?: number }) {
+  return (
+    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+      {name === "menu" && <path d="M4 6h16M4 12h16M4 18h16" />}
+      {name === "search" && <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4 4" /></>}
+      {name === "bell" && <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10 21h4" /></>}
+      {name === "chevron" && <path d="m6 9 6 6 6-6" />}
+      {name === "check" && <path d="m5 12 4 4L19 6" />}
+      {name === "logout" && <><path d="M9 4H5v16h4M9 12h12m-5-5 5 5-5 5" /></>}
+      {name === "arrow" && <path d="M5 12h14m-5-5 5 5-5 5" />}
+      {name === "close" && <path d="m6 6 12 12M18 6 6 18" />}
+    </svg>
   );
 }

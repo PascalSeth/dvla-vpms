@@ -228,10 +228,28 @@ function StepHeading({
   );
 }
 
+/* ── Helper: Get maximum days in a month (accounting for leap years) ── */
+function getDaysInMonth(month: number, year?: number): number {
+  if (month < 1 || month > 12) return 31;
+  if (month === 2) {
+    if (year) {
+      const isLeap =
+        (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+      return isLeap ? 29 : 28;
+    }
+    return 29; // allow 29 until year is typed
+  }
+  if (month === 4 || month === 6 || month === 9 || month === 11) {
+    return 30;
+  }
+  return 31;
+}
+
 /* ── Flexible Date Parser & Formatter for Typing & Calendar Selection ── */
 function parseFlexibleDate(
   input: string,
-): { iso: string; readable: string } | null {
+  maxYear?: number,
+): { iso: string; readable: string; year: number } | null {
   if (!input) return null;
   const raw = input.trim();
   if (!raw) return null;
@@ -272,21 +290,29 @@ function parseFlexibleDate(
   }
 
   if (y && m && d) {
-    if (m >= 1 && m <= 12 && d >= 1 && d <= 31 && y >= 1970 && y <= 2050) {
-      const testDate = new Date(y, m - 1, d);
-      if (
-        testDate.getFullYear() === y &&
-        testDate.getMonth() === m - 1 &&
-        testDate.getDate() === d
-      ) {
-        const iso = `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-        const readable = testDate.toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        });
-        return { iso, readable };
-      }
+    // Month must strictly be 1-12
+    if (m < 1 || m > 12) return null;
+    // Year cannot exceed maxYear if provided
+    if (maxYear && y > maxYear) return null;
+    if (y < 1970 || y > 2099) return null;
+
+    // Day cannot exceed maximum days attributed to that specific month
+    const maxDays = getDaysInMonth(m, y);
+    if (d < 1 || d > maxDays) return null;
+
+    const testDate = new Date(y, m - 1, d);
+    if (
+      testDate.getFullYear() === y &&
+      testDate.getMonth() === m - 1 &&
+      testDate.getDate() === d
+    ) {
+      const iso = `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const readable = testDate.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+      return { iso, readable, year: y };
     }
   }
 
@@ -303,8 +329,8 @@ function isoToDmy(str: string): string {
   return str;
 }
 
-/* ── Live As-You-Type Date Auto-Formatting Mask (One by One) ── */
-function applyDateMask(input: string, prev: string): string {
+/* ── Live As-You-Type Date Auto-Formatting Mask with Strict Clamping ── */
+function applyDateMask(input: string, prev: string, maxYear?: number): string {
   // 1. If deleting (backspace/cut)
   if (input.length < prev.length) {
     if (input.endsWith("/")) {
@@ -315,13 +341,18 @@ function applyDateMask(input: string, prev: string): string {
 
   // 2. If user explicitly typed a slash after a 1-digit day e.g. "5/" -> auto-pad to "05/"
   if (input.endsWith("/") && /^\d{1}\/$/.test(input)) {
-    return `0${input}`;
+    let d = parseInt(input[0], 10);
+    if (d === 0) d = 1;
+    return `0${d}/`;
   }
 
   // 3. If user explicitly typed a slash after a 1-digit month e.g. "22/9/" -> auto-pad to "22/09/"
   if (input.endsWith("/") && /^\d{2}\/\d{1}\/$/.test(input)) {
     const parts = input.split("/");
-    return `${parts[0]}/0${parts[1]}/`;
+    let m = parseInt(parts[1], 10);
+    if (m === 0) m = 1;
+    if (m > 12) m = 12;
+    return `${parts[0]}/${String(m).padStart(2, "0")}/`;
   }
 
   // 4. Extract pure digits only (maximum 8 digits: DDMMYYYY)
@@ -333,25 +364,114 @@ function applyDateMask(input: string, prev: string): string {
     input.includes("-") &&
     (digits.startsWith("20") || digits.startsWith("19"))
   ) {
-    if (digits.length <= 4) return digits;
-    if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
-    return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+    let yStr = digits.slice(0, 4);
+    let mStr = digits.slice(4, 6);
+    let dStr = digits.slice(6, 8);
+
+    if (yStr.length === 4 && maxYear) {
+      let y = parseInt(yStr, 10);
+      if (y > maxYear) y = maxYear;
+      yStr = String(y);
+    }
+
+    if (mStr.length > 0) {
+      let m = parseInt(mStr, 10);
+      if (mStr.length === 2) {
+        if (m === 0) m = 1;
+        if (m > 12) m = 12;
+        mStr = String(m).padStart(2, "0");
+      }
+    }
+
+    if (dStr.length > 0 && mStr.length === 2) {
+      let d = parseInt(dStr, 10);
+      const m = parseInt(mStr, 10);
+      const y = yStr.length === 4 ? parseInt(yStr, 10) : undefined;
+      const maxD = getDaysInMonth(m, y);
+      if (dStr.length === 2) {
+        if (d === 0) d = 1;
+        if (d > maxD) d = maxD;
+        dStr = String(d).padStart(2, "0");
+      }
+    }
+
+    if (digits.length <= 4) return yStr;
+    if (digits.length <= 6) return `${yStr}-${mStr}`;
+    return `${yStr}-${mStr}-${dStr}`;
   }
 
-  // 6. Standard Ghana DD/MM/YYYY formatting one by one
+  // 6. Standard Ghana DD/MM/YYYY formatting with strict live validation
+  // --- Day (digits 0..1) ---
+  const d1 = digits[0];
   if (digits.length === 1) {
-    return digits;
+    // If first digit is 4-9, user intended e.g. 05
+    if (parseInt(d1, 10) > 3) {
+      return `0${d1}/`;
+    }
+    return d1;
   }
+
+  let day = parseInt(digits.slice(0, 2), 10);
+  if (day === 0) day = 1;
+  if (day > 31) day = 31;
+  const dayStr = String(day).padStart(2, "0");
+
   if (digits.length === 2) {
-    return `${digits}/`;
+    return `${dayStr}/`;
   }
+
+  // --- Month (digits 2..3) ---
+  const mPart = digits.slice(2);
+  if (mPart.length === 1) {
+    const m1 = parseInt(mPart[0], 10);
+    // If first digit of month is 2-9, user intended e.g. 04
+    if (m1 > 1) {
+      const month = m1;
+      const monthStr = String(month).padStart(2, "0");
+      const maxD = getDaysInMonth(month);
+      const adjustedDay = Math.min(day, maxD);
+      return `${String(adjustedDay).padStart(2, "0")}/${monthStr}/`;
+    }
+    return `${dayStr}/${mPart}`;
+  }
+
+  let month = parseInt(digits.slice(2, 4), 10);
+  if (month === 0) month = 1;
+  if (month > 12) month = 12; // Month cannot exceed 12
+  const monthStr = String(month).padStart(2, "0");
+
+  // Adjust day for the validated month (e.g. 31/04 -> 30/04, 31/02 -> 29/02)
+  const maxD = getDaysInMonth(month);
+  let adjustedDay = Math.min(day, maxD);
+  let adjustedDayStr = String(adjustedDay).padStart(2, "0");
+
   if (digits.length === 3) {
-    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    return `${adjustedDayStr}/${digits.slice(2, 3)}`;
   }
+
   if (digits.length === 4) {
-    return `${digits.slice(0, 2)}/${digits.slice(2)}/`;
+    return `${adjustedDayStr}/${monthStr}/`;
   }
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+
+  // --- Year (digits 4..7) ---
+  const yPart = digits.slice(4);
+  if (yPart.length === 4) {
+    let year = parseInt(yPart, 10);
+    if (maxYear && year > maxYear) {
+      year = maxYear; // Year cannot exceed current year
+    }
+    // Re-check February in non-leap year (e.g. 29/02/2026 -> 28/02/2026)
+    if (month === 2) {
+      const febMax = getDaysInMonth(2, year);
+      if (adjustedDay > febMax) {
+        adjustedDay = febMax;
+        adjustedDayStr = String(adjustedDay).padStart(2, "0");
+      }
+    }
+    return `${adjustedDayStr}/${monthStr}/${year}`;
+  }
+
+  return `${adjustedDayStr}/${monthStr}/${yPart}`;
 }
 
 interface FlexibleDateInputProps {
@@ -361,6 +481,7 @@ interface FlexibleDateInputProps {
   required?: boolean;
   placeholder?: string;
   className?: string;
+  maxYear?: number;
 }
 
 function FlexibleDateInput({
@@ -370,6 +491,7 @@ function FlexibleDateInput({
   required = false,
   placeholder = "DD / MM / YYYY (e.g. 22092026)",
   className = "",
+  maxYear,
 }: FlexibleDateInputProps) {
   const [typedText, setTypedText] = useState(() => isoToDmy(value || ""));
   const pickerRef = useRef<HTMLInputElement>(null);
@@ -388,15 +510,15 @@ function FlexibleDateInput({
     }
   }, [value]);
 
-  const parsedInfo = parseFlexibleDate(typedText);
+  const parsedInfo = parseFlexibleDate(typedText, maxYear);
 
   function handleTextChange(rawVal: string) {
     isTypingRef.current = true;
-    const formatted = applyDateMask(rawVal, typedText);
+    const formatted = applyDateMask(rawVal, typedText, maxYear);
     setTypedText(formatted);
 
     // Only update parent state if full valid date is recognized, or if cleared
-    const parsed = parseFlexibleDate(formatted);
+    const parsed = parseFlexibleDate(formatted, maxYear);
     if (parsed) {
       onChange(parsed.iso);
     } else if (!formatted.trim()) {
@@ -433,10 +555,26 @@ function FlexibleDateInput({
     isTypingRef.current = false;
     const val = e.target.value;
     if (val) {
+      const match = val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (match) {
+        let y = parseInt(match[1], 10);
+        let m = parseInt(match[2], 10);
+        let d = parseInt(match[3], 10);
+        if (maxYear && y > maxYear) y = maxYear;
+        if (m > 12) m = 12;
+        const maxD = getDaysInMonth(m, y);
+        if (d > maxD) d = maxD;
+        const clampedIso = `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        setTypedText(isoToDmy(clampedIso));
+        onChange(clampedIso);
+        return;
+      }
       setTypedText(isoToDmy(val));
       onChange(val);
     }
   }
+
+  const maxDateString = maxYear ? `${maxYear}-12-31` : undefined;
 
   return (
     <div className="space-y-1">
@@ -461,6 +599,7 @@ function FlexibleDateInput({
           type="date"
           tabIndex={-1}
           aria-hidden="true"
+          max={maxDateString}
           value={parsedInfo ? parsedInfo.iso : ""}
           onChange={handlePickerChange}
           className="sr-only"
@@ -516,11 +655,11 @@ function FlexibleDateInput({
           </span>
         ) : typedText.trim() ? (
           <span className="text-amber-600 font-medium">
-            Enter a complete date, e.g. 22/09/2026
+            Enter valid date (DD/MM/YYYY) · max year: {maxYear || new Date().getFullYear()}
           </span>
         ) : (
           <span className="text-slate-400">
-            DD/MM/YYYY · calendar available
+            DD/MM/YYYY · {maxYear ? `Max year: ${maxYear}` : "calendar available"}
           </span>
         )}
       </div>
@@ -1388,6 +1527,29 @@ function BookingDeskContent() {
     }
   }, [regularPlateFieldKey, customFieldValues, regularPlateNo]);
 
+  // Current year constraint: payment receipt date and customs clearance date cannot exceed current year
+  const currentYear = new Date().getFullYear();
+
+  const receiptDateYear = useMemo(() => {
+    if (!receiptDate) return null;
+    const match = receiptDate.match(/^(\d{4})/);
+    return match ? parseInt(match[1], 10) : null;
+  }, [receiptDate]);
+
+  const isReceiptDateYearExceeded = Boolean(
+    receiptDateYear && receiptDateYear > currentYear,
+  );
+
+  const customsDateYear = useMemo(() => {
+    if (!customsDate) return null;
+    const match = customsDate.match(/^(\d{4})/);
+    return match ? parseInt(match[1], 10) : null;
+  }, [customsDate]);
+
+  const isCustomsDateYearExceeded = Boolean(
+    customsDateYear && customsDateYear > currentYear,
+  );
+
   /* ── 3 Streamlined Steps Validation ── */
   const [attemptedTabs, setAttemptedTabs] = useState<Record<number, boolean>>({
     1: false,
@@ -1437,8 +1599,14 @@ function BookingDeskContent() {
       });
     if (!receiptNo.trim())
       missing.push({ id: "input-receiptNo", label: "Revenue Receipt Number" });
-    if (!receiptDate.trim())
+    if (!receiptDate.trim()) {
       missing.push({ id: "input-receiptDate", label: "Receipt Payment Date" });
+    } else if (isReceiptDateYearExceeded) {
+      missing.push({
+        id: "input-receiptDate",
+        label: `Receipt Payment Date (Year ${receiptDateYear} exceeds current year ${currentYear})`,
+      });
+    }
     if (isTransfer) {
       if (
         activeServiceDef?.prevOwnerRequireName !== false &&
@@ -1492,6 +1660,9 @@ function BookingDeskContent() {
     ownerName,
     receiptNo,
     receiptDate,
+    isReceiptDateYearExceeded,
+    receiptDateYear,
+    currentYear,
     isTransfer,
     activeServiceDef,
     oldOwnerName,
@@ -1554,11 +1725,17 @@ function BookingDeskContent() {
           id: "input-customsNo",
           label: "Customs Declaration Number",
         });
-      if (!customsDate.trim())
+      if (!customsDate.trim()) {
         missing.push({
           id: "input-customsDate",
           label: "Customs Clearance Date",
         });
+      } else if (isCustomsDateYearExceeded) {
+        missing.push({
+          id: "input-customsDate",
+          label: `Customs Clearance Date (Year ${customsDateYear} exceeds current year ${currentYear})`,
+        });
+      }
     }
     if (!supervisor.trim())
       missing.push({ id: "input-supervisor", label: "Approving Officer" });
@@ -1578,6 +1755,9 @@ function BookingDeskContent() {
     requiresCustomsStep,
     customsNo,
     customsDate,
+    isCustomsDateYearExceeded,
+    customsDateYear,
+    currentYear,
     supervisor,
     step3CustomFields,
     customFieldValues,
@@ -1825,7 +2005,7 @@ function BookingDeskContent() {
     if (missingFieldsTab1.length > 0) {
       focusField(missingFieldsTab1[0].id, 1);
       alert(
-        `⚠️ Step 1 Incomplete: Please enter "${missingFieldsTab1[0].label}" before certifying.`,
+        `⚠️ Step 1 Incomplete: ${missingFieldsTab1[0].label}.`,
       );
       return;
     }
@@ -1841,7 +2021,7 @@ function BookingDeskContent() {
     if (missingFieldsTab3.length > 0) {
       focusField(missingFieldsTab3[0].id, 3);
       alert(
-        `⚠️ Step 3 Incomplete: Please enter "${missingFieldsTab3[0].label}" before certifying.`,
+        `⚠️ Step 3 Incomplete: ${missingFieldsTab3[0].label}.`,
       );
       return;
     }
@@ -2943,17 +3123,27 @@ function BookingDeskContent() {
                       <Field
                         label="Receipt Payment Date"
                         required
-                        isFilled={Boolean(receiptDate.trim())}
-                        hasError={attemptedTabs[1] && !receiptDate.trim()}
-                        errorMessage="Receipt Payment Date is required"
+                        isFilled={
+                          Boolean(receiptDate.trim()) && !isReceiptDateYearExceeded
+                        }
+                        hasError={
+                          (attemptedTabs[1] && !receiptDate.trim()) ||
+                          isReceiptDateYearExceeded
+                        }
+                        errorMessage={
+                          isReceiptDateYearExceeded
+                            ? `Receipt payment date year (${receiptDateYear}) cannot exceed current year (${currentYear})`
+                            : "Receipt Payment Date is required"
+                        }
                         fieldId="receiptDate"
-                        hint="Date on official receipt"
+                        hint={`Date on official receipt (max year: ${currentYear})`}
                       >
                         <div className="space-y-2">
                           <FlexibleDateInput
                             id="input-receiptDate"
                             value={receiptDate}
                             onChange={setReceiptDate}
+                            maxYear={currentYear}
                             required
                             placeholder="DD/MM/YYYY"
                           />
@@ -3553,17 +3743,27 @@ function BookingDeskContent() {
                           <Field
                             label="Customs Clearance Date"
                             required
-                            isFilled={Boolean(customsDate.trim())}
-                            hasError={attemptedTabs[3] && !customsDate.trim()}
-                            errorMessage="Customs Clearance Date is required"
+                            isFilled={
+                              Boolean(customsDate.trim()) && !isCustomsDateYearExceeded
+                            }
+                            hasError={
+                              (attemptedTabs[3] && !customsDate.trim()) ||
+                              isCustomsDateYearExceeded
+                            }
+                            errorMessage={
+                              isCustomsDateYearExceeded
+                                ? `Customs clearance date year (${customsDateYear}) cannot exceed current year (${currentYear})`
+                                : "Customs Clearance Date is required"
+                            }
                             fieldId="customsDate"
-                            hint="Clearance stamp date"
+                            hint={`Clearance stamp date (max year: ${currentYear})`}
                           >
                             <div className="space-y-2">
                               <FlexibleDateInput
                                 id="input-customsDate"
                                 value={customsDate}
                                 onChange={setCustomsDate}
+                                maxYear={currentYear}
                                 required
                                 placeholder="DD/MM/YYYY"
                               />

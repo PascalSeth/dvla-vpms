@@ -79,6 +79,29 @@ export async function POST(request: Request) {
       }
     }
 
+    // ── Validation: Year for receipt payment date & customs date cannot exceed current year ──
+    const currentYear = new Date().getFullYear();
+    if (body.receiptDate) {
+      const match = String(body.receiptDate).match(/^(\d{4})/);
+      const rYear = match ? parseInt(match[1], 10) : new Date(body.receiptDate).getFullYear();
+      if (!isNaN(rYear) && rYear > currentYear) {
+        return NextResponse.json(
+          { error: `Receipt payment date year (${rYear}) cannot exceed the current year (${currentYear}).` },
+          { status: 400 }
+        );
+      }
+    }
+    if (body.customsDate) {
+      const match = String(body.customsDate).match(/^(\d{4})/);
+      const cYear = match ? parseInt(match[1], 10) : new Date(body.customsDate).getFullYear();
+      if (!isNaN(cYear) && cYear > currentYear) {
+        return NextResponse.json(
+          { error: `Customs clearance date year (${cYear}) cannot exceed the current year (${currentYear}).` },
+          { status: 400 }
+        );
+      }
+    }
+
     // ── 1. Parse Vehicle Specifications & Model from Input / Vehicle String ──
     let finalMake = body.make ? String(body.make).trim().toUpperCase() : "";
     let finalModel = body.model ? String(body.model).trim().toUpperCase() : "";
